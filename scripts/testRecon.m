@@ -1,6 +1,6 @@
 clear all;
 close all;
-
+disp('Loading testing stimulus data...')
 name = 'bar';
 %set which testing stimulus to use
 if strcmp(name,'grating')
@@ -10,19 +10,20 @@ if strcmp(name,'grating')
     %load ../output/reconstructedSTA/offParasolGratingSTARecon.mat
 elseif strcmp(name,'bar')
     matfOff = matfile('../dat/WNstim_response_OffParasol_offBig2_64_barGay_june10.mat');
-    matfOn = matfile('../dat/WNstim_response_OffParasol_onBig2_36_barGray_june10.mat');
+    matfOn = matfile('../dat/WNstim_response_OnParasol_onBig2_36_barGray_june10.mat');
     %load ../output/reconstructedSTA/onParasolBarSTARecon.mat
     %load ../output/reconstructedSTA/offParasolBarSTARecon.mat
 end
 
 
 
-%test moving bar with off parasols
+disp('Reconstructing with off parasols...')
+%test with off parasols
 filtMat_off = matfile('../output/filters_may26_off.mat');
 %
 
-%create response matrix for moving bar (first load spikes like in
-%loadspikes.m
+%create response matrix for test stimulus
+
 blocklength = 152;
 numcells= 64;
 
@@ -36,7 +37,7 @@ mov = reshape(stim,96,96,size(stim,2));
 movrecons_off = reshape(recons_stim_off,96,96,size(recons_stim_off,2));
 
 
-
+disp('Reconstructing with on parasols...')
 %reconstruct with ON parasols
 filtMat_on = matfile('../output/filters_may26_on.mat');
 
@@ -52,7 +53,7 @@ recons_stim_on = reconsFromFilt(filtMat_on.filterMat, spikeRespOn);
 mov = reshape(stim,96,96,size(stim,2));
 movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
 
-
+disp('Reconstructing with both on/off parasols...')
 %reconstruct with on and off
 filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
 spikeRespOnOff =vertcat(spikeRespOn,spikeRespOff);
@@ -60,6 +61,7 @@ recons_stim_on_off = reconsFromFilt(filtMat_on_off.filterMat, spikeRespOnOff);
 
 mov = reshape(stim,96,96,size(stim,2));
 movrecons_on_off = reshape(recons_stim_on_off,96,96,size(recons_stim_on_off,2));
+
 
 %reconstruct with on trained with on/off
 filtMatJoint = filtMat_on_off.filterMat;
