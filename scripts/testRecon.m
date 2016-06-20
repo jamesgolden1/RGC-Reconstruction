@@ -55,26 +55,26 @@ movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
 
 disp('Reconstructing with both on/off parasols...')
 %reconstruct with on and off
-% filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
-
-filtMat_on_off1 = matfile('../output/filters_may26_on_off1.mat');
-% filtMat_on_off1.filterMat = filtMat_on_off.filterMat(1:1500,:);
-
-filtMat_on_off2 = matfile('../output/filters_may26_on_off2.mat');
-% filtMat_on_off2.filterMat = filtMat_on_off.filterMat(1501:3001,:);
-
 spikeRespOnOff =vertcat(spikeRespOn,spikeRespOff);
-% recons_stim_on_off = reconsFromFilt(filtMat_on_off.filterMat, spikeRespOnOff);
-filterMatCombined = [filtMat_on_off1.filterMat; filtMat_on_off2.filterMat];
-recons_stim_on_off = reconsFromFilt(filterMatCombined, spikeRespOnOff);
+if exist('../output/filters_may26_on_off1.mat','file') ~= 0
+    filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
+    recons_stim_on_off = reconsFromFilt(filtMat_on_off.filterMat, spikeRespOnOff);
+    filtMatJoint = filtMat_on_off.filterMat;
+else
+    filtMat_on_off1 = matfile('../output/filters_may26_on_off1.mat');
+    filtMat_on_off2 = matfile('../output/filters_may26_on_off2.mat');
+    
+    filterMatCombined = [filtMat_on_off1.filterMat; filtMat_on_off2.filterMat];
+    recons_stim_on_off = reconsFromFilt(filterMatCombined, spikeRespOnOff);
+    filtMatJoint = filterMatCombined;
+end
 
 mov = reshape(stim,96,96,size(stim,2));
 movrecons_on_off = reshape(recons_stim_on_off,96,96,size(recons_stim_on_off,2));
 
 
 %reconstruct with on trained with on/off
-% filtMatJoint = filtMat_on_off.filterMat;
-filtMatJoint = filterMatCombined;
+
 recons_stim_on_joint = reconsFromFilt(filtMatJoint(1:size(filtMat_on.filterMat,1),:),spikeRespOn);
 movrecons_on_joint = reshape(recons_stim_on_joint,96,96,size(recons_stim_on_joint,2));
 
