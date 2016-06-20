@@ -55,16 +55,26 @@ movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
 
 disp('Reconstructing with both on/off parasols...')
 %reconstruct with on and off
-filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
+% filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
+
+filtMat_on_off1 = matfile('../output/filters_may26_on_off1.mat');
+% filtMat_on_off1.filterMat = filtMat_on_off.filterMat(1:1500,:);
+
+filtMat_on_off2 = matfile('../output/filters_may26_on_off2.mat');
+% filtMat_on_off2.filterMat = filtMat_on_off.filterMat(1501:3001,:);
+
 spikeRespOnOff =vertcat(spikeRespOn,spikeRespOff);
-recons_stim_on_off = reconsFromFilt(filtMat_on_off.filterMat, spikeRespOnOff);
+% recons_stim_on_off = reconsFromFilt(filtMat_on_off.filterMat, spikeRespOnOff);
+filterMatCombined = [filtMat_on_off1.filterMat; filtMat_on_off2.filterMat];
+recons_stim_on_off = reconsFromFilt(filterMatCombined, spikeRespOnOff);
 
 mov = reshape(stim,96,96,size(stim,2));
 movrecons_on_off = reshape(recons_stim_on_off,96,96,size(recons_stim_on_off,2));
 
 
 %reconstruct with on trained with on/off
-filtMatJoint = filtMat_on_off.filterMat;
+% filtMatJoint = filtMat_on_off.filterMat;
+filtMatJoint = filterMatCombined;
 recons_stim_on_joint = reconsFromFilt(filtMatJoint(1:size(filtMat_on.filterMat,1),:),spikeRespOn);
 movrecons_on_joint = reshape(recons_stim_on_joint,96,96,size(recons_stim_on_joint,2));
 
@@ -117,7 +127,7 @@ hf = figure;
 % resize figure based on frame's w x h, and place at (150, 150)
 set(hf, 'position', [150 150 w h]);
 axis off
-save(strcat('../output/presentation/movie_may26_',name),'M');
+save(strcat('../output/movie_may26_',name),'M');
 
 close all;
 %Compare reconstructions trained with only ON and OFF with the joint
@@ -169,7 +179,7 @@ hf = figure;
 % resize figure based on frame's w x h, and place at (150, 150)
 set(hf, 'position', [150 150 w h]);
 axis off
-save(strcat('../output/presentation/movie_compare_may26_',name),'M');
+save(strcat('../output/movie_compare_may26_',name),'M');
 
 
 
