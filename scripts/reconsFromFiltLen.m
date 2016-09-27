@@ -1,6 +1,6 @@
-function [ recons_stim ] = reconsFromFilt(filters, spikeResp)
+function [ recons_stim ] = reconsFromFiltLen(filters, spikeResp, numbins)
 %reconstruct a stimulus given the filters and spike responses
-numbins=20;
+% numbins=12;
 trainTimes = 1:size(spikeResp,2)-numbins;
 respTest = zeros(length(trainTimes),size(spikeResp,1)*numbins+1);
 respTest(:,1) = ones(length(trainTimes),1);

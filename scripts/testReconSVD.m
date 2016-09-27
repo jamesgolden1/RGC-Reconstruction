@@ -1,8 +1,7 @@
 % clear all;
 % close all;
 disp('Loading testing stimulus data...')
-% name = 'bar';
-name = 'grating'
+name = 'bar';
 %set which testing stimulus to use
 if strcmp(name,'grating')
     matfOn = matfile('../dat/WNstim_response_OnParasol_36_grating_june10.mat');
@@ -231,7 +230,7 @@ end
 
 %%
 figure;
-for ishift = 0%1:5;
+for ishift = 1:5;
 barmov = matfOn.whiteNoiseSmall;
 barmovShort = double(barmov(:,:,ishift+[1:122]))/2+.5;
 

@@ -1,5 +1,5 @@
-clear all;
-close all;
+% clear all;
+% close all;
 disp('Loading filters...')
 filtMat_off = matfile('../output/filters_may26_off.mat');
 filtMat_on = matfile('../output/filters_may26_on.mat');
@@ -8,14 +8,16 @@ filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
 disp('Loading movie...')
 load ../dat/movie_may26.mat
 disp('Loading response matrix and raw spike responses...')
-load ../output/respTest_may26_on_off.mat
+% load ../output/respTest_may26_on_off.mat
+load ../output/on_off_respTest.mat
 matfON = matfile('../dat/spikeResp_may26_on.mat');
 matfOFF = matfile('../dat/spikeResp_may26_off.mat');
 spikeResp = vertcat(matfON.spikeResp, matfOFF.spikeResp);
 
-disp('Loading sta...')
-matfSTA = matfile('../output/staFull_may26_on_off.mat');
-sta = matfSTA.sta;
+% disp('Loading sta...')
+% matfSTA = matfile('../output/staFull_may26_on_off.mat');
+% sta = matfSTA.sta;
+sta{1} = zeros(96*96,30);
 
 disp('Compute temporal filters for selected subset of cells...')
 numbins = 30;
@@ -27,7 +29,7 @@ ttfOnOff = zeros(numbins, size(8,1));
 staFrames = cell(size(spikeResp,1),1);
 ttfMat = zeros(numbins,size(spikeResp,1));
 for icell = 1:size(spikeResp,1)
-    
+    icell = 1;
     [m,a] = max(abs(sta{icell}(:,26)));
     ttfMat(:,icell) = sta{icell}(a,:)';
     staFrames{icell} = reshape(sta{icell}(:,26),96,96);
@@ -77,6 +79,7 @@ for i = 1:numbins-3
         colormap gray
         axis image
         subplot(2,4,icell+4)
+        cellval =1;
         imagesc(reshape(sta{cellval}(:,numbins-i),96,96));
         %caxis([min(sta{cellval}(:,numbins-i)),max(sta{cellval}(:,numbins-i))]);
         colormap gray

@@ -54,18 +54,18 @@ filterMat = zeros(size(respTrain,2),size(stim,1));
 disp(['Reconstructing train and test stimuli with pixel batch size ' num2str(batchsize)])
 
 for pix = 1:batchsize:size(stim,1)-(batchsize-1) 
-		%pix
+		pix
     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)');
     filter = corrTrain*pixelTC;
     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
     filterMat(:,pix:pix+(batchsize-1)) = filter;
 end
-save(strcat('../output/recons_train_',fileext),'recons_train','-v7.3');
-save(strcat('../output/recons_test_', fileext),'recons_test','-v7.3');
-save(strcat('../output/respTrain_',fileext), 'respTrain', '-v7.3');
-save(strcat('../output/respTest_',fileext), 'respTest', '-v7.3');
-save(strcat('../output/filters_',fileext), 'filterMat','-v7.3');
+% save(strcat('../output/recons_train_',fileext),'recons_train','-v7.3');
+% save(strcat('../output/recons_test_', fileext),'recons_test','-v7.3');
+% save(strcat('../output/respTrain_',fileext), 'respTrain', '-v7.3');
+% save(strcat('../output/respTest_',fileext), 'respTest', '-v7.3');
+% save(strcat('../output/filters_',fileext), 'filterMat','-v7.3');
 
 
 end

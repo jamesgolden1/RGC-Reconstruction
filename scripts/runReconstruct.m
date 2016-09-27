@@ -1,5 +1,5 @@
-clear all;
-close all;
+% clear all;
+% close all;
 
 %%run Linear reconstruction for on, off, and joint on/off training 
 windowsize = 30;
