@@ -1,4 +1,4 @@
-function linearReconstructSVD_short_midgets_both(stimNull,resp,fileext, windowsize,includedComponentsArray, trainSize)
+function filterMat = linearReconstructSVD_short_midgets_both(stimName,resp,fileext, windowsize,includedComponentsArray, trainSize)
 %Linear reconstruction using least squares estimate for filters
 %inputs: stim (movie stimulus reshaped to framewidth*frameheight x time bins)
 %        resp (spike response of size numCells x time bins)
@@ -92,7 +92,10 @@ disp('loading stim movie');
 
 % load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_onParasol_fast','stim')
 
-load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
+% load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
+
+load([reconstructionRootPath '\dat\' stimName]);
+
 % load ../dat/movie_onMidget_long300.mat
 
 
@@ -124,9 +127,9 @@ fileext2 = [fileext '_svd_' num2str(includedComponentsArray(icind)) '_len_' num2
 % save(strcat('../output/svd_reconstruct/recons_test_', fileext2),'recons_test','-v7.3');
 % % save(strcat('../output/svd_reconstruct/respTrain_',fileext2), 'respTrain', '-v7.3');
 % save(strcat('../output/svd_reconstruct/respTest_',fileext2), 'respTest', '-v7.3');
-save(strcat('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\filters_',fileext2), 'filterMat','-v7.3');
+save(strcat([reconstructionRootPath '\dat\filters_'],fileext2), 'filterMat','-v7.3');
 
-clear recons_train recons_test filterMat stim
+clear recons_train recons_test stim
 toc
 
 
