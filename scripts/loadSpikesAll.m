@@ -1,16 +1,17 @@
 % clear all;
 % folderLocation  = '../dat/may26_off/';
-blocklength = 24000;
-numReps = 10
-numCells= 36;
+blocklength = 12000;
+numReps = 20
+numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
 stim = zeros(96*96,blocklength*numReps,'uint8');
 for blockNum = 1:numReps
     blockNum
 %     filename1 = [folderLocation 'WNstim_response_OffParasol_block_' num2str(blockNum) '.mat'];
 
+filename1 = ['C:\Users\James\Documents\matlab\github\EJLPhosphene\local\all_fast\WNstim_response_block_' num2str(blockNum) '.mat'];
 
-    filename1 = ['C:\Users\James\Documents\matlab\github\EJLPhosphene\local\OnParasol_fast\WNstim_response_OnParasol_block_' num2str(blockNum) '.mat'];
+%     filename1 = ['C:\Users\James\Documents\matlab\github\EJLPhosphene\local\OnParasol_fast\WNstim_response_OnParasol_block_' num2str(blockNum) '.mat'];
 %     filename1 = ['C:\Users\James\Documents\matlab\github\EJLPhosphene\local\OffParasol_fast\WNstim_response_OffParasol_block_' num2str(blockNum) '.mat'];
 %     filename1 = ['C:\Users\James\Documents\matlab\github\EJLPhosphene\local\OnMidget_fast\WNstim_response_OnMidget_block_' num2str(blockNum) '.mat'];
 %     filename1 = ['C:\Users\James\Documents\matlab\github\EJLPhosphene\local\OffMidget_fast\WNstim_response_OffMidget_block_' num2str(blockNum) '.mat'];
@@ -44,9 +45,9 @@ for blockNum = 1:numReps
 end
 
 
-% save('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\spikeResp_onParasol_fast','spikeResp');
+save('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\spikeResp_all0','spikeResp');
 
-save('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_onParasol_fast','stim','-v7.3')
+save('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0','stim','-v7.3')
 
 % % save('../dat/spikeResp_offParasol','spikeResp')
 % save('../dat/spikeResp_onParasol_fast','spikeResp')

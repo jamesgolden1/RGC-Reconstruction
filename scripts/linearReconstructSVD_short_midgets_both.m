@@ -88,7 +88,11 @@ corrTrainSVD =  (Vtrain(:,includedComponents) * (StrainInv(includedComponents,in
 clear Utrain
 disp('loading stim movie');
 % load ../dat/movie_may26.mat
-load ../dat/movie_onMidget.mat
+% load ../dat/movie_onMidget.mat
+
+% load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_onParasol_fast','stim')
+
+load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
 % load ../dat/movie_onMidget_long300.mat
 
 
@@ -120,7 +124,7 @@ fileext2 = [fileext '_svd_' num2str(includedComponentsArray(icind)) '_len_' num2
 % save(strcat('../output/svd_reconstruct/recons_test_', fileext2),'recons_test','-v7.3');
 % % save(strcat('../output/svd_reconstruct/respTrain_',fileext2), 'respTrain', '-v7.3');
 % save(strcat('../output/svd_reconstruct/respTest_',fileext2), 'respTest', '-v7.3');
-save(strcat('../output/svd_reconstruct_shorttrain_midgets/filters_',fileext2), 'filterMat','-v7.3');
+save(strcat('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\filters_',fileext2), 'filterMat','-v7.3');
 
 clear recons_train recons_test filterMat stim
 toc
