@@ -1,15 +1,16 @@
 % clear all;
 blocklength = 12000;
-numReps = 1;
+numReps = 12;
 numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
 stim = zeros(96*96,blocklength*numReps,'uint8');
 for blockNum = 1:numReps
     blockNum
-%     filename1 = [folderLocation 'WNstim_response_OffParasol_block_' num2str(blockNum) '.mat'];
+    filename1 = [reconstructionRootPath '\dat\WNstim_response_stx2_block_' num2str(blockNum) '.mat'];
 
-filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNum) '.mat'];
+% filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNum) '.mat'];
 
+% filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
     matf = matfile(filename1);
     spikesoutsm = matf.spikesoutsm;
     % Spikes in this variable for each block
@@ -28,6 +29,7 @@ filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockN
     clear spikesout
     clear spikesoutsm
     stimtmp = reshape(matf.whiteNoiseSmall,96*96,blocklength);
+%     stimtmp = uint8(128+double(stimtmp) - ones(size(stimtmp,1),1)*mean(stimtmp,1));
     stim(:,(blockNum-1)*blocklength +1 : blockNum*blocklength) = stimtmp;
 
     
@@ -36,9 +38,9 @@ filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockN
 end
 
 
-save([reconstructionRootPath '\dat\spikeResp_all0'],'spikeResp');
+save([reconstructionRootPath '\dat\WNspikeResp_stx2_overlap0'],'spikeResp');
 
-save([reconstructionRootPath '\dat\movie_spikeResp_all0'],'stim','-v7.3')
+save([reconstructionRootPath '\dat\WNmovie_spikeResp_stx2_overlap0'],'stim','-v7.3')
 
 % % save('../dat/spikeResp_offParasol','spikeResp')
 % save('../dat/spikeResp_onParasol_fast','spikeResp')
