@@ -4,7 +4,7 @@ function filterMat = linearReconstructSVD_short_midgets_both(stimName,resp,filee
 %        resp (spike response of size numCells x time bins)
 
 %split data into train, validate, and test
-sizeStim = 12*12000;%size(stim,2);
+sizeStim = 42*12000;%size(stim,2);
 % trainSize = 0.6;
 validSize = 0.2;
 
@@ -99,10 +99,11 @@ disp('loading stim movie');
 
 load([reconstructionRootPath '\dat\' stimName]);
 
-for blockNum = 1:12
-    stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
-        uint8(128+double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1));
-end
+% % Zero mean for NS
+% for blockNum = 1:42
+%     stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
+%         uint8(128+double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1));
+% end
 
 
 % load ../dat/movie_onMidget_long300.mat
@@ -122,7 +123,8 @@ disp(['Reconstructing train and test stimuli with pixel batch size ' num2str(bat
 
 for pix = 1:batchsize:size(stim,1)-(batchsize-1) 
 		[pix size(stim,1)-(batchsize-1) ]
-    pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+%     pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+    pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
 %     filter = corrTrain*pixelTC;
     filter = corrTrainSVD*pixelTC;
 %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';

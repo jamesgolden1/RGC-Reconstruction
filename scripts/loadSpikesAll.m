@@ -1,14 +1,15 @@
 % clear all;
 blocklength = 12000;
-numReps = 12;
+numReps = 70;
 numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
 stim = zeros(96*96,blocklength*numReps,'uint8');
-for blockNum = 1:numReps
-    blockNum
-    filename1 = [reconstructionRootPath '\dat\WNstim_response_stx2_block_' num2str(blockNum) '.mat'];
+blockNum = 0;
+for blockNumInd =[1:12 21:50]
+    blockNum = blockNum+1
+%     filename1 = [reconstructionRootPath '\dat\WNstim_response_stx2_block_' num2str(blockNum) '.mat'];
 
-% filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNum) '.mat'];
+filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNumInd) '.mat'];
 
 % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
     matf = matfile(filename1);
@@ -38,9 +39,9 @@ for blockNum = 1:numReps
 end
 
 
-save([reconstructionRootPath '\dat\WNspikeResp_stx2_overlap0'],'spikeResp');
+save([reconstructionRootPath '\dat\WNspikeResp_70reps_overlap0'],'spikeResp','-v7.3');
 
-save([reconstructionRootPath '\dat\WNmovie_spikeResp_stx2_overlap0'],'stim','-v7.3')
+save([reconstructionRootPath '\dat\WNmovie_spikeResp_70reps_overlap0'],'stim','-v7.3')
 
 % % save('../dat/spikeResp_offParasol','spikeResp')
 % save('../dat/spikeResp_onParasol_fast','spikeResp')

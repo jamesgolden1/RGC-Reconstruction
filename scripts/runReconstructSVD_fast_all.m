@@ -10,14 +10,14 @@ disp('Loading spike responses...')
 % stimFileName = 'NSmovie_spikeResp_overlap0';
 % spikesFileName = 'NSspikeResp_overlap0';
 
-stimFileName = 'WNmovie_spikeResp_stx2_overlap0';
-spikesFileName = 'WNspikeResp_stx2_overlap0';
+stimFileName = 'WNmovie_spikeResp_70reps_overlap0';
+spikesFileName = 'WNspikeResp_70reps_overlap0';
 matfON = matfile([reconstructionRootPath '\dat\' spikesFileName]);
 
 movielength = 1*240000;%size(stim,2);
 disp(['Total Movie Length in Frames: ' num2str(movielength)]);
 
-fileext = 'mosaic_wn_all_stx2_overlap0';
+fileext = 'mosaic_wn_all_42reps_overlap0';
 trainSizeArray = 1;%[.6/8:.6/8:.6]; 
 trainInd = 1;
 includedComponentsArray = 1000;
@@ -25,7 +25,8 @@ includedComponentsArray = 1000;
 srON = matfON.spikeResp;
 % srOFF = matfOFF.spikeResp;
 % clear matfON matfOFF
-spikeResp1 = vertcat(srON(:,1:12*12000));%, srOFF(:,1:240000), matfONP.spikeResp, matfOFFP.spikeResp);
+% spikeResp1 = vertcat(srON(:,1:12*12000));%, srOFF(:,1:240000), matfONP.spikeResp, matfOFFP.spikeResp);
+spikeResp1 = srON;
 
 % scov = spikeResp1*spikeResp1';
 % figure; imagesc(scov); colormap parula;
@@ -106,7 +107,7 @@ for cellNumber = startCell+36+64+225+1:startCell+36+64+1+225+totalCells^2%225
 %     caxis([-.125e-3 .125e-3]); 
 %     caxis([-1e-3 1e-3]);
 
-caxis([-6e-6 6e-6]);
+caxis([-9e-6 9e-6]);
     colormap parula; %axis square
 %     drawnow;
 axis off
