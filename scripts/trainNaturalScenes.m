@@ -7,8 +7,11 @@
 clear;
 % ieInit;
 
+addpath(genpath('/Volumes/Lab/Users/james/isetbio'));
+addpath(genpath('/Volumes/Lab/Users/james/RGC-Reconstruction'));
+
 % % Set path
-% cd(reconstructionRootPath)
+cd(reconstructionRootPath);
 
 tic
 %% Parameters to alter
@@ -22,7 +25,7 @@ fov = 1.6;
 
 % Stimulus length = nSteps*nBlocks;
 nSteps = 12000;
-nBlocks = 12;
+nBlocks = 40;
 
 %% Load image
 clear params
@@ -102,10 +105,10 @@ retinalPatchSize = osGet(os,'size');
 % 
 % filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
 
-filenameRGC = [reconstructionRootPath '\dat\mosaic_all_overlap0.mat'];
+filenameRGC = [reconstructionRootPath '/dat/mosaic_all_bertha_ns0.mat'];
 % save(filenameRGC, 'innerRetina');
 
-for blockNum =1:nBlocks
+for blockNum =2:nBlocks
     
     % clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions innerRetina
     
@@ -123,7 +126,8 @@ for blockNum =1:nBlocks
     % whiteNoise.sceneRGB = double(whiteNoiseSmall);
     
     
-    load([ reconstructionRootPath  '\dat\movsm_' num2str(blockNum) '.mat'],'movsm');
+     %load([ reconstructionRootPath  '\dat\movsm_' num2str(blockNum) '.mat'],'movsm');
+     load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
     natScenes = movsm(1:96,1:96,randperm(nSteps));
     os = osSet(os, 'rgbData', double(natScenes));
     
@@ -153,7 +157,8 @@ for blockNum =1:nBlocks
     
     spikesoutsm = uint8(spikesoutmat);
     
-    filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
+    % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
+    filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
     
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc

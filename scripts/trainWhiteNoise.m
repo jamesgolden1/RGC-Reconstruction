@@ -8,7 +8,10 @@ clear;
 % ieInit;
 
 % % Set path
-% cd(reconstructionRootPath)
+cd(reconstructionRootPath);
+
+addpath(genpath('/Volumes/Lab/Users/james/isetbio'));
+addpath(genpath('/Volumes/Lab/Users/james/RGC-Reconstruction'));
 
 tic
 %% Parameters to alter
@@ -77,18 +80,18 @@ retinalPatchSize = osGet(os,'size');
 
 %% Build RGC array
 
-% clear paramsIR innerRetina
-% paramsIR.name    = 'Macaque inner retina 1'; % This instance
-% paramsIR.eyeSide   = 'left';   % Which eye
-% paramsIR.eyeRadius = 4;        % Radius in mm
-% paramsIR.eyeAngle  = 90;       % Polar angle in degrees
-% 
-% model   = 'LNP';    % Computational model
-% innerRetina = irCreate(os,paramsIR);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
+clear paramsIR innerRetina
+paramsIR.name    = 'Macaque inner retina 1'; % This instance
+paramsIR.eyeSide   = 'left';   % Which eye
+paramsIR.eyeRadius = 4;        % Radius in mm
+paramsIR.eyeAngle  = 90;       % Polar angle in degrees
+
+model   = 'LNP';    % Computational model
+innerRetina = irCreate(os,paramsIR);
+innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
 % 
 % % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
 % 
@@ -100,11 +103,11 @@ retinalPatchSize = osGet(os,'size');
 % 
 % % irPlot(innerRetina,'mosaic');
 % 
-% filenameRGC = [reconstructionRootPath '\dat\mosaic_all_overlap0.mat'];
+filenameRGC = [reconstructionRootPath '\dat\mosaic_all_bertha0.mat'];
 % 
-% save(filenameRGC, 'innerRetina');
+save(filenameRGC, 'innerRetina');
 
-filenameRGC = [reconstructionRootPath '\dat\mosaic_all_overlap0.mat'];
+% filenameRGC = [reconstructionRootPath '\dat\mosaic_all_overlap0.mat'];
 
 for blockNum = 0+[1:nBlocks]
     
