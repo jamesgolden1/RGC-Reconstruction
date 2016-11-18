@@ -4,7 +4,7 @@ function filterMat = linearReconstructSVD_short_midgets_both(stimName,resp,filee
 %        resp (spike response of size numCells x time bins)
 
 %split data into train, validate, and test
-sizeStim = 42*12000;%size(stim,2);
+sizeStim = 40*12000;%size(stim,2);
 % trainSize = 0.6;
 validSize = 0.2;
 
@@ -97,7 +97,9 @@ disp('loading stim movie');
 
 % load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
 
-load([reconstructionRootPath '\dat\' stimName]);
+% load([reconstructionRootPath '\dat\' stimName]);
+
+load([reconstructionRootPath '/dat/' stimName]);
 
 % % Zero mean for NS
 % for blockNum = 1:42
@@ -138,7 +140,8 @@ fileext2 = [fileext '_svd_' num2str(includedComponentsArray(icind)) '_len_' num2
 % save(strcat('../output/svd_reconstruct/recons_test_', fileext2),'recons_test','-v7.3');
 % % save(strcat('../output/svd_reconstruct/respTrain_',fileext2), 'respTrain', '-v7.3');
 % save(strcat('../output/svd_reconstruct/respTest_',fileext2), 'respTest', '-v7.3');
-save(strcat([reconstructionRootPath '\dat\filters_'],fileext2), 'filterMat','-v7.3');
+% save(strcat([reconstructionRootPath '\dat\filters_'],fileext2), 'filterMat','-v7.3');
+save(strcat([reconstructionRootPath '/dat/filters_'],fileext2), 'filterMat','-v7.3');
 
 clear recons_train recons_test stim
 toc

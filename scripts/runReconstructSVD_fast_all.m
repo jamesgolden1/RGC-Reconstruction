@@ -10,14 +10,15 @@ disp('Loading spike responses...')
 % stimFileName = 'NSmovie_spikeResp_overlap0';
 % spikesFileName = 'NSspikeResp_overlap0';
 
-stimFileName = 'WNmovie_spikeResp_70reps_overlap0';
-spikesFileName = 'WNspikeResp_70reps_overlap0';
-matfON = matfile([reconstructionRootPath '\dat\' spikesFileName]);
+stimFileName = 'NSmovie_40reps_ns0';
+spikesFileName = 'NSspikeResp_40reps_ns0';
+% matfON = matfile([reconstructionRootPath '\dat\' spikesFileName]);
+matfON = matfile([reconstructionRootPath '/dat/' spikesFileName]);
 
 movielength = 1*240000;%size(stim,2);
 disp(['Total Movie Length in Frames: ' num2str(movielength)]);
 
-fileext = 'mosaic_wn_all_42reps_overlap0';
+fileext = 'mosaic_ns_all_40reps_ns0';
 trainSizeArray = 1;%[.6/8:.6/8:.6]; 
 trainInd = 1;
 includedComponentsArray = 1000;
