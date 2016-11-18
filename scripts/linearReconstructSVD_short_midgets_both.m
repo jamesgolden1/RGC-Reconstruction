@@ -102,10 +102,10 @@ disp('loading stim movie');
 load([reconstructionRootPath '/dat/' stimName]);
 
 % % Zero mean for NS
-% for blockNum = 1:42
-%     stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
-%         uint8(128+double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1));
-% end
+for blockNum = 1:40
+    stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
+        uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
+end
 
 
 % load ../dat/movie_onMidget_long300.mat
@@ -124,8 +124,8 @@ filterMat = zeros(szStrain(1),size(stim,1));
 disp(['Reconstructing train and test stimuli with pixel batch size ' num2str(batchsize)])
 
 for pix = 1:batchsize:size(stim,1)-(batchsize-1) 
-		[pix size(stim,1)-(batchsize-1) ]
-%     pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+% 		[pix size(stim,1)-(batchsize-1) ]
+    pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
 %     filter = corrTrain*pixelTC;
     filter = corrTrainSVD*pixelTC;

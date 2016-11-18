@@ -18,7 +18,7 @@ matfON = matfile([reconstructionRootPath '/dat/' spikesFileName]);
 movielength = 1*240000;%size(stim,2);
 disp(['Total Movie Length in Frames: ' num2str(movielength)]);
 
-fileext = 'mosaic_ns_all_40reps_ns0';
+fileext = 'mosaic_ns_all_40reps_ns0_rz';
 trainSizeArray = 1;%[.6/8:.6/8:.6]; 
 trainInd = 1;
 includedComponentsArray = 1000;
@@ -63,7 +63,8 @@ for cellNumber = 1:36
     imagesc(reshape(filterMat(2+cellNumber*8,:),96,96)); 
 %     caxis([-.5e-3 .5e-3]); 
 %     caxis([-1e-3 1e-3]);
-    caxis([-9e-6 9e-6]);
+%     caxis([-9e-6 9e-6]);
+caxis([-.35 .35])
 axis off
     colormap parula
 end
@@ -76,7 +77,7 @@ for cellNumber = 37:37+64
 %     caxis([-.5e-3 .5e-3]); 
 %     caxis([-2e-3 2e-3]);
 
-caxis([-8e-6 8e-6]);
+% caxis([-8e-6 8e-6]);
 axis off
     colormap parula
 end
@@ -101,14 +102,15 @@ end
 figure;
 startCell = 1;
 totalCells = 8;
+cMax = max(max(filterMat(2+startCell+36+64+225+1:startCell+36+64+1+225+totalCells^2*8,:)));
 for cellNumber = startCell+36+64+225+1:startCell+36+64+1+225+totalCells^2%225
 %     subplot(15,15,cellNumber-(36+64));
     subplot(totalCells,totalCells,cellNumber-(startCell+36+64+225));
     imagesc(reshape(filterMat(2+cellNumber*8,:),96,96)); 
 %     caxis([-.125e-3 .125e-3]); 
 %     caxis([-1e-3 1e-3]);
-
-caxis([-9e-6 9e-6]);
+caxis([-cMax cMacx]);
+% caxis([-9e-6 9e-6]);
     colormap parula; %axis square
 %     drawnow;
 axis off
