@@ -1,10 +1,26 @@
-% t_pixiumWhiteNoiseAll
+function [mosaicFile, saveFile] = trainNaturalScenes(varargin)
 %
 % Run binary white noise through the RGC array for the big four RGC cell types.
+% 
+% inputs:
+%   mosaicFile - a string that is used to save the mosaic file
+%   saveFile - a string that is used to store the spikes and the movie stim
+% 
+% See also: trainAndTest.m
+%
+p = inputParser;
+p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('saveFile',[],@ischar);
+p.parse(varargin{:});
+mosaicFile = p.Results.mosaicFile;
+saveFile = p.Results.saveFile;
 
+if isempty(saveFile)
+    saveFile = ['NS_training_' num2str(round(cputime*100))];
+end
 
 %% Initialize
-clear;
+% clear;
 % ieInit;
 
 addpath(genpath('/Volumes/Lab/Users/james/isetbio'));
@@ -80,35 +96,42 @@ retinalPatchSize = osGet(os,'size');
 
 %% Build RGC array
 
-% clear paramsIR innerRetina
-% paramsIR.name    = 'Macaque inner retina 1'; % This instance
-% paramsIR.eyeSide   = 'left';   % Which eye
-% paramsIR.eyeRadius = 4;        % Radius in mm
-% paramsIR.eyeAngle  = 90;       % Polar angle in degrees
-% 
-% model   = 'LNP';    % Computational model
-% innerRetina = irCreate(os,paramsIR);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
-% innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
-% 
-% % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
-% 
-% % innerRetina.mosaic{1}.mosaicSet('numberTrials',1);
-% % innerRetina.mosaic{2}.mosaicSet('numberTrials',1);
-% % innerRetina.mosaic{3}.mosaicSet('numberTrials',1);
-% % innerRetina.mosaic{4}.mosaicSet('numberTrials',1);
-% % innerRetina.mosaic{5}.mosaicSet('numberTrials',1);
-% 
-% % irPlot(innerRetina,'mosaic');
-% 
-% filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
+if isempty(mosaicFile)
+    % clear paramsIR innerRetina
+    paramsIR.name    = 'Macaque inner retina 1'; % This instance
+    paramsIR.eyeSide   = 'left';   % Which eye
+    paramsIR.eyeRadius = 4;        % Radius in mm
+    paramsIR.eyeAngle  = 90;       % Polar angle in degrees
+    
+    model   = 'LNP';    % Computational model
+    innerRetina = irCreate(os,paramsIR);
+    innerRetina = rgcMosaicCreate(innerRetina,'type','onParasol','model',model);
+    innerRetina = rgcMosaicCreate(innerRetina,'type','offParasol','model',model);
+    innerRetina = rgcMosaicCreate(innerRetina,'type','offMidget','model',model);
+    innerRetina = rgcMosaicCreate(innerRetina,'type','onMidget','model',model);
+    
+    % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
+    
+    % innerRetina.mosaic{1}.mosaicSet('numberTrials',1);
+    % innerRetina.mosaic{2}.mosaicSet('numberTrials',1);
+    % innerRetina.mosaic{3}.mosaicSet('numberTrials',1);
+    % innerRetina.mosaic{4}.mosaicSet('numberTrials',1);
+    % innerRetina.mosaic{5}.mosaicSet('numberTrials',1);
+    
+    % irPlot(innerRetina,'mosaic');
+    
+    mosaicFile = ['mosaicAll_' num2str(round(cputime*100))];
+    filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
+    save(filenameRGC, 'innerRetina');
 
-filenameRGC = [reconstructionRootPath '/dat/mosaic_all_bertha_ns0.mat'];
-% save(filenameRGC, 'innerRetina');
+else
+    
+    % filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
+    % filenameRGC = [reconstructionRootPath '/dat/mosaic_all_bertha_ns0.mat'];
+    filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
+end
 
-for blockNum =2:nBlocks
+for blockNum =1:nBlocks
     
     % clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions innerRetina
     
@@ -158,7 +181,8 @@ for blockNum =2:nBlocks
     spikesoutsm = uint8(spikesoutmat);
     
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
-    filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
+    % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
+    filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
     
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc

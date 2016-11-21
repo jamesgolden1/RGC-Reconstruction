@@ -1,7 +1,20 @@
-
+function filterFile = runReconstructSVD_fast_all(varargin)
 % Run the reconstruction algorithm to generate the filters
 
 % Must run loadSpikesAll.m to build stimFile and spikesFile
+
+p = inputParser;
+p.addParameter('movieFile',[],@ischar);
+p.addParameter('spikesFile',[],@ischar);
+p.addParameter('filterFile',[],@ischar);
+p.parse(varargin{:});
+loadFile = p.Results.loadFile;
+movieFile = p.Results.movieFile;
+spikesFile = p.Results.spikesFile;
+
+if isempty(filterFile)
+    filterFile = ['filters_' num2str(round(cputime*100))];
+end
 
 %% run Linear reconstruction for on, off, and joint on/off training 
 windowsize = 8;
@@ -35,6 +48,8 @@ spikeResp1 = srON;
 for incInd = 1%:length(includedComponentsArray)
     filterMat = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1(:,:),fileext, windowsize,includedComponentsArray(incInd),trainSizeArray(trainInd));
 end
+
+save([reconstructionRootPath '/dat/' filterFile],'filterMat','-v7.3');
 
 % figure; imagesc(reshape(filterMat(2+1*8,:),96,96));
 

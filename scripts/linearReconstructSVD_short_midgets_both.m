@@ -141,7 +141,8 @@ fileext2 = [fileext '_svd_' num2str(includedComponentsArray(icind)) '_len_' num2
 % % save(strcat('../output/svd_reconstruct/respTrain_',fileext2), 'respTrain', '-v7.3');
 % save(strcat('../output/svd_reconstruct/respTest_',fileext2), 'respTest', '-v7.3');
 % save(strcat([reconstructionRootPath '\dat\filters_'],fileext2), 'filterMat','-v7.3');
-save(strcat([reconstructionRootPath '/dat/filters_'],fileext2), 'filterMat','-v7.3');
+
+% save(strcat([reconstructionRootPath '/dat/filters_'],fileext2), 'filterMat','-v7.3');
 
 clear recons_train recons_test stim
 toc

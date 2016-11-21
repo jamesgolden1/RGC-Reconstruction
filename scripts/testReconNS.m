@@ -1,4 +1,4 @@
-% testReconAll
+function testReconNS(varargin)
 % 
 % Tests the accuracy of a movie stimulus reconstructed from RGC spikes. 
 % 
@@ -9,9 +9,18 @@
 % reconstructed movie from the spikes and decoding filters.
 % 
 
+
+p = inputParser;
+
+p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('filterFile',[],@ischar);
+p.parse(varargin{:});
+filterFile = p.Results.filterFile;
+mosaicFile = p.Results.filterFile;
+
 %% RGB stimulus stored in os
 
-clear
+% clear
 
 % Make this cone mosaic
 os = osCreate('displayrgb');
@@ -20,21 +29,26 @@ images1 = dir([reconstructionRootPath '/dat/*.tif']);
 im1 = (rgb2gray(imread([reconstructionRootPath '/dat/' images1(1).name])));
 % im1 = rgb2gray(imread('peppers.png'));
 tic
-for xblock = 1:4
+for xblock = 1:2
     xblock
-    for yblock = 1:4
-        stimulusRGBdata(:,:,21:40) = 2*(double(repmat(im1((xblock-1)*96+[1:96],(yblock-1)*96+[1:96]),[1 1 20])));
+    for yblock = 1:2
+        stimulusRGBdata(:,:,21:40) = 1*(double(repmat(im1((xblock-1)*96+[1:96],(yblock-1)*96+[1:96]),[1 1 20])));
         
         os = osCreate('displayrgb');
         os = osSet(os, 'rgbData', stimulusRGBdata);
         % RGC spikes
         % Load mosaic
 
-        load('/Users/james/Downloads/mosaic_all_overlap0.mat')
+        filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
+        load(filenameRGC);
+        % load('/Users/james/Downloads/mosaic_all_overlap0.mat')
+        
         % Compute response
         innerRetina.compute(os,'coupling',false);
         % Generate reconstruction
-        [movrecons, ~] = irOptimalReconSingle(innerRetina, 0);
+        % [movrecons, ~] = irOptimalReconSingle(innerRetina, 0);
+        pRecons.innerRetina = innerRetina; pRecons.filterFile = filterFile;
+        [movrecons, ~] = irOptimalReconSingle(pRecons);
         % figure; ieMovie(movrecons);
         movreconsScale = (movrecons-mean(movrecons(:)));
         
@@ -51,7 +65,7 @@ figure;
 subplot(121);
 imagesc(imOrig(:,:,40)); colormap gray;
 subplot(122);
-imagesc(1-imStitch(:,:,11)); colormap gray
+imagesc(1-imStitch(:,:,33)); colormap gray
 % subplot(133);
 % errIm = ieScale(imStitch(:,:,1))-ieScale(imOrig(:,:,1));
 % imagesc(errIm); colormap gray
