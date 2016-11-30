@@ -4,7 +4,8 @@ function filterMat = linearReconstructSVD_short_midgets_both(stimName,resp,filee
 %        resp (spike response of size numCells x time bins)
 
 %split data into train, validate, and test
-sizeStim = 40*12000;%size(stim,2);
+sizeStim = size(resp,2);
+% sizeStim = 40*12000;%size(stim,2);
 % trainSize = 0.6;
 validSize = 0.2;
 
@@ -59,9 +60,12 @@ tic
 % load('on_off_covar_svd_vtrain.mat');
 
 for icind = 1:length(includedComponentsArray)
-    
+    if includedComponentsArray(icind) < 1
+       percentSV = includedComponentsArray(icind);
+       includedComponentsArray(icind) = round(percentSV*size(respTrain,2));
+    end
     includedComponents = [1:includedComponentsArray(icind)];
-
+    
 % load('on_off_covar_svd_utrain.mat');
 tic
 [Utrain, Strain, Vtrain] = svd(respTrain, 'econ');
@@ -102,10 +106,10 @@ disp('loading stim movie');
 load([reconstructionRootPath '/dat/' stimName]);
 
 % % Zero mean for NS
-for blockNum = 1:40
-    stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
-        uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
-end
+% for blockNum = 1:40
+%     stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
+%         uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
+% end
 
 
 % load ../dat/movie_onMidget_long300.mat
@@ -125,7 +129,7 @@ disp(['Reconstructing train and test stimuli with pixel batch size ' num2str(bat
 
 for pix = 1:batchsize:size(stim,1)-(batchsize-1) 
 % 		[pix size(stim,1)-(batchsize-1) ]
-    pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+%     pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
 %     filter = corrTrain*pixelTC;
     filter = corrTrainSVD*pixelTC;

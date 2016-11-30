@@ -7,24 +7,28 @@ p = inputParser;
 p.addParameter('movieFile',[],@ischar);
 p.addParameter('spikesFile',[],@ischar);
 p.addParameter('filterFile',[],@ischar);
+p.addParameter('windowSize',8,@isnumeric);
+p.addParameter('percentSV',0.5,@isnumeric);
 p.parse(varargin{:});
-loadFile = p.Results.loadFile;
-movieFile = p.Results.movieFile;
-spikesFile = p.Results.spikesFile;
-
+filterFile = p.Results.filterFile;
+stimFileName = p.Results.movieFile;
+spikesFileName = p.Results.spikesFile;
+windowSize = p.Results.windowSize;
+percentSV = p.Results.percentSV;
 if isempty(filterFile)
     filterFile = ['filters_' num2str(round(cputime*100))];
 end
 
 %% run Linear reconstruction for on, off, and joint on/off training 
-windowsize = 8;
+
 disp('Loading spike responses...')
 
 % stimFileName = 'NSmovie_spikeResp_overlap0';
 % spikesFileName = 'NSspikeResp_overlap0';
 
-stimFileName = 'NSmovie_40reps_ns0';
-spikesFileName = 'NSspikeResp_40reps_ns0';
+% stimFileName = 'NSmovie_40reps_ns0';
+% spikesFileName = 'NSspikeResp_40reps_ns0';
+
 % matfON = matfile([reconstructionRootPath '\dat\' spikesFileName]);
 matfON = matfile([reconstructionRootPath '/dat/' spikesFileName]);
 
@@ -34,7 +38,8 @@ disp(['Total Movie Length in Frames: ' num2str(movielength)]);
 fileext = 'mosaic_ns_all_40reps_ns0_rz';
 trainSizeArray = 1;%[.6/8:.6/8:.6]; 
 trainInd = 1;
-includedComponentsArray = 1000;
+% includedComponentsArray = 1000;
+includedComponentsArray = percentSV;
 
 srON = matfON.spikeResp;
 % srOFF = matfOFF.spikeResp;
@@ -46,7 +51,7 @@ spikeResp1 = srON;
 % figure; imagesc(scov); colormap parula;
 
 for incInd = 1%:length(includedComponentsArray)
-    filterMat = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1(:,:),fileext, windowsize,includedComponentsArray(incInd),trainSizeArray(trainInd));
+    filterMat = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1,fileext, windowSize,includedComponentsArray(incInd),trainSizeArray(trainInd));
 end
 
 save([reconstructionRootPath '/dat/' filterFile],'filterMat','-v7.3');
@@ -79,7 +84,7 @@ for cellNumber = 1:36
 %     caxis([-.5e-3 .5e-3]); 
 %     caxis([-1e-3 1e-3]);
 %     caxis([-9e-6 9e-6]);
-caxis([-.35 .35])
+% caxis([-.35 .35])
 axis off
     colormap parula
 end

@@ -26,18 +26,22 @@ if isempty(spikesFile)
 end
 
 %% 
+
+dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*.mat']));
 blocklength = 12000;
-numReps = 70;
+numReps = length(dNames);
 numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
 stim = zeros(96*96,blocklength*numReps,'uint8');
 blockNum = 0;
-for blockNumInd =[1:12 21:50]
+for blockNumInd =[1:length(dNames) ]
+% for blockNumInd =[1:12 21:50]
     blockNum = blockNum+1
     % filename1 = [reconstructionRootPath '\dat\WNstim_response_stx2_block_' num2str(blockNum) '.mat'];    
     % filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNumInd) '.mat'];    
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];    
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
+
     filename1 = [reconstructionRootPath '\dat\' loadFile '_block_' num2str(blockNum) '.mat'];
     
     matf = matfile(filename1);
