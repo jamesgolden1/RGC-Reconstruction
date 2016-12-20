@@ -31,27 +31,25 @@
 % filterFile = 'pixiumBig\pix1_long_filter_nsBig_100hz_4st';
 
 
-mosaicFile = '_mosaicAll_4346359' ;%['_' d1(dind).name(11:end-4)];
-movieFile = 'pixiumBig\pixiumBig_long_mov_nsBig_100hz';
-spikesFile = 'pixiumBig\pixiumBig_long_sp_nsBig_100hz';
-filterFile = ['pixiumBig\pixiumBig_long_filter_nsBig_100hz_4st_' mosaicFile];
+mosaicFile = '_mosaicAll_772530' ;%['_' d1(dind).name(11:end-4)];
+movieFile = 'pixiumBig/pix1_nsBig_100Hz_mov';
+spikesFile = 'pixiumBig/pix1_nsBig_100Hz_sp';
+filterFile = ['pixiumBig/pix1_nsBig_100Hz_4st_' mosaicFile];
 
-pLoad.loadFile = ['pixiumBig\pix1_nsBig_100Hz'];
+pLoad.loadFile = ['pixiumBig/pix1_nsBig_100Hz'];
     
 pLoad.movieFile = movieFile;
 pLoad.spikesFile = spikesFile;
 pLoad.mosaicFile = mosaicFile;
 % [movieFile, spikesFile] = loadSpikesAll(pLoad);
 
-
-% filterFile = 'wn_Dec3_sp_filter_new1_drop';%'pixium\pix1filter_100Hz_Parasol';
 pRecon.movieFile = movieFile;
 pRecon.spikesFile = spikesFile;
 pRecon.filterFile = filterFile;
 
 pRecon.mosaicFile = mosaicFile;
 pRecon.windowSize = 4;
-pRecon.percentSV = 0.125;
+pRecon.percentSV = 0.25;
 [filterFile] = runReconstructSVD_fast_all(pRecon);
 % 
 % pTest.mosaicFile = mosaicFile;

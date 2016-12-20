@@ -67,6 +67,7 @@ for icind = 1:length(includedComponentsArray)
     includedComponents = [1:includedComponentsArray(icind)];
     
 % load('on_off_covar_svd_utrain.mat');
+size(respTrain);
 tic
 [Utrain, Strain, Vtrain] = svd(single(respTrain), 'econ');
 toc
@@ -101,9 +102,12 @@ disp('loading stim movie');
 
 % load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
 
-load([reconstructionRootPath '\dat\' stimName]);
+if ismac || isunix
+    load([reconstructionRootPath '/dat/' stimName]);
+else
+    load([reconstructionRootPath '\dat\' stimName]);
+end
 
-% load([reconstructionRootPath '/dat/' stimName]);
 
 % % Zero mean for NS
 for blockNum = 1:13

@@ -28,14 +28,26 @@ if isempty(spikesFile)
 end
 
 %% 
-
-dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
+if ismac || isunix
+    dNames = (dir([phospheneRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
+else
+    dNames = (dir([phospheneRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
+end
 blocklength = 12000;
 numReps = length(dNames);
-numCells= 36+64+169+225;
+% numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
-stim = zeros(96*96,blocklength*numReps,'uint8');
-blockNum = 1;
+if isunix || ismac
+    filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+else
+    filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+end
+
+matf = matfile(filename1);
+szMov = size(matf.whiteNoiseSmall);
+stim = zeros(szMov(1)*szMov(2),blocklength*numReps,'uint8');
+clear matf
+blockNum = 0;
 for blockNumInd =[1:length(dNames) ]
 % for blockNumInd =[1:12 21:50]
     blockNum = blockNum+1
@@ -45,9 +57,9 @@ for blockNumInd =[1:length(dNames) ]
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
 
     if isunix || ismac
-        filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+        filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
     else
-        filename1 = [reconstructionRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+        filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
     end
     matf = matfile(filename1);
     spikesoutsm = matf.spikesoutsm;
@@ -66,7 +78,8 @@ for blockNumInd =[1:length(dNames) ]
     end
     clear spikesout
     clear spikesoutsm
-    stimtmp = reshape(matf.whiteNoiseSmall,96*96,blocklength);
+    szMov = size(matf.whiteNoiseSmall);
+    stimtmp = reshape(matf.whiteNoiseSmall,szMov(1)*szMov(2),blocklength);
 %     stimtmp = uint8(128+double(stimtmp) - ones(size(stimtmp,1),1)*mean(stimtmp,1));
     stim(:,(blockNum-1)*blocklength +1 : blockNum*blocklength) = stimtmp;
 
