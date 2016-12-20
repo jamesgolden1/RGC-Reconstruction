@@ -96,7 +96,7 @@ retinalPatchSize = osGet(os,'size');
 
 %% Build RGC array
 
-if isempty(mosaicFile)
+% if isempty(mosaicFile)
     % clear paramsIR innerRetina
     paramsIR.name    = 'Macaque inner retina 1'; % This instance
     paramsIR.eyeSide   = 'left';   % Which eye
@@ -124,12 +124,12 @@ if isempty(mosaicFile)
     filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
     save(filenameRGC, 'innerRetina');
 
-else
-    
-    % filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
-    % filenameRGC = [reconstructionRootPath '/dat/mosaic_all_bertha_ns0.mat'];
-    filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
-end
+% else
+%     
+%     % filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
+%     % filenameRGC = [reconstructionRootPath '/dat/mosaic_all_bertha_ns0.mat'];
+%     filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
+% end
 
 for blockNum =1:nBlocks
     
@@ -149,8 +149,9 @@ for blockNum =1:nBlocks
     % whiteNoise.sceneRGB = double(whiteNoiseSmall);
     
     
-     %load([ reconstructionRootPath  '\dat\movsm_' num2str(blockNum) '.mat'],'movsm');
-     load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
+     load([ reconstructionRootPath  '\dat\movsm_' num2str(blockNum) '.mat'],'movsm');
+%      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
+%           load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
     natScenes = movsm(1:96,1:96,randperm(nSteps));
     os = osSet(os, 'rgbData', double(natScenes));
     
@@ -182,7 +183,8 @@ for blockNum =1:nBlocks
     
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
-    filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
+%     filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
+    filename1 = [reconstructionRootPath '\dat\nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
     
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc

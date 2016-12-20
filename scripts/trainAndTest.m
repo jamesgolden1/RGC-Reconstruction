@@ -8,17 +8,56 @@
 %                               accuracy of reconstructions.
 % 
 
-pTrain.mosaicFile = 'mosaic_ns_Nov18';
-pTrain.saveFile   = 'ns_Nov18';
-[mosaicFile, saveFile] = trainNaturalScenes(pTrain);
+% pTrain.mosaicFile = 'mosaic_wn_Dec3_sp_2';
+% pTrain.saveFile   = 'wn_Dec3_sp_2';
+% % % [mosaicFile, saveFile] = trainNaturalScenes(pTrain);
+% % [mosaicFile, saveFile] = trainWhiteNoise(pTrain);
+% 
+% mosaicFile = 'mosaicAll_117391';
+% % saveFile = 'wnResponses\wn_Dec3_sp';
+% saveFile = 'wnResponses\WNstim_response_stx2';
+% movieFile = 'wn_Dec3_sp_mov_2';
+% spikesFile = 'wn_Dec3_sp_spike_2';
 
-pLoad.loadFile = saveFile;
-[movieFile, spikesFile] = loadSpikesAll(pLoad);
+% % pLoad.loadFile = saveFile;
+% pLoad.loadFile = 'pixium\pix1_nsBig_100Hz';
+% movieFile = 'pixium\pix1_long_mov_nsBig_100hz';
+% spikesFile = 'pixium\pix1_long_sp_nsBig_100hz';
+% filterFile = 'pixium\pix1_long_filter_nsBig_100hz_4st';
 
+% pLoad.loadFile = 'pixiumBig\pix1_nsBig_100Hz';
+% movieFile = 'pixiumBig\pix1_long_mov_nsBig_100hz';
+% spikesFile = 'pixiumBig\pix1_long_sp_nsBig_100hz';
+% filterFile = 'pixiumBig\pix1_long_filter_nsBig_100hz_4st';
+
+
+mosaicFile = '_mosaicAll_4346359' ;%['_' d1(dind).name(11:end-4)];
+movieFile = 'pixiumBig\pixiumBig_long_mov_nsBig_100hz';
+spikesFile = 'pixiumBig\pixiumBig_long_sp_nsBig_100hz';
+filterFile = ['pixiumBig\pixiumBig_long_filter_nsBig_100hz_4st_' mosaicFile];
+
+pLoad.loadFile = ['pixiumBig\pix1_nsBig_100Hz'];
+    
+pLoad.movieFile = movieFile;
+pLoad.spikesFile = spikesFile;
+pLoad.mosaicFile = mosaicFile;
+% [movieFile, spikesFile] = loadSpikesAll(pLoad);
+
+
+% filterFile = 'wn_Dec3_sp_filter_new1_drop';%'pixium\pix1filter_100Hz_Parasol';
 pRecon.movieFile = movieFile;
 pRecon.spikesFile = spikesFile;
-[filterFile] = runReconstructSVD_fast_all(pRecon);
+pRecon.filterFile = filterFile;
 
-pTest.mosaicFile = pTrain.mosaicFile;
-pTest.filterFile = filterFile;
-testReconNS(pTest);
+pRecon.mosaicFile = mosaicFile;
+pRecon.windowSize = 4;
+pRecon.percentSV = 0.125;
+[filterFile] = runReconstructSVD_fast_all(pRecon);
+% 
+% pTest.mosaicFile = mosaicFile;
+% pTest.filterFile = filterFile;
+% testReconNS(pTest);
+
+load(filterFile);
+figure; imagesc(reshape(sum(abs(filterMat),1),[96 96]));
+figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(800+fr,:),[96 96])); caxis([-.003 .003]); colormap parula;  end;

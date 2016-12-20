@@ -19,15 +19,15 @@ numbins = windowsize;
 disp('Creating training response matrix...')
 %Create the training response matrix (numtimepoints x numcells*numbins)
 trainTimes = 1:i1-numbins;
-respTrain = single(zeros(length(trainTimes),size(resp,1)*numbins+1));
-respTrain(:,1) = single(ones(length(trainTimes),1));
+respTrain = uint8(zeros(length(trainTimes),size(resp,1)*numbins+1));
+respTrain(:,1) = uint8(ones(length(trainTimes),1));
 for t = 1:length(trainTimes)
     starttime = trainTimes(t)+1;
     endtime = trainTimes(t)+numbins;
 %     size(resp)
 %     size(respTrain)
 %     numbins
-    respTrain(t,2:end) = single(reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
+    respTrain(t,2:end) = uint8(reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
 end
 
 % disp('Creating testing response matrix...')
@@ -68,7 +68,7 @@ for icind = 1:length(includedComponentsArray)
     
 % load('on_off_covar_svd_utrain.mat');
 tic
-[Utrain, Strain, Vtrain] = svd(respTrain, 'econ');
+[Utrain, Strain, Vtrain] = svd(single(respTrain), 'econ');
 toc
 % tic
 % [Utrain, Strain, Vtrain] = svds(respTrain, includedComponentsArray);
@@ -101,15 +101,15 @@ disp('loading stim movie');
 
 % load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
 
-% load([reconstructionRootPath '\dat\' stimName]);
+load([reconstructionRootPath '\dat\' stimName]);
 
-load([reconstructionRootPath '/dat/' stimName]);
+% load([reconstructionRootPath '/dat/' stimName]);
 
 % % Zero mean for NS
-% for blockNum = 1:40
-%     stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
-%         uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
-% end
+for blockNum = 1:13
+    stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
+        uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
+end
 
 
 % load ../dat/movie_onMidget_long300.mat
@@ -129,8 +129,8 @@ disp(['Reconstructing train and test stimuli with pixel batch size ' num2str(bat
 
 for pix = 1:batchsize:size(stim,1)-(batchsize-1) 
 % 		[pix size(stim,1)-(batchsize-1) ]
-%     pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
-    pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+    pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+%     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
 %     filter = corrTrain*pixelTC;
     filter = corrTrainSVD*pixelTC;
 %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';

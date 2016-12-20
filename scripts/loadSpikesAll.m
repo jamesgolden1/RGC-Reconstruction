@@ -12,10 +12,12 @@ p = inputParser;
 p.addParameter('loadFile',[],@ischar);
 p.addParameter('movieFile',[],@ischar);
 p.addParameter('spikesFile',[],@ischar);
+p.addParameter('mosaicFile',[],@ischar);
 p.parse(varargin{:});
 loadFile = p.Results.loadFile;
 movieFile = p.Results.movieFile;
 spikesFile = p.Results.spikesFile;
+mosaicFile = p.Results.mosaicFile;
 
 if isempty(movieFile)
     movieFile = ['movie_' num2str(round(cputime*100))];
@@ -27,13 +29,13 @@ end
 
 %% 
 
-dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*.mat']));
+dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
 blocklength = 12000;
 numReps = length(dNames);
 numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
 stim = zeros(96*96,blocklength*numReps,'uint8');
-blockNum = 0;
+blockNum = 1;
 for blockNumInd =[1:length(dNames) ]
 % for blockNumInd =[1:12 21:50]
     blockNum = blockNum+1
@@ -42,8 +44,11 @@ for blockNumInd =[1:length(dNames) ]
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];    
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
 
-    filename1 = [reconstructionRootPath '\dat\' loadFile '_block_' num2str(blockNum) '.mat'];
-    
+    if isunix || ismac
+        filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+    else
+        filename1 = [reconstructionRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+    end
     matf = matfile(filename1);
     spikesoutsm = matf.spikesoutsm;
     % Spikes in this variable for each block
@@ -70,8 +75,16 @@ for blockNumInd =[1:length(dNames) ]
     % whiteNoiseSmall;
 end
 
-save([reconstructionRootPath '/dat/' spikesFile],'spikeResp','-v7.3');
-save([reconstructionRootPath '/dat/' movieFile],'stim','-v7.3')
+
+if isunix || ismac
+    
+    save([reconstructionRootPath '/dat/' spikesFile mosaicFile ],'spikeResp','-v7.3');
+    save([reconstructionRootPath '/dat/' movieFile mosaicFile],'stim','-v7.3')
+else
+    
+    save([reconstructionRootPath '\dat\' spikesFile mosaicFile],'spikeResp','-v7.3');
+    save([reconstructionRootPath '\dat\' movieFile mosaicFile],'stim','-v7.3')
+end
 
 % save([reconstructionRootPath '/dat/NSspikeResp_40reps_ns0'],'spikeResp','-v7.3');
 % save([reconstructionRootPath '/dat/NSmovie_40reps_ns0'],'stim','-v7.3')
