@@ -110,7 +110,7 @@ end
 
 
 % % Zero mean for NS
-for blockNum = 1:13
+for blockNum = 1:floor(size(stim,2)/12000)
     stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
         uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
 end
@@ -124,7 +124,7 @@ end
 %%training and testing done in one loop while storing the filters
 % recons_train = zeros(size(stim,1),length(trainTimes),'single');
 % recons_test = zeros(size(stim,1), length(testTimes),'single');
-batchsize = 96; %num pixels you want to do at once
+batchsize = 200; %num pixels you want to do at once
 % filterMat = zeros(size(respTrain,2),size(stim,1));
 % filterMat = zeros(4321,size(stim,1));
 % filterMat = zeros(6751,size(stim,1));

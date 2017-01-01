@@ -1,4 +1,4 @@
-function [mosaicFile, saveFile] = trainNaturalScenes(varargin)
+function [mosaicFile, saveFile] = trainNaturalScenes100(varargin)
 %
 % Run binary white noise through the RGC array for the big four RGC cell types.
 % 
@@ -12,7 +12,7 @@ p = inputParser;
 p.addParameter('mosaicFile',[],@ischar);
 p.addParameter('saveFile',[],@ischar);
 p.parse(varargin{:});
-mosaicFile = p.Results.mosaicFile;
+% mosaicFile = p.Results.mosaicFile;
 saveFile = p.Results.saveFile;
 
 if isempty(saveFile)
@@ -33,23 +33,23 @@ tic
 %% Parameters to alter
 
 % Retinal patch eccentricity
-patchEccentricity = 12; % mm
+% patchEccentricity = 12; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 1.6;
+fov = 2*1.6;
 
 % Stimulus length = nSteps*nBlocks;
-nSteps = 12000;
-nBlocks = 40;
+nSteps = 12;
+nBlocks = 30;
 
 %% Load image
 clear params
 % One frame of a moving bar stimulus
 % Set parameters for size
 params.nSteps = nSteps;
-params.row = 96;
-params.col = 96;
+params.row = 100;
+params.col = 100;
 params.fov = fov;
 % % params.vfov = 0.7;
 
@@ -100,7 +100,7 @@ retinalPatchSize = osGet(os,'size');
     % clear paramsIR innerRetina
     paramsIR.name    = 'Macaque inner retina 1'; % This instance
     paramsIR.eyeSide   = 'left';   % Which eye
-    paramsIR.eyeRadius = 4;        % Radius in mm
+    paramsIR.eyeRadius = 2.5;        % Radius in mm
     paramsIR.eyeAngle  = 90;       % Polar angle in degrees
     
     model   = 'LNP';    % Computational model
@@ -121,9 +121,10 @@ retinalPatchSize = osGet(os,'size');
     % irPlot(innerRetina,'mosaic');
     
     mosaicFile = ['mosaicAll_' num2str(round(cputime*100))];
-    filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
+    filenameRGC = [reconstructionRootPath '/dat/ns100/' mosaicFile '.mat'];
     save(filenameRGC, 'innerRetina');
-
+%     mosaicFile = 'mosaicAll_25760187';
+%     filenameRGC = [reconstructionRootPath '/dat/ns100/' mosaicFile '.mat'];
 % else
 %     
 %     % filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
@@ -132,7 +133,7 @@ retinalPatchSize = osGet(os,'size');
 % end
 
 for blockNum =1:nBlocks
-    
+    tic
     % clear psthNorm spikesout spikesoutM spikesoutsm whiteNoiseSmall whiteNoise iStim absorptions innerRetina
     
     
@@ -148,23 +149,22 @@ for blockNum =1:nBlocks
     % load(filename1); clear spikesoutsm;
     % whiteNoise.sceneRGB = double(whiteNoiseSmall);
     
-    if ismac || isunix
-        load([ reconstructionRootPath  '/dat/movsm_' num2str(blockNum) '.mat'],'movsm');
-    else
-        load([ reconstructionRootPath  '\dat\movsm_' num2str(blockNum) '.mat'],'movsm');
-    end
+    
+%      load([ reconstructionRootPath  '\dat\movsm_' num2str(blockNum) '.mat'],'movsm');
+
+     load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
 %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
 %           load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
-    natScenes = movsm(1:96,1:96,randperm(nSteps));
+    natScenes = movsm(1:100,1:100,randperm(nSteps));
     os = osSet(os, 'rgbData', double(natScenes));
     
     innerRetina = irCompute(innerRetina,os);
     
     % irPlot(innerRetina, 'linear');
     % irPlot(innerRetina, 'psth');
-    
+    toc
     %% Look at covariance matrix
-    
+    tic
     spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
     spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
     spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
@@ -172,29 +172,27 @@ for blockNum =1:nBlocks
     
     timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
     
-    spikesoutmat = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins);
-    spikesoutmat(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
-    spikesoutmat(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
+    spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
+    spikesoutsm(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
+    spikesoutsm(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
     
-    spikesoutmat(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
-    spikesoutmat(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
+    spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
+    spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
     
 %     whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
     whiteNoiseSmall = natScenes;
     
-    spikesoutsm = uint8(spikesoutmat);
+%     spikesoutsm = uint8(spikesoutmat);
     
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
 %     filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
-
     if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
+        filename1 = [reconstructionRootPath '/dat/ns100/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     else
-        filename1 = [reconstructionRootPath '\dat\nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
+        filename1 = [reconstructionRootPath '\dat\ns100/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     end
-    
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc
-    close
+    close all
 end

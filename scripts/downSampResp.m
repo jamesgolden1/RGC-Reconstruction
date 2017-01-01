@@ -1,9 +1,9 @@
-function [ spikeResp] = downSampResp(spikesout, numcells, blocklength)
+function [ spikeResp] = downSampResp(spikesout, numcells, blocklength, dt)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 spikeResp = zeros(numcells, blocklength);
 for i = 1:blocklength
-    blocksize = 100;
+    blocksize = round(1/dt);
     endval  = i*blocksize;
     if endval > size(spikesout,2)
         endval = size(spikesout,2);

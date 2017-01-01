@@ -49,9 +49,9 @@ srON = matfON.spikeResp;
 % spikeResp1 = vertcat(srON(:,1:12*12000));%, srOFF(:,1:240000), matfONP.spikeResp, matfOFFP.spikeResp);
 spikeResp1 = srON;
 
-for ri = 1:2:size(spikeResp1,1)
-    spikeResp1(ri,:) = zeros(1,size(spikeResp1,2));
-end
+% for ri = 1:2:size(spikeResp1,1)
+%     spikeResp1(ri,:) = zeros(1,size(spikeResp1,2));
+% end
 
 % scov = spikeResp1*spikeResp1';
 % figure; imagesc(scov); colormap parula;

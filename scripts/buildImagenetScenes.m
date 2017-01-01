@@ -13,15 +13,16 @@ imagenetFolders = imagenetDir(dirFlags);
 % im0 = imread(['/Volumes/Lab/Users/nikhilp/imagenet/' imagenetFolders(10).name '/' images1(1).name ]);
 % figure; imagesc(im0)
 
-movsm = uint8(zeros(100,100,12000));
+szp = 200;
+movsm = uint8(zeros(szp,szp,12000));
 
 vsm = zeros(12000,1);
 
 pctr = 0;
-bctr = 22;
+bctr = 15;
 
 % Iterate folders
-for folderInd = [200:280]%3:100%length(length(imagenetFolders))
+for folderInd = [400:600]%stopped at 519%[200:280]%3:100%length(length(imagenetFolders))
     
 
 images1 = dir(['/Volumes/Lab/Users/nikhilp/imagenet/' imagenetFolders(folderInd).name '/*.JPEG']);
@@ -38,11 +39,11 @@ for i =1:length(images1)
     % mov(:,:,i) = imrs;
     % movsm(:,:,35*(i-1)+1:35*i) = permute(reshape(imrs(1:500,1:700)', 35,100,100),[3 2 1]);
     
-    for k = 1:floor(size(im1,1)/100)
-        for j = 1:floor(size(im1,2)/100)
+    for k = 1:floor(size(im1,1)/szp)
+        for j = 1:floor(size(im1,2)/szp)
             pctr = pctr+1;
-            % movsm(:,:,35*(i-1)+5*(k-1) + j) = imrs(100*(k-1)+1:100*k, 100*(j-1)+1:100*j);
-            imrstmp = imrs(100*(k-1)+1:100*k, 100*(j-1)+1:100*j);
+            % movsm(:,:,35*(i-1)+5*(k-1) + j) = imrs(szp*(k-1)+1:szp*k, szp*(j-1)+1:szp*j);
+            imrstmp = imrs(szp*(k-1)+1:szp*k, szp*(j-1)+1:szp*j);
             movsm(:,:,pctr) = imrstmp;
             
             
@@ -51,7 +52,7 @@ for i =1:length(images1)
     end
     
     if pctr >= 12350;
-        save([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(bctr) '.mat'],'movsm','vsm');
+        save([ reconstructionRootPath  '/dat/imagenetBlocks200/movsm_' num2str(bctr) '.mat'],'movsm','vsm');
         pctr = 0;
         bctr = bctr+1;
     end
