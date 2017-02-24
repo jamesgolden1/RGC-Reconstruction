@@ -1,4 +1,4 @@
-function [mosaicFile, saveFile] = trainNaturalScenes100(varargin)
+function [mosaicFile, saveFile] = trainNaturalScenes100_r2(varargin)
 %
 % Run binary white noise through the RGC array for the big four RGC cell types.
 % 
@@ -41,7 +41,7 @@ fov = 2*1.6;
 
 % Stimulus length = nSteps*nBlocks;
 nSteps = 12000;
-nBlocks = 30;
+nBlocks = 15;%30;
 
 %% Load image
 clear params
@@ -121,10 +121,14 @@ retinalPatchSize = osGet(os,'size');
     % irPlot(innerRetina,'mosaic');
     
     mosaicFile = ['mosaicAll_' num2str(round(cputime*100))];
-    filenameRGC = [reconstructionRootPath '/dat/ns100_r2/' mosaicFile '.mat'];
+    filenameRGC = [reconstructionRootPath '/dat/ns100_r2_regmos/' mosaicFile '.mat'];
+    innerRetina.mosaic{1}
+    innerRetina.mosaic{2}
+    innerRetina.mosaic{3}
+    innerRetina.mosaic{4}
     save(filenameRGC, 'innerRetina');
-%     mosaicFile = 'mosaicAll_25760187';
-%     filenameRGC = [reconstructionRootPath '/dat/ns100/' mosaicFile '.mat'];
+%     mosaicFile = 'mosaicAll_1246640';
+%     filenameRGC = [reconstructionRootPath '/dat/ns100_r2_10_regmos/' mosaicFile '.mat'];
 % else
 %     
 %     % filenameRGC = [reconstructionRootPath '\dat\mosaic_all.mat'];
@@ -188,7 +192,7 @@ for blockNum =1:nBlocks
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
 %     filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
     if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/ns100_r2/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        filename1 = [reconstructionRootPath '/dat/ns100_r2_regmos/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     else
         filename1 = [reconstructionRootPath '\dat\ns100/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     end

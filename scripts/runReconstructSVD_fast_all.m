@@ -10,6 +10,9 @@ p.addParameter('filterFile',[],@ischar);
 p.addParameter('windowSize',8,@isnumeric);
 p.addParameter('percentSV',0.5,@isnumeric);
 p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('trainFraction',1,@isnumeric);
+p.addParameter('shiftTime',0,@isnumeric);
+p.addParameter('stimType','ns',@ischar);
 p.parse(varargin{:});
 filterFile = p.Results.filterFile;
 stimFileName = p.Results.movieFile;
@@ -17,6 +20,10 @@ spikesFileName = p.Results.spikesFile;
 windowSize = p.Results.windowSize;
 percentSV = p.Results.percentSV;
 mosaicFile = p.Results.mosaicFile;
+trainSizeArray = p.Results.trainFraction;
+shiftTime = p.Results.shiftTime;
+stimType = p.Results.stimType;
+
 if isempty(filterFile)
     filterFile = ['filters_' num2str(round(cputime*100))];
 end
@@ -38,7 +45,7 @@ matfON = matfile([reconstructionRootPath '/dat/' spikesFileName mosaicFile]);
 % disp(['Total Movie Length in Frames: ' num2str(movielength)]);
 
 fileext = 'mosaic_ns_all_mult';
-trainSizeArray = 1;%[.6/8:.6/8:.6]; 
+% trainSizeArray = 1;%[.6/8:.6/8:.6]; 
 trainInd = 1;
 % includedComponentsArray = 1000;
 includedComponentsArray = percentSV;
@@ -57,7 +64,7 @@ spikeResp1 = srON;
 % figure; imagesc(scov); colormap parula;
 stimFileName = [stimFileName mosaicFile];
 for incInd = 1%:length(includedComponentsArray)
-    filterMat = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1,fileext, windowSize,includedComponentsArray(incInd),trainSizeArray(trainInd));
+    filterMat = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1,fileext, windowSize,includedComponentsArray(incInd),trainSizeArray(trainInd),shiftTime,stimType);
 end
 
 save([reconstructionRootPath '/dat/' filterFile],'filterMat','-v7.3');

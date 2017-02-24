@@ -1,4 +1,4 @@
-function filterMat = linearReconstructSVD_short_midgets_both(stimName,resp,fileext, windowsize,includedComponentsArray, trainSize)
+function filterMat = linearReconstructSVD_short_midgets_both(stimName,resp,fileext, windowsize,includedComponentsArray, trainSize, shifttime, stimType)
 %Linear reconstruction using least squares estimate for filters
 %inputs: stim (movie stimulus reshaped to framewidth*frameheight x time bins)
 %        resp (spike response of size numCells x time bins)
@@ -8,17 +8,17 @@ sizeStim = size(resp,2);
 % sizeStim = 40*12000;%size(stim,2);
 % trainSize = 0.6;
 validSize = 0.2;
-
+trainSize
 %indices to block out train and validation data from the full stimulus
 i1 = floor(trainSize*sizeStim);
 i2 = floor((trainSize+validSize)*sizeStim);
 
 %number of time bins used in reconstruction from single-timepoint
 numbins = windowsize;
-
+% shifttime = 9;
 disp('Creating training response matrix...')
 %Create the training response matrix (numtimepoints x numcells*numbins)
-trainTimes = 1:i1-numbins;
+trainTimes = 1:i1-numbins-shifttime;
 respTrain = uint8(zeros(length(trainTimes),size(resp,1)*numbins+1));
 respTrain(:,1) = uint8(ones(length(trainTimes),1));
 for t = 1:length(trainTimes)
@@ -71,6 +71,7 @@ size(respTrain);
 tic
 [Utrain, Strain, Vtrain] = svd(single(respTrain), 'econ');
 toc
+% save('svd_ns100_jan_1st3.mat','Utrain', 
 % tic
 % [Utrain, Strain, Vtrain] = svds(respTrain, includedComponentsArray);
 % toc
@@ -108,13 +109,13 @@ else
     load([reconstructionRootPath '\dat\' stimName]);
 end
 
-
-% % Zero mean for NS
+if strcmpi(stimType,'ns')
+% Zero mean for NS
 for blockNum = 1:floor(size(stim,2)/12000)
     stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
         uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
 end
-
+end
 
 % load ../dat/movie_onMidget_long300.mat
 
@@ -131,15 +132,36 @@ batchsize = 200; %num pixels you want to do at once
 filterMat = zeros(szStrain(1),size(stim,1));
 disp(['Reconstructing train and test stimuli with pixel batch size ' num2str(batchsize)])
 
-for pix = 1:batchsize:size(stim,1)-(batchsize-1) 
-% 		[pix size(stim,1)-(batchsize-1) ]
-    pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
-%     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
-%     filter = corrTrain*pixelTC;
-    filter = corrTrainSVD*pixelTC;
-%     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
-%     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
-    filterMat(:,pix:pix+(batchsize-1)) = filter;
+
+if strcmpi(stimType,'ns')
+    for pix = 1:batchsize:size(stim,1)-(batchsize-1)
+        % pix
+        % 		[pix size(stim,1)-(batchsize-1) ]
+        pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+%         pixelTC = (1)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)');
+        %     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+        %     filter = corrTrain*pixelTC;
+        filter = corrTrainSVD*pixelTC;
+        %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
+        %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
+        filterMat(:,pix:pix+(batchsize-1)) = filter;
+    end
+    
+else
+    
+    for pix = 1:batchsize:size(stim,1)-(batchsize-1)
+%         pix
+        % 		[pix size(stim,1)-(batchsize-1) ]
+        %     pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+        pixelTC = (1)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)');
+        %     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+        %     filter = corrTrain*pixelTC;
+        filter = corrTrainSVD*pixelTC;
+        %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
+        %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
+        filterMat(:,pix:pix+(batchsize-1)) = filter;
+    end
+
 end
 clear stim
 fileext2 = [fileext '_svd_' num2str(includedComponentsArray(icind)) '_len_' num2str(round(100*trainSize))];
