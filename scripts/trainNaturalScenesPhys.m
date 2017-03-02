@@ -1,7 +1,7 @@
-function [mosaicFile, saveFile] = trainNaturalScenes100_r2(varargin)
+function [mosaicFile, saveFile] = trainNaturalScenesPhys(varargin)
 %
 % Run binary white noise through the RGC array for the big four RGC cell types.
-% 
+%       based on trainNaturalScenes100_r2
 % inputs:
 %   mosaicFile - a string that is used to save the mosaic file
 %   saveFile - a string that is used to store the spikes and the movie stim
@@ -81,11 +81,11 @@ switch stimulusTestI
 end
 
 % Cell type: ON or OFF Parasol
-switch cellTypeI
-    case 1; cellType = 'prosthesis selective';
-    case 2; cellType = 'prosthesis off parasol';
-    case 3; cellType = 'prosthesis on parasol';
-end
+% switch cellTypeI
+%     case 1; cellType = 'prosthesis selective';
+%     case 2; cellType = 'prosthesis off parasol';
+%     case 3; cellType = 'prosthesis on parasol';
+% end
 
 
 %% Show raw stimulus for osIdentity
@@ -149,27 +149,36 @@ retinalPatchSize = osGet(os,'size');
     % piece used in the Chichilnisky Lab experiment.
     
     % Set parameters
-    params.name = 'macaque phys';
-    params.eyeSide = 'left';
-    params.eyeRadius = 12;
-    params.eyeAngle = 0; ntrials = 0;
+    paramsIR.name = 'macaque phys';
+    paramsIR.eyeSide = 'left';
+    paramsIR.eyeRadius = 12;
+    paramsIR.eyeAngle = 0; ntrials = 0;
     
     % Determined at beginning to allow looping
-    params.experimentID = experimentID; % Experimental dataset
-    params.stimulusTest = stimulusTest; % WN or NSEM
-    params.cellType = cellType;         % ON or OFF Parasol
+    paramsIR.experimentID = experimentID; % Experimental dataset
+    paramsIR.stimulusTest = stimulusTest; % WN or NSEM
     
-    % params.cellIndices = 1:10%:118;
-    
-    % Create object
-    innerRetina = irPhys(os1, params);
+    cellType = 'prosthesis on parasol';
+    paramsIR.cellType = cellType;         % ON or OFF Parasol    
+    innerRetina = irPhys(os, paramsIR);
     nTrials = 1;
     innerRetina.mosaic{1} = innerRetina.mosaic{1}.set('numberTrials',nTrials);
-
+    for cellnum = 1:length(innerRetina.mosaic{1}.cellLocation); newtCenter{cellnum} = -innerRetina.mosaic{1}.tCenter{cellnum}; end;
+    innerRetina.mosaic{1} = mosaicSet(innerRetina.mosaic{1},'tCenter',newtCenter);
     
     cellType = 'prosthesis off parasol';
-    params.cellType = cellType;         % ON or OFF Parasol    
-    innerRetina2 = irPhys(os1, params);
+    paramsIR.cellType = cellType;         % ON or OFF Parasol    
+    innerRetina2 = irPhys(os, paramsIR);%     
+    innerRetina2.mosaic{1} = innerRetina2.mosaic{1}.set('numberTrials',nTrials);
+%     innerRetina.mosaic{2} = innerRetina2.mosaic{1}; clear innerRetina2;
+    
+    
+%     cellType = 'prosthesis on midget';
+%     paramsIR.cellType = cellType;         % ON or OFF Parasol    
+%     innerRetina3 = irPhys(os, paramsIR);
+%     innerRetina3.mosaic{1} = innerRetina3.mosaic{1}.set('numberTrials',nTrials);
+%     
+%     innerRetina.mosaic{3} = innerRetina3.mosaic{1}; clear innerRetina3;
     
     % innerRetina = rgcMosaicCreate(innerRetina,'type','sbc','model',model);
     
@@ -182,12 +191,12 @@ retinalPatchSize = osGet(os,'size');
     % irPlot(innerRetina,'mosaic');
     
     mosaicFile = ['mosaicAll_' num2str(round(cputime*100))];
-    filenameRGC = [reconstructionRootPath '/dat/ns100_r2_regmos/' mosaicFile '.mat'];
-    innerRetina.mosaic{1}
-    innerRetina.mosaic{2}
-    innerRetina.mosaic{3}
-    innerRetina.mosaic{4}
-    save(filenameRGC, 'innerRetina');
+    filenameRGC = [reconstructionRootPath '/dat/nsPhys/' mosaicFile '.mat'];
+%     innerRetina.mosaic{1}
+%     innerRetina.mosaic{2}
+%     innerRetina.mosaic{3}
+%     innerRetina.mosaic{4}
+    save(filenameRGC, 'innerRetina','innerRetina2');
 %     mosaicFile = 'mosaicAll_1246640';
 %     filenameRGC = [reconstructionRootPath '/dat/ns100_r2_10_regmos/' mosaicFile '.mat'];
 % else
@@ -220,10 +229,20 @@ for blockNum =1:nBlocks
      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
 %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
 %           load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
-    natScenes = movsm(1:100,1:100,randperm(nSteps));
+    natScenes = movsm(1:40,1:80,randperm(nSteps));
+    natScenes(:,:,nSteps+1:2*nSteps) = movsm(50+[1:40],1:80,randperm(nSteps));
     os = osSet(os, 'rgbData', double(natScenes));
     
     innerRetina = irCompute(innerRetina,os);
+
+%     spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
+%     clear innerRetina
+    
+    innerRetina2 = irCompute(innerRetina2,os);
+    
+%     spikesout2 = RGB2XWFormat(mosaicGet(innerRetina2.mosaic{1},'spikes'));
+%     clear innerRetina2
+%     innerRetina3 = irCompute(innerRetina3,os);
     
     % irPlot(innerRetina, 'linear');
     % irPlot(innerRetina, 'psth');
@@ -231,18 +250,20 @@ for blockNum =1:nBlocks
     %% Look at covariance matrix
     tic
     spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
-    spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
-    spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
-    spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
+    spikesout2 = RGB2XWFormat(mosaicGet(innerRetina2.mosaic{1},'spikes'));
+%     spikesout3 = RGB2XWFormat(mosaicGet(innerRetina3.mosaic{3},'spikes'));
+%     spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
     
-    timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
+    timeBins = max([size(spikesout,2) size(spikesout2,2)]);% size(spikesout3,2) ]);%size(spikesout4,2)]);
     
-    spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
+%     spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
+    
+    spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1), timeBins,'uint8');
     spikesoutsm(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
     spikesoutsm(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
     
-    spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
-    spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
+%     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
+%     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
     
 %     whiteNoiseSmall = uint8(squeeze(whiteNoise.sceneRGB(:,:,:,1)));
     whiteNoiseSmall = natScenes;
@@ -253,11 +274,12 @@ for blockNum =1:nBlocks
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];
 %     filename1 = [reconstructionRootPath '/dat/nsResponses/' saveFile '_block_' num2str(blockNum) '.mat'];
     if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/ns100_r2_regmos/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        filename1 = [reconstructionRootPath '/dat/nsPhys/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     else
         filename1 = [reconstructionRootPath '\dat\ns100/' saveFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     end
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc
     close all
+    figure; imagesc(double(spikesoutsm)*double(spikesoutsm')); colormap parula; drawnow;
 end
