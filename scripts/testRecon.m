@@ -1,368 +1,89 @@
-% clear all;
-% close all;
-disp('Loading testing stimulus data...')
-% name = 'bar';
-name = 'grating'
-%set which testing stimulus to use
-if strcmp(name,'grating')
-    matfOn = matfile('../dat/WNstim_response_OnParasol_36_grating_june10.mat');
-    matfOff = matfile('../dat/WNstim_response_OffParasol_64_grating_june10.mat');
-    %load ../output/reconstructedSTA/onParasolGratingSTARecon.mat
-    %load ../output/reconstructedSTA/offParasolGratingSTARecon.mat
-elseif strcmp(name,'bar')
-    matfOff = matfile('../dat/WNstim_response_OffParasol_offBig2_64_barGay_june10.mat');
-    matfOn = matfile('../dat/WNstim_response_OnParasol_onBig2_36_barGray_june10.mat');
-    %load ../output/reconstructedSTA/onParasolBarSTARecon.mat
-    %load ../output/reconstructedSTA/offParasolBarSTARecon.mat
-end
+function testReconNS(varargin)
+% 
+% Tests the accuracy of a movie stimulus reconstructed from RGC spikes. 
+% 
+% An outer segment osDisplayRGB object is created in order to provide RGB
+% input to an RGC mosaic. The rgbData is set to the movie stimulus, and the
+% RGC spikes in response to the movie are computed. The mosaic spikes are
+% passed to the irOptimalReconSingle function, which generates the
+% reconstructed movie from the spikes and decoding filters.
+% 
 
 
+p = inputParser;
 
-disp('Reconstructing with off parasols...')
-%test with off parasols
-filtMat_off = matfile('../output/filters_may26_off.mat');
-%
+p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('filterFile',[],@ischar);
+p.parse(varargin{:});
+filterFile = p.Results.filterFile;
+mosaicFile = p.Results.mosaicFile;
 
-%create response matrix for test stimulus
+%% RGB stimulus stored in os
 
-blocklength = 152;
-numcells= 64;
+% clear
 
-spikesout = double(matfOff.spikesoutsm);
-spikeRespOff = downSampResp(spikesout, numcells, blocklength);
-stim = double(reshape(matfOff.whiteNoiseSmall,96*96,blocklength));
-recons_stim_off = reconsFromFilt(filtMat_off.filterMat, spikeRespOff);
+% Make this cone mosaic
+os = osCreate('displayrgb');
 
-
-mov = reshape(stim,96,96,size(stim,2));
-movrecons_off = reshape(recons_stim_off,96,96,size(recons_stim_off,2));
-
-
-disp('Reconstructing with on parasols...')
-%reconstruct with ON parasols
-filtMat_on = matfile('../output/filters_may26_on.mat');
-
-%create response matrix for moving bar (first load spikes like in
-%loadspikes.m
-
-numcells= 36;
-spikesout = double(matfOn.spikesoutsm);
-spikeRespOn = downSampResp(spikesout, numcells, blocklength);
-recons_stim_on = reconsFromFilt(filtMat_on.filterMat, spikeRespOn);
-
-
-mov = reshape(stim,96,96,size(stim,2));
-movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
-
-disp('Reconstructing with both on/off parasols...')
-%reconstruct with on and off
-spikeRespOnOff =vertcat(spikeRespOn,spikeRespOff);
-if exist('../output/filters_may26_on_off1.mat','file') ~= 0
-    filtMat_on_off = matfile('../output/filters_may26_on_off.mat');
-    recons_stim_on_off = reconsFromFilt(filtMat_on_off.filterMat, spikeRespOnOff);
-    filtMatJoint = filtMat_on_off.filterMat;
+if isunix || ismac
+    images1 = dir([reconstructionRootPath '/dat/*.tif']);
+    im1 = (rgb2gray(imread([reconstructionRootPath '/dat/' images1(1).name])));
 else
-    filtMat_on_off1 = matfile('../output/filters_may26_on_off1.mat');
-    filtMat_on_off2 = matfile('../output/filters_may26_on_off2.mat');
-    
-    filterMatCombined = [filtMat_on_off1.filterMat; filtMat_on_off2.filterMat];
-    recons_stim_on_off = reconsFromFilt(filterMatCombined, spikeRespOnOff);
-    filtMatJoint = filterMatCombined;
+    images1 = dir([reconstructionRootPath '\dat\FoliageBig\*.tif']);
+    im1 = (rgb2gray(imread([reconstructionRootPath '\dat\FoliageBig\' images1(1).name])));
 end
+% im1 = rgb2gray(imread('peppers.png'));
+tic
+for xblock = 1:2
+    xblock
+    for yblock = 1:2
+        stimulusRGBdata(:,:,21:40) = 1*(double(repmat(im1((xblock-1)*96+[1:96],(yblock-1)*96+[1:96]),[1 1 20])));
+        
+        os = osCreate('displayrgb');
+        os = osSet(os, 'rgbData', stimulusRGBdata);
+        % RGC spikes
+        % Load mosaic
 
-mov = reshape(stim,96,96,size(stim,2));
-movrecons_on_off = reshape(recons_stim_on_off,96,96,size(recons_stim_on_off,2));
-
-
-%reconstruct with on trained with on/off
-
-recons_stim_on_joint = reconsFromFilt(filtMatJoint(1:size(filtMat_on.filterMat,1),:),spikeRespOn);
-movrecons_on_joint = reshape(recons_stim_on_joint,96,96,size(recons_stim_on_joint,2));
-
-%reconstruct with off trained with on/off
-recons_stim_off_joint = reconsFromFilt(filtMatJoint([1,size(filtMat_on.filterMat,1)+1:end],:),spikeRespOff);
-movrecons_off_joint = reshape(recons_stim_off_joint,96,96,size(recons_stim_off_joint,2));
-
-
-%plot reconstructions with the joint training
-fig = figure('position',[100 100 1024 1024]);
-set(gcf,'visible', 'off')
-for itime=1:121
-
-   subplot(2,4,1)
-   imagesc(mov(:,:,itime)); 
-   caxis([min(movrecons_off_joint(:)),max(mov(:))])
-   title('True Stimulus');
-   colormap gray
-   axis image
-
-
-   subplot(2,4,2)
-   imagesc(movrecons_off_joint(:,:,itime));
-   caxis([min(movrecons_off_joint(:)),max(mov(:))])
-   title('Train: ON/OFF, Decode: OFF')
-   axis image 
-
-   subplot(2,4,3)
-   imagesc(movrecons_on_joint(:,:,itime));
-   caxis([min(movrecons_off_joint(:)),max(mov(:))])
-   title('Train: ON/OFF, Decode: ON')
-   colormap gray
-   axis image
-
-
-
-   subplot(2,4,4)
-   imagesc(movrecons_on_off(:,:,itime));
-   caxis([min(movrecons_off_joint(:)),max(mov(:))])
-   title('Train: ON/OFF, Decode: ON/OFF');
-   colormap gray
-   axis image
-
-   M(itime) = getframe(fig);
-
+        if isunix || ismac
+            filenameRGC = [reconstructionRootPath '/dat/' mosaicFile '.mat'];
+        else
+            filenameRGC = [reconstructionRootPath '\dat\' mosaicFile '.mat'];
+        end
+        load(filenameRGC);
+        % load('/Users/james/Downloads/mosaic_all_overlap0.mat')
+        
+        % Compute response
+        innerRetina.compute(os,'coupling',false);
+        % Generate reconstruction
+        % [movrecons, ~] = irOptimalReconSingle(innerRetina, 0);
+        pRecons.innerRetina = innerRetina; pRecons.filterFile = filterFile; pRecons.numbins =1;
+%         [movrecons, ~] = irOptimalReconSingle(pRecons);
+        [movrecons, ~] = irOptimalReconSingle(pRecons);
+        % figure; ieMovie(movrecons);
+        movreconsScale = (movrecons-mean(movrecons(:)));
+        
+        
+        imStitchOrig((xblock-1)*96+[1:96],(yblock-1)*96+[1:96],:) =movrecons(:,:,:);
+        imStitch((xblock-1)*96+[1:96],(yblock-1)*96+[1:96],:) = movreconsScale(:,:,:);
+        imOrig((xblock-1)*96+[1:96],(yblock-1)*96+[1:96],:) = stimulusRGBdata(:,:,:);
+        clear innerRetina os stimulusRGBdata
+    end
 end
-close all;
-[h, w, p] = size(M(1).cdata);  % use 1st frame to get dimensions
-hf = figure; 
-% resize figure based on frame's w x h, and place at (150, 150)
-set(hf, 'position', [150 150 w h]);
-axis off
-save(strcat('../output/movie_may26_',name),'M');
-
-close all;
+toc
 %%
-%Compare reconstructions trained with only ON and OFF with the joint
-%training
-fig = figure('position',[100 100 1024 1024]);
-set(gcf,'visible', 'off')
-for itime=1:121
-
-   subplot(1,5,1)
-   imagesc(mov(:,:,itime));
-   caxis([min(movrecons_off(:)),max(mov(:))])
-   title('True Stimulus');
-   colormap gray
-   axis image
-
-   subplot(1,5,2)
-   imagesc(movrecons_off(:,:,itime));
-   caxis([min(movrecons_off(:)),max(mov(:))])
-   title('Train: OFF, Decode: OFF');
-   colormap gray
-   axis image
-
-   subplot(1,5,3)
-   imagesc(movrecons_off_joint(:,:,itime));
-   caxis([min(movrecons_off(:)),max(mov(:))])
-   title('Train: ON/OFF, Decode: OFF')
-   axis image 
-
-   subplot(1,5,4)
-   imagesc(movrecons_on(:,:,itime));
-   caxis([min(movrecons_off(:)),max(mov(:))])
-   title('Train: ON, Decode: ON')
-   colormap gray
-   axis image
-
-   subplot(1,5,5)
-   imagesc(movrecons_on_joint(:,:,itime));
-   caxis([min(movrecons_off(:)), max(mov(:))])
-   title('Train: ON/OFF, Decode: ON')
-   colormap gray
-   axis image
-
-   M(itime) = getframe(fig);
-
-end
-close all;
-[h, w, p] = size(M(1).cdata);  % use 1st frame to get dimensions
-hf = figure; 
-% resize figure based on frame's w x h, and place at (150, 150)
-set(hf, 'position', [150 150 w h]);
-axis off
-% save(strcat('../output/movie_compare_may26_',name),'M');
-
-figure; hold on;
-for it = 1:121
-    imagesc(movrecons_on(:,:,it));
-    
-%    caxis([min(movrecons_on(:)),max(mov(:))])
-   colormap gray
-    drawnow
-end
-
+figure; 
+subplot(121);
+imagesc(imOrig(:,:,40)); colormap gray;
+subplot(122);
+imagesc(1-imStitch(:,:,33)); colormap gray
+ph=1;
+% subplot(133);
+% errIm = ieScale(imStitch(:,:,1))-ieScale(imOrig(:,:,1));
+% imagesc(errIm); colormap gray
 
 %%
-
-load('/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_on_svd_200.mat')
-
-numcells= 36;
-spikesout = double(matfOn.spikesoutsm);
-spikeRespOn = downSampResp(spikesout, numcells, blocklength);
-% recons_stim_on = reconsFromFilt(filtMat_on.filterMat, spikeRespOn);
-recons_stim_on = reconsFromFilt(filterMat, spikeRespOn);
-
-mov = reshape(stim,96,96,size(stim,2));
-movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
-
-figure; hold on;
-for it = 1:121
-    imagesc(movrecons_on(:,:,it));
-    
-%    caxis([min(movrecons_on(:)),max(mov(:))])
-   colormap gray
-    drawnow
-end
-
-
+% clear combMovie
+% combMovie(:,1:96,:) = stimulusRGBdata(1:96,1:96,5:end-4);
+% combMovie(:,96+[1:96],:) = 1-movreconsScale;
+% figure; ieMovie(combMovie);
 %%
-
-% matfOn
-
-figure; hold on;
-for it = 1:121
-    imagesc(matfOn.whiteNoiseSmall(:,:,it));
-    
-%    caxis([min(movrecons_on(:)),max(mov(:))])
-   colormap gray
-    drawnow
-end
-
-%%
-figure;
-for ishift = 0%1:5;
-barmov = matfOn.whiteNoiseSmall;
-barmovShort = double(barmov(:,:,ishift+[1:122]))/2+.5;
-
-icArray = [100:100:1000];
-for icind = 1:10
-    
-    
-    load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_on_svd_' num2str(icArray(icind)) '.mat'])
-    
-    numcells= 36;
-    spikesout = double(matfOn.spikesoutsm);
-    spikeRespOn = downSampResp(spikesout, numcells, blocklength);
-    % recons_stim_on = reconsFromFilt(filtMat_on.filterMat, spikeRespOn);
-    recons_stim_on = reconsFromFilt(filterMat, spikeRespOn);
-    
-    mov = reshape(stim,96,96,size(stim,2));
-    movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
-    
-    
-    err1 = (barmovShort(:) - movrecons_on(:));
-%     figure; hist(err1(:),40)
-    
-    reconsError(icind) = sum((barmovShort(:) - movrecons_on(:)).^2);
-
-end
-
-
-% err1 = (barmovShort(:) - movrecons_on(:));
-% figure; hist(err1(:),40)
-
-%
-% sznorm = 96*96*122;
-sznorm = 1;
-% figure; 
-hold on;
-plot(icArray./1081,sqrt(reconsError)/(sznorm),'-o');
-title('Reconstruction Error for Moving Bar');
-xlabel('Fraction of singular values');
-ylabel(sprintf('Reconstruction error ( sqrt(sum(y - y_0)^2) )'));
-grid on;
-end;
-%%
-
-
-    errmov = reshape(recons_stim_on,96,96,122);
-    
-    
-figure; hold on;
-for it = 1:121
-    imagesc(errmov(:,:,it));
-    
-%    caxis([min(movrecons_on(:)),max(mov(:))])
-   colormap gray
-    drawnow
-end
-
-%% Measure optimal delay = zero
-% barmov = matfOn.whiteNoiseSmall;
-% barmovShort = double(barmov(:,:,:))/2+.5;
-% 
-% icArray = [100:100:1000];
-% for icind = 10
-%     
-%     
-%     load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/output/svd_reconstruct/filters_may26_on_svd_' num2str(icArray(icind)) '.mat'])
-%     
-%     numcells= 36;
-%     spikesout = double(matfOn.spikesoutsm);
-%     spikeRespOn = downSampResp(spikesout, numcells, blocklength);
-%     % recons_stim_on = reconsFromFilt(filtMat_on.filterMat, spikeRespOn);
-%     recons_stim_on = reconsFromFilt(filterMat, spikeRespOn);
-%     
-%     mov = reshape(stim,96,96,size(stim,2));
-%     movrecons_on = reshape(recons_stim_on,96,96,size(recons_stim_on,2));
-% 
-%     for ishift = 1:50
-%         barmovShift = barmovShort(:,:,ishift:ishift+121);
-%         
-%         err1 = (barmovShift(:) - movrecons_on(:));
-% %         figure; hist(err1(:),40)
-%         
-%         reconsError(ishift) = sum((barmovShift(:) - movrecons_on(:)).^2);
-%     end
-% end
-% 
-% 
-% err1 = (barmovShort(:) - movrecons_on(:));
-% figure; hist(err1(:),40)
-%%
-
-
-%%TODO: get correct STA reconstruction from manuallly computed STA and compare with the linear Reconstruction
-% old STA reconstruction was using ISETBIO model which was not a fair comparison
-%Compare with STA reconstruction
-
-%close all;
-%fig = figure('position',[100 100 1024 1024]);
-%set(gcf,'visible', 'off')
-%for itime = 1:121
-%    subplot(1,3,1)
-%    imagesc(mov(:,:,itime));
-%   %plot(mov(:,:,itime));
-%    caxis([min(movrecons_on_off(:)),max(mov(:))])
-%    title('True Stimulus');
-%    colormap gray
-%    axis image
-%
-%    subplot(1,3,2)
-%    imagesc(movrecons_on_off(:,:,itime));
-%    caxis([min(movrecons_on_off(:)), max(mov(:))])
-%    title('Train: ON/OFF, Decode: ON/OFF')
-%    colormap gray
-%    axis image
-%
-%    subplot(1,3,3)
-%    if strcmp(name, 'grating')
-%        imagesc(onParasolGratingSTARecon(1:96,1:96,itime)+offParasolGratingSTARecon(1:96,1:96,itime));
-%    elseif strcmp(name, 'bar')
-%        imagesc(onParasolBarSTARecon(1:96,1:96,itime)+offParasolBarSTARecon(1:96,1:96,itime));
-%    end
-%    caxis([min(movrecons_on_off(:)), max(mov(:))])
-%    title('Summed STA Reconstruction (ON/OFF)');
-%    colormap gray
-%    axis image
-%    M(itime) = getframe(fig);
-%end
-%
-%close all;
-%[h, w, p] = size(M(1).cdata);  % use 1st frame to get dimensions
-%hf = figure; 
-%% resize figure based on frame's w x h, and place at (150, 150)
-%set(hf, 'position', [150 150 w h]);
-%axis off
-%save(strcat('../output/presentation/movie_compareSTA_may26_',name),'M'); 
