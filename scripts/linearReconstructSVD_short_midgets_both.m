@@ -87,7 +87,7 @@ toc
 % corrTrainSVD =  (Vtrain(:,includedComponents) * inv(Strain(includedComponents,includedComponents)) * (Utrain(:,includedComponents))');
 
 
-clear respTrain
+% clear respTrain
 szStrain = size(Strain);
 StrainInv = zeros(szStrain);
 StrainInv(1:szStrain(1)+1:end) = 1./diag(Strain);
@@ -146,6 +146,57 @@ if strcmpi(stimType,'ns')
         %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
         filterMat(:,pix:pix+(batchsize-1)) = filter;
     end
+    
+    
+elseif strcmpi(stimType,'nsZero')
+    
+    %%%%% Find STA
+%     tstim = 2/119.5172;
+%     STA_length = 30;
+%     movie_size = size(fitmovie{1});
+%     STA = zeros(movie_size(1),movie_size(2),STA_length,100);
+%     fitframes = movie_size(3);
+    stimD = single(stim(:,9+[1:60000]))-ones(10000,1)*mean(stim(:,9+[1:60000]));
+    for cellind = 6000%:length(fitspikes)
+%         sp_frame = floor(fitspikes{cellind}(:)/tstim);
+        sp_rel = find(respTrain(:,cellind));
+        for i = 1%:STA_length
+            STA(:,:,i,cellind) = (stimD*single(respTrain(9+[1:60000],cellind)));
+        end
+    end
+
+    %%%%% Find max of STA
+    [mgr,mgc] = meshgrid(1:100,1:100);
+    
+    [cmax,cind] = max(abs(filterMat),[],2);
+    [fmaxc,fmaxr] = ind2sub([100 100],cind);
+    
+    mgrmat = mgr(:)*ones(1,size(fmaxr,1));
+    fmaxrmat = ones(size(mgrmat,1),1)*fmaxr';
+    mgrd = ((mgrmat - fmaxrmat)').^2;
+    
+    mgcmat = mgc(:)*ones(1,size(fmaxc,1));
+    fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
+    mgcd = ((mgcmat - fmaxcmat)').^2;
+    
+    dp = sqrt(mgrd+mgcd);
+    filterMat2 = filterMat;
+    filterMat2(dp>30) = 0;
+    %%%%%%%
+    
+    for pix = 1:batchsize:size(stim,1)-(batchsize-1)
+        % pix
+        % 		[pix size(stim,1)-(batchsize-1) ]
+        pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+%         pixelTC = (1)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)');
+        %     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+        %     filter = corrTrain*pixelTC;
+        filter = corrTrainSVD*pixelTC;
+        %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
+        %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
+        filterMat(:,pix:pix+(batchsize-1)) = filter;
+    end
+
     
 else
     

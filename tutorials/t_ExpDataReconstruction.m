@@ -11,6 +11,7 @@
 
 clear;
 addpath(genpath('/Volumes/Lab/Users/james/matlab'));
+addpath(genpath('/Volumes/Lab/Users/james/smooth-reconstruction'));
 addpath(genpath('/Volumes/Lab/Users/james/RGC-Reconstruction/'))
 javaaddpath /home/vision/Nishal/Java/Java/vision7/bin/
 

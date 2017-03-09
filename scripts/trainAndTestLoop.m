@@ -13,14 +13,14 @@
 % [mosaicFile, saveFile] = trainNaturalScenes100_r2(pTrain);
 % [mosaicFile, saveFile] = trainWhiteNoise(pTrain);
 
-mosaicFile = '_mosaicAll_35336498' ;%['_' d1(dind).name(11:end-4)];% 
-movieFile = 'pixium15_100/pix1_ns100_100Hz_mov'; 
-spikesFile = 'pixium15_100/pix1_ns100_100Hz_sp';
+% mosaicFile = '_mosaicAll_35336498' ;%['_' d1(dind).name(11:end-4)];% 
+% movieFile = 'pixium15_100/pix1_ns100_100Hz_mov'; 
+% spikesFile = 'pixium15_100/pix1_ns100_100Hz_sp';
 % filterFile = ['pixium15_100/filters_pix1_nsBig15_1st_sv025_' mosaicFile]
 % 
-% mosaicFile = '_mosaicAll_1246640' ;%['_' d1(dind).name(11:end-4)];% 
-% movieFile = 'ns100_r2_10/ns100_jan1_mov3'; 
-% spikesFile = 'ns100_r2_10/ns100_jan1_sp3';
+mosaicFile = '_mosaicAll_1246640' ;%['_' d1(dind).name(11:end-4)];% 
+movieFile = 'ns100_r2_10/ns100_jan1_mov3'; 
+spikesFile = 'ns100_r2_10/ns100_jan1_sp3';
 % filterFile = ['ns100_r2_10/filters_ns100_jan1_1st3_sh9_sv30_' mosaicFile];
 
 % mosaicFile = '_mosaicAll_20116' ;%['_' d1(dind).name(11:end-4)];% 
@@ -29,7 +29,7 @@ spikesFile = 'pixium15_100/pix1_ns100_100Hz_sp';
 % filterFile = ['ns100_r2_10_regmos/filters_ns100_regmos_1st_sh9_sv30_' mosaicFile];
 % % 
 % pLoad.loadFile = ['ns100_r2_10_regmos/ns100_regmos'];
-pLoad.loadFile = ['pixium15_sm/pix1_ns100_100Hz'];
+% pLoad.loadFile = ['pixium15_sm/pix1_ns100_100Hz'];
 pLoad.movieFile = movieFile;
 pLoad.spikesFile = spikesFile;
 pLoad.mosaicFile = mosaicFile;
@@ -41,24 +41,24 @@ pRecon.spikesFile = spikesFile;
 % % % 
 pRecon.mosaicFile = mosaicFile;
 
-% evArr = [.2 .1 .3 .4];
-evArr = [.01 .02 .03 .04 .1 .2];
+evArr = [.2 .1 .3 .4];
+% evArr = [.01 .02 .03 .04 .1 .2];
 trainFraction = [.16 .5 .66 .83 1];
 % already did trainFraction =1
-for evInd = 1:6
-for trainFractionInd = 1:5
+for evInd = 4%1:6
+for trainFractionInd = 5%1:5
     [evInd trainFractionInd]
 % if ~(evInd==1 && trainFractionInd==1)
 
-% filterFile = ['ns100_r2_10/filters3_ns100_feb6_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
+filterFile = ['ns100_r2_10/filters4_ns100_feb6_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
 % filterFile = ['pixium15_100/filters3_pix1_feb6_sh0_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
-filterFile = ['pixium15_sm/filters_pix_feb21_sh0_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
+% filterFile = ['pixium15_sm/filters_pix_feb21_sh0_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
 
 pRecon.filterFile = filterFile;
 pRecon.windowSize = 1;
 pRecon.percentSV = evArr(evInd);
 pRecon.trainFraction = trainFraction(trainFractionInd);
-pRecon.shiftTime = 0;
+pRecon.shiftTime = 9;
 [filterFile] = runReconstructSVD_fast_all(pRecon);
 load(filterFile);
 close;

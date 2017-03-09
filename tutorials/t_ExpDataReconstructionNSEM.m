@@ -19,63 +19,72 @@ javaaddpath /home/vision/Nishal/Java/Java/vision7/bin/
 % % movie stimulus for '2016-02-17-6/data025': RGB-16-2-0.48-22222
 % datarun = load_data('2016-02-17-6/data025'); % onP, offP, onM, offM, onSmooth
 % datarun = load_data('2016-02-17-6/data025-cf/edited/data025-cf/data025-cf'); % off Smooth
-datarun = load_data('2013-08-19-6/data001'); % onP, offP, onM, offM, onSmooth
+% datarun = load_data('2013-08-19-6/data001'); % onP, offP, onM, offM, onSmooth
 
-% % Other datasets
-% d_save_str = '/Volumes/Lab/Users/james/fits-2016-04-21-10/on_midget';
-% d_save_str = '/Volumes/Lab/Users/james/fits-2015-11-09-3/on_parasol';
+% % % % 
+% Description: The training data and testing data are interleaved in blocks
+% during the experiment. The even blocks are a different, unique movie
+% every time (the training data), and the odd blocks are a repeated movie
+% (the testing data). The STA and the movies are saved [pixels, pixels,
+% frames]. This folder contains two matfiles, one with spikes (CellData)
+% and one with the movie (StimData), for each experiment and stimulus type:
+% White Noise (WN) or Natural Scenes with Eye Movements (NSEM).
+% 
+% MAT files: CellData Spikes: Each cell has its spike times in seconds,
+% separated into blocks. The even blocks correspond to the FitMovie, and
+% the odd blocks correspond to the TestMovie. STA: Spike triggered average
+% calculated from white noise StimData FitMovie: contains one cell for each
+% fitting block TestMovie: contains one movie which is repeated every
+% testing block
+% 
+% Note: The frame rate for our monitor is NOT 120Hz exactly. The actual
+% time each frame is displayed for is: 0.00832750 s.
 
-datarun=load_params(datarun);
 
-% figure;plot_rf_fit(datarun,'unclassified')
 
-% Choose cell type
-% cell_type_ind = 1;
-% cell_str = {'on parasol','off parasol','on midget','off midget','on smooth','off smooth','all','all5','all4'};
-% cell_type = cell_str{cell_type_ind};
-cell_type = 'unclassified';
-% Get index values for different mosaics when type is 'all'
-indices = [];
-if strcmp(cell_type,'all')
-    for cell_type_number = 1:6
-        indices = [indices get_cell_indices(datarun, cell_str{cell_type_number})];
-    end
-elseif strcmp(cell_type,'all5')
-    for cell_type_number = 1:5
-        indices = [indices get_cell_indices(datarun, cell_str{cell_type_number})];
-    end
-elseif strcmp(cell_type,'all4')
-    for cell_type_number = 1:4
-        indices = [indices get_cell_indices(datarun, cell_str{cell_type_number})];
-    end
-else
-    indices = get_cell_indices(datarun,cell_type);
+load('/Volumes/Lab/Users/Nora/ShareData/CarlosData/NSEM-2013-08-19-6-CellData.mat');
+load('/Volumes/Lab/Users/Nora/ShareData/CarlosData/NSEM-2013-08-19-6-StimData.mat');
+% 2013-08-19-6
+% Isolated, used in Heitman and ICLR papers
+% dt = .00832750
+% NS: 59 1-minute training movies interleaved with 59 iterations of 30
+% second test movie, skip first two iterations: 114 30-second movies: 91
+% 30-second training movies, 23 30-second validation movies, 57 iterations
+% of 30-second test movie
+	
+% WN: 60 30-second training movies interleaved with 60 iterations of
+% 10-second test movie, skip first three iterations: 57 30-second movies:
+% 46 30-second training movies, 11 30-second validation movies, 57
+% iterations of 10-second test movie
+
+movieLength= size(NSEMStimData.FitMovie{1},3);
+for blockNum = 1:59
+    fitMovie(:,:,(blockNum-1)*movieLength+1:blockNum*movieLength) = NSEMStimData.FitMovie{blockNum};
 end
 
-% Get indices
-cell_ids = datarun.cell_ids(indices); cellind= cell_ids;
-% indices = get_cell_indices(datarun,'on midget');
-
-d_save_str = '/Volumes/Lab/Users/james/smooth-reconstruction/';
-% fittedGLM = glm_fit_from_WN([7], '2009-04-3/data008', 'BW-1-4-11111')
-
-% Load spikes and movie stimulus
-indind =[1:length(cellind)];
-[fitspikes,fitmovie] = get_spikes_stim(cellind(indind), '2013-08-19-6/data001', 'fitmovie_schemeA_8pix_Identity_8pix','d_save',d_save_str);
-load('/Volumes/Lab/Users/akheitman/NSEM_Home/Stimuli/NSEM_eye-long-v2/fitmovie_schemeA_8pix_Identity_8pix.mat');
+names = fieldnames(NSEMCellData);
+cellSpikes = cell(length(names));
+for nameInd = 1:length(names)
+    blockNumCtr = 0;
+    for blockNum = 1:2:118
+        blockNumCtr = blockNumCtr+1;
+        eval(['cellSpikesTemp = NSEMCellData.' names{nameInd} '.Spikes{blockNum};']);
+        cellSpikes{nameInd} = [cellSpikes{nameInd}; blockNumCtr*.00832750+cellSpikesTemp];
+    end
+end
 %% Get STA
 
-tstim = 2/119.5172;
+tstim = .00832750;%2/119.5172;
 STA_length = 30;
-movie_size = size(fitmovie{1});
+movie_size = size(fitMovie);
 STA = zeros(movie_size(1),movie_size(2),STA_length,100);
 fitframes = movie_size(3);
 
-for cellind = 1%:length(fitspikes)
-    sp_frame = floor(fitspikes{cellind}(:)/tstim);    
+for cellind = 1:length(fitspikes)
+    sp_frame = floor(cellSpikes{cellind}(:)/tstim);    
     sp_rel = find((sp_frame>STA_length)&(sp_frame<fitframes));
     for i = 1:STA_length
-        STA(:,:,i,cellind) = sum((fitmovie{1}(:,:,(sp_frame(sp_rel)-STA_length+1)+i)),3);       
+        STA(:,:,i,cellind) = sum((fitMovie(:,:,(sp_frame(sp_rel)-STA_length+1)+i)),3);       
     end
 end
 
@@ -98,11 +107,11 @@ end
 
 % For only spatial decoding filters, get movie frame from peak of STA temporal response
 % Loop over every cell
-spikemat = zeros(length(fitspikes),54000);
+spikemat = zeros(length(cellSpikes),54000);
 zshift =3;
-for cellind = 1:length(fitspikes)
-for i = 1:length(fitspikes{cellind})
-    sp_frame = floor(fitspikes{cellind}(i)/tstim);
+for cellind = 1:length(cellSpikes)
+for i = 1:length(cellSpikes{cellind})
+    sp_frame = floor(cellSpikes{cellind}(i)/tstim);
     if sp_frame > STA_length && sp_frame<fitframes
         % STA = STA+double(fitmovie{1}(:,:,(sp_frame-STA_length+1):sp_frame));
         spikemat(cellind,(sp_frame-1)) = 1 + spikemat(cellind,(sp_frame-zshift));
@@ -110,6 +119,7 @@ for i = 1:length(fitspikes{cellind})
 end
 end
 
+%%
 % % Visualize spike covariance matrix
 % figure; imagesc(spikemat*spikemat');
 % % spikeResp = spikemat;
@@ -123,18 +133,18 @@ figure; imagesc(spikematnormcov - max(spikematnormcov(:))*eye(size(spikematnormc
 %% Compute decoding filters
 
 mosaicFile = '' ;
-movieFileSave = [reconstructionRootPath '/dat/smooth-reconstruction2/onparasol_movie']; 
-spikesFileSave = [reconstructionRootPath '/dat/smooth-reconstruction2/' cell_type '_spikes'];
+movieFileSave = [reconstructionRootPath '/dat/nsem_2013_08_19_6/movie']; 
+spikesFileSave = [reconstructionRootPath '/dat/nsem_2013_08_19_6/spikes'];
 
-stim = reshape(fitmovie{1},20*40,size(fitmovie{1},3));
-spikeResp = spikemat(:,1:length(stim));
+stim = reshape(fitMovie,40*80,size(fitMovie,3));
+spikeResp = spikemat;%(:,1:length(stim));
 
 % % Save for loading in future
-% save(movieFileSave,'stim');
+save(movieFileSave,'stim');
 save(spikesFileSave,'spikeResp');
 
-movieFile = ['/smooth-reconstruction2/onparasol_movie'];
-spikesFile = ['/smooth-reconstruction2/' cell_type '_spikes'];
+movieFile = ['/nsem_2013_08_19_6/movie'];
+spikesFile = ['/nsem_2013_08_19_6/spikes'];
 
 % % % % 
 pRecon.movieFile = [movieFile];
@@ -148,8 +158,10 @@ pRecon.windowSize = 1;
 evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
 trainFraction = [0.2 0.4 0.6 0.8];
 
-for evInd = 1:length(evArr)
-    for trainFractionInd = 1:length(trainFraction)
+cell_type = '';
+
+for evInd = length(evArr)
+    for trainFractionInd = length(trainFraction)
         
         if pRecon.windowSize == 1
             filterFile = ['smooth-reconstruction2/' cell_type '_sh' sprintf('%d',zshift) '_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd)) mosaicFile];
@@ -176,7 +188,7 @@ load(filterFile);
 % % figure; imagesc(reshape(sum(abs(filterMat)),[40 20]))
 
 numFilters = size(filterMat,1);
-figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(0+fr,:),[40 20])');colormap parula;  end;
+figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(100+fr,:),[80 40])');colormap parula;  end;
 
 % numberCells = [103 112 117 182 12]; % for each cell type in '2016-02-17-6/data025'
 
