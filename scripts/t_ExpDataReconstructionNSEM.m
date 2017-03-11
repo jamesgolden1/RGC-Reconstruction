@@ -43,8 +43,8 @@ javaaddpath /home/vision/Nishal/Java/Java/vision7/bin/
 
 % piece = 'WN-2012-09-27-3';
 
-% piece = 'WN-2013-08-19-6';
-piece = 'NSEM-2013-08-19-6';
+piece = 'WN-2013-08-19-6';
+% piece = 'NSEM-2013-08-19-6';
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-CellData.mat']);
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-StimData.mat']);
 
@@ -100,14 +100,14 @@ for cellind = 10%:length(cellSpikes)
 %         STA(:,i,cellind) = sum((fitMovieRSzm(:,(sp_frame(sp_rel)-STA_length+1)+i)),3);  
 
 %     fitMovieMean = single(mean(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i),2));
-    fitMovieRSzm = single(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i));% - fitMovieMean*ones(1,size(sp_rel,1));
+    fitMovieRSzm =-.5+ single(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i));% - fitMovieMean*ones(1,size(sp_rel,1));
         STA(:,i,cellind) = sum(fitMovieRSzm,2);
     end
 end
 
 t0 = squeeze((sum(sum(STA,1),3)));
 figure; plot(t0);
-
+%%
 STAview = reshape(STA(:,:,cellind),[movie_size(1),movie_size(2),STA_length]);
 %  % Show STA movie
 figure;
@@ -153,18 +153,23 @@ figure; imagesc(spikematnormcov - max(spikematnormcov(:))*eye(size(spikematnormc
 
 if ~isdir([reconstructionRootPath '/dat/' piece])
     mkdir(([reconstructionRootPath '/dat/' piece]));
+    addpath([reconstructionRootPath '/dat/' piece]);
 end
 
 mosaicFile = '' ;
 movieFileSave = [reconstructionRootPath '/dat/' piece '/movie']; 
 spikesFileSave = [reconstructionRootPath '/dat/' piece '/spikes'];
 
-stim = reshape(fitMovie,40*80,size(fitMovie,3));
+stim = (reshape(fitMovie,40*80,size(fitMovie,3)));
 spikeResp = spikemat;%(:,1:length(stim));
 
+% % Visualize RF to make sure everything is still lined up
+rf1 = (single(stim(:,1:end-5)-.5)*spikeResp(109,6:end)');
+figure; imagesc(reshape(rf1,[80 40]))
+
 % % Save for loading in future
-save(movieFileSave,'stim');
-save(spikesFileSave,'spikeResp');
+% save(movieFileSave,'stim');
+% save(spikesFileSave,'spikeResp');
 
 
 movieFile = ['/' piece '/movie'];
@@ -181,7 +186,7 @@ pRecon.windowSize = 1;
 
 evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
 trainFraction = [0.2 0.4 0.6 0.8];
-zshift = 11;
+zshift = 105;
 cell_type = piece;
 
 for evInd = length(evArr)
@@ -212,9 +217,9 @@ load(filterFile);
 % % figure; imagesc(reshape(sum(abs(filterMat)),[80 40]))
 
 numFilters = size(filterMat,1);
-figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); caxis([-.03 .03]); colormap parula;  end;
+figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
 
-figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(50+fr,:),[80 40])'); caxis([-.03 .03]); colormap parula;  end;
+figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(50+fr,:),[80 40])'); colormap parula;  end;
 
 % numberCells = [103 112 117 182 12]; % for each cell type in '2016-02-17-6/data025'
 
