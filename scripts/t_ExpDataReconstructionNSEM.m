@@ -55,50 +55,52 @@ load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-StimData.mat']);
 % 46 30-second training movies, 11 30-second validation movies, 57
 % iterations of 10-second test movie
 
+% Get the movie stimulus data
 if strcmpi(piece(1:2),'WN'); NSEMStimData = WNStimData; NSEMCellData = WNCellData; clear WNStimData; clear WNCellData; end;
 movieLength= size(NSEMStimData.FitMovie{1},3);
 for blockNum = 1:59
     fitMovie(:,:,(blockNum-1)*movieLength+1:blockNum*movieLength) = NSEMStimData.FitMovie{blockNum};
 end
 
+% Get the spiking data
+tstim = .00832750; % sec %2/119.5172;
 names = fieldnames(NSEMCellData);
 cellSpikes = cell(length(names),1);
 for nameInd = 1:length(names)
     blockNumCtr = 0;
-    for blockNum = 2:2:118
+    for blockNum = 2:2:118 % Need to change for WN?
         blockNumCtr = blockNumCtr+1;
         eval(['cellSpikesTemp = NSEMCellData.' names{nameInd} '.Spikes{blockNum};']);
-        cellSpikes{nameInd} = [cellSpikes{nameInd}; (blockNumCtr-1)*movieLength*.00832750+cellSpikesTemp];
+        cellSpikes{nameInd} = [cellSpikes{nameInd}; (blockNumCtr-1)*movieLength*tstim+cellSpikesTemp];
     end
 end
 %% Get STA
 
-tstim = .00832750;%2/119.5172;
 STA_length = 30;
 movie_size = size(fitMovie);
 STA = zeros(movie_size(1)*movie_size(2),STA_length,100);
 fitframes = movie_size(3);
 
 fitMovieRS = reshape(fitMovie,[movie_size(1)*movie_size(2),movie_size(3)]);
-    
+
 for cellind = 10%:length(cellSpikes)
-    sp_frame = floor(cellSpikes{cellind}(:)/tstim);    
-%     sp_rel = find((sp_frame>STA_length)&(sp_frame<fitframes));
-    sp_rel = find(sp_frame>STA_length);
+    sp_frame = floor(cellSpikes{cellind}(:)/tstim);
+    %     sp_rel = find((sp_frame>STA_length)&(sp_frame<fitframes));
+    sp_rel = find(sp_frame>STA_length);    
     
-
     for i = 1:STA_length
-%         STA(:,i,cellind) = sum((fitMovieRSzm(:,(sp_frame(sp_rel)-STA_length+1)+i)),3);  
-
-%     fitMovieMean = single(mean(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i),2));
-    fitMovieRSzm =-.5+ single(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i));% - fitMovieMean*ones(1,size(sp_rel,1));
+        % STA(:,i,cellind) = sum((fitMovieRSzm(:,(sp_frame(sp_rel)-STA_length+1)+i)),3);        
+        % fitMovieMean = single(mean(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i),2));
+        fitMovieRSzm =-.5+ single(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i));% - fitMovieMean*ones(1,size(sp_rel,1));
         STA(:,i,cellind) = sum(fitMovieRSzm,2);
     end
 end
 
 t0 = squeeze((sum(sum(STA,1),3)));
 figure; plot(t0);
-%%
+
+%% View STA movie
+
 STAview = reshape(STA(:,:,cellind),[movie_size(1),movie_size(2),STA_length]);
 %  % Show STA movie
 figure;
@@ -113,7 +115,7 @@ for i = 1:STA_length
 end
 % figure; imagesc(NSEMCellData.OFFPar_1006.STA(:,:,5)')
 
-%% Pull out spikes for each cell
+%% Put spikes into matrix form
 
 % For only spatial decoding filters, get movie frame from peak of STA temporal response
 % Loop over every cell
@@ -129,8 +131,8 @@ for i = 1:length(cellSpikes{cellind})
 end
 end
 
-%%
-% % Visualize spike covariance matrix
+%% Visualize spike covariance matrix
+
 % figure; imagesc(spikemat*spikemat');
 % % spikeResp = spikemat;
 spikematmean = mean(spikemat,2);
@@ -210,7 +212,7 @@ load(filterFile);
 numFilters = size(filterMat,1);
 figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
 
-figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(150+fr,:),[80 40])'); colormap parula;  end;
+% figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(150+fr,:),[80 40])'); colormap parula;  end;
 
 % numberCells = [103 112 117 182 12]; % for each cell type in '2016-02-17-6/data025'
 
