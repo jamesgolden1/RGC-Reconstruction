@@ -10,16 +10,8 @@
 %% Initialize
 
 clear;
-addpath(genpath('/Volumes/Lab/Users/james/matlab'));
-addpath(genpath('/Volumes/Lab/Users/james/RGC-Reconstruction/'))
-javaaddpath /home/vision/Nishal/Java/Java/vision7/bin/
-
-% % Load experimental data
-% Smooth cell experiment from Colleen
-% % movie stimulus for '2016-02-17-6/data025': RGB-16-2-0.48-22222
-% datarun = load_data('2016-02-17-6/data025'); % onP, offP, onM, offM, onSmooth
-% datarun = load_data('2016-02-17-6/data025-cf/edited/data025-cf/data025-cf'); % off Smooth
-% datarun = load_data('2013-08-19-6/data001'); % onP, offP, onM, offM, onSmooth
+addpath(genpath(reconstructionRootPath));
+% javaaddpath /home/vision/Nishal/Java/Java/vision7/bin/
 
 % % % % 
 % Description: The training data and testing data are interleaved in blocks
@@ -40,11 +32,10 @@ javaaddpath /home/vision/Nishal/Java/Java/vision7/bin/
 % Note: The frame rate for our monitor is NOT 120Hz exactly. The actual
 % time each frame is displayed for is: 0.00832750 s.
 
-
 % piece = 'WN-2012-09-27-3';
 
-piece = 'WN-2013-08-19-6';
-% piece = 'NSEM-2013-08-19-6';
+% piece = 'WN-2013-08-19-6';
+piece = 'NSEM-2013-08-19-6';
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-CellData.mat']);
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-StimData.mat']);
 
@@ -168,8 +159,8 @@ rf1 = (single(stim(:,1:end-5)-.5)*spikeResp(109,6:end)');
 figure; imagesc(reshape(rf1,[80 40]))
 
 % % Save for loading in future
-% save(movieFileSave,'stim');
-% save(spikesFileSave,'spikeResp');
+save(movieFileSave,'stim');
+save(spikesFileSave,'spikeResp');
 
 
 movieFile = ['/' piece '/movie'];
@@ -182,14 +173,14 @@ pRecon.mosaicFile = mosaicFile;
 
 % windowSize = 1 gives spatial decoding filters only
 % set to value > 1 for spatiotemporal decoding filters
-pRecon.windowSize = 1; 
+pRecon.windowSize = 10; 
 
 evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
 trainFraction = [0.2 0.4 0.6 0.8];
-zshift = 105;
+zshift = 0;
 cell_type = piece;
 
-for evInd = length(evArr)
+for evInd = 5%length(evArr)
     for trainFractionInd = length(trainFraction)
         
         if pRecon.windowSize == 1
@@ -214,115 +205,122 @@ end
 load(filterFile);
 
 % % Visualize sum(abs(filters)) to see spatial extent
-% % figure; imagesc(reshape(sum(abs(filterMat)),[80 40]))
+% % figure; imagesc(reshape(sum(abs(filterMat)),[80 40])')
 
 numFilters = size(filterMat,1);
 figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
 
-figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(50+fr,:),[80 40])'); colormap parula;  end;
+figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(150+fr,:),[80 40])'); colormap parula;  end;
 
 % numberCells = [103 112 117 182 12]; % for each cell type in '2016-02-17-6/data025'
 
 %% Test decoding accuracy
 
-% % Uncomment to run only test
-% % cell_type_ind = 1;
-% % zshift=3;
-% 
+% Uncomment to run only test
+% cell_type_ind = 1;
+% zshift=3;
+
 % cell_str = {'on parasol','off parasol','on midget','off midget','on smooth','off smooth','all','all5'};
 % cell_type = cell_str{cell_type_ind};
-% 
-% 
-% % For spatial only decoder, set tempFlag = 1 to add temporal STA course as temporal decoding filter timecourse
-% tempFlag = 0; 
-% 
-% mosaicFile = '' ;
-% movieFileSave = [reconstructionRootPath '/dat/smooth-reconstruction2/onparasol_movie']; 
-% spikesFileSave = [reconstructionRootPath '/dat/smooth-reconstruction2/' cell_type '_spikes'];
-% 
-% % Uncomment to run only test
-% % load(movieFileSave); 
-% % load(spikesFileSave);
-% 
-% mse = [];
+
+% For spatial only decoder, set tempFlag = 1 to add temporal STA course as temporal decoding filter timecourse
+tempFlag = 0; 
+
+mosaicFile = '' ;
+% movieFileSave = [reconstructionRootPath '/dat/' piece '/movie']; 
+% spikesFileSave = [reconstructionRootPath '/dat/' piece '/spikes'];
+
+% Uncomment to run only test
+% load(movieFileSave); 
+% load(spikesFileSave);
+
+mse = [];
 % pRecon.windowSize = 1; % 1 = .4429, 4 = .4433
-% 
-% figure;
-% 
-% % Percent of eigenvalues/SVs to use
-% evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
-% % Percent of total dataset for filters to have been trained on
-% trainFraction = [0.2 0.4 0.6 0.8];
-% 
-% for evInd = 1:length(evArr)
-%     for trainFractionInd = 1:length(trainFraction)
-% %         [evInd trainFractionInd]
-%         
-%         stimTest = stim(:,ceil(0.8*length(stim)):length(stim));
-%         
-%         spikeRespTest = zeros(1+size(spikeResp,1),length(ceil(0.8*length(stim)):length(stim)));
-%         
-%         spikeRespTest = ones(1,length(ceil(0.8*length(stim)):length(stim)));
-%         spikeRespTest(2:(1+size(spikeResp,1)),:) = spikeResp(:,ceil(0.8*length(stim)):length(stim));
-%         
-%         if pRecon.windowSize == 1
-%             filterFile = ['smooth-reconstruction2/' cell_type '_sh' sprintf('%d',zshift) '_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd)) mosaicFile];
-%         else
-%             filterFile = ['smooth-reconstruction2/' cell_type '_sh' sprintf('%d',zshift) '_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd)) '_wind' sprintf('%d',pRecon.windowSize) mosaicFile];
-%         end
-%         
-%         load(filterFile);
-%         
-%         if tempFlag 
-%              pRecon.windowSize = 12;
-%             load('t02.mat');
-%             filterMatSp = filterMat;
-%             filterMat = zeros(12*(size(filterMatSp,1)-1)+1,size(filterMatSp,2));
-%             
-%             cellTypeNumber = cumsum(2+numberCells);
-%             for ci = 2:size(filterMatSp,1)
-%                 tind = min(find(cellTypeNumber>ci));
-%                 filterTemp = filterMatSp(ci,:)'*(t0{1}-mean(t0{tind}))'./sum(abs(t0{1}-mean(t0{1})));
-%                 filterMat(ci:ci+11,:) = filterTemp(:,19:30)';
-%             end
-%         end
-%         
-%         % stimRecon = -filterMat'*spikeRespTest;
-%         stimRecon =  reconsFromFiltLen(filterMat, spikeRespTest(2:end,:), pRecon.windowSize);
-%         % stimRecon = -filterMat(randperm(size(filterMat,1)),randperm(size(filterMat,2)))'*spikeRespTest;
-%         % stimRecon = -randn(size(filterMat))'*spikeRespTest;
-%         
-%         mc1rz = stimTest - ones(size(stimTest,1),1)*mean(stimTest,1);
-%         mc2rz = stimRecon - ones(size(stimRecon,1),1)*mean(stimRecon,1);
-%         
-%         mc1rs = reshape(mc1rz,[40 20 size(stimTest,2)]);
-%         mc2rs = reshape(mc2rz,[40 20 size(stimRecon,2)]);
-%         
+
+figure;
+
+% Percent of eigenvalues/SVs to use
+evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
+% Percent of total dataset for filters to have been trained on
+trainFraction = [0.2 0.4 0.6 0.8];
+
+
+stimTest = stim(:,ceil(0.8*length(stim)):length(stim));
+
+spikeRespTest = zeros(1+size(spikeResp,1),length(ceil(0.8*length(stim)):length(stim)));
+
+spikeRespTest = ones(1,length(ceil(0.8*length(stim)):length(stim)));
+spikeRespTest(2:(1+size(spikeResp,1)),:) = spikeResp(:,ceil(0.8*length(stim)):length(stim));
+
+% for evInd = length(evArr)
+%     for trainFractionInd = length(trainFraction)
+%         [evInd trainFractionInd]
+                
+        
+        if pRecon.windowSize == 1
+            filterFile = ['' piece '/' cell_type '_sh' sprintf('%d',zshift) '_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd)) mosaicFile];
+        else
+            filterFile = ['' piece '/' cell_type '_sh' sprintf('%d',zshift) '_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd)) '_wind' sprintf('%d',pRecon.windowSize) mosaicFile];
+        end
+        
+        load(filterFile);
+        
+        if tempFlag 
+             pRecon.windowSize = 12;
+            load('t02.mat');
+            filterMatSp = filterMat;
+            filterMat = zeros(12*(size(filterMatSp,1)-1)+1,size(filterMatSp,2));
+            
+            cellTypeNumber = cumsum(2+numberCells);
+            for ci = 2:size(filterMatSp,1)
+                tind = min(find(cellTypeNumber>ci));
+                filterTemp = filterMatSp(ci,:)'*(t0{1}-mean(t0{tind}))'./sum(abs(t0{1}-mean(t0{1})));
+                filterMat(ci:ci+11,:) = filterTemp(:,19:30)';
+            end
+        end
+        
+        % stimRecon = -filterMat'*spikeRespTest;
+        stimRecon =  reconsFromFiltLen(filterMat, spikeRespTest(2:end,:), pRecon.windowSize);
+        % stimRecon = -filterMat(randperm(size(filterMat,1)),randperm(size(filterMat,2)))'*spikeRespTest;
+        % stimRecon = -randn(size(filterMat))'*spikeRespTest;
+        
+        % figure; subplot(121); imagesc(stimTest(:,1:1000)); subplot(122); imagesc(stimRecon(:,1:1000))
+        
+        mc1rz = single(stimTest(:,1:end-pRecon.windowSize,1)) - ones(size(stimTest,1),1)*mean(stimTest(:,1:end-pRecon.windowSize,1));
+        mc2rz = single(stimRecon) - ones(size(stimRecon,1),1)*mean(stimRecon,1);
+         figure; subplot(121); imagesc(mc1rz(:,1:1000)); subplot(122); imagesc(mc2rz(:,1:1000))
+    
+        mc1rs = reshape(mc1rz,[80 40 size(mc1rz,2)]);
+        mc2rs = reshape(mc2rz,[80 40  size(mc2rz,2)]);
+        
 %         mc1red = reshape(mc1rs(11:30,6:15,:),[10*20,size(stimTest,2)]); 
 %         mc2red = reshape(mc2rs(11:30,6:15,:),[10*20,size(stimRecon,2)]); 
-% %         figure; imagesc(mc2rs(:,:,1));
-% 
-%         
-%         shiftTime = 0;
-%         % errmov =(mc1rz(:,1+shiftTime:end))+1*(mc2rz(:,1:end-shiftTime));
-%         % errmov =(mc1rz(:,1+shiftTime:end-(pRecon.windowSize)))-1*(mc2rz(:,1:end-shiftTime));        
+%         figure; imagesc(mc2rs(:,:,1));
+
+        
+        shiftTime = 0;
+        errmov =(mc1rz(:,1+shiftTime:end))+1*(mc2rz(:,1:end-shiftTime));
+        % errmov =(mc1rz(:,1+shiftTime:end-(pRecon.windowSize)))-1*(mc2rz(:,1:end-shiftTime));        
+%         errmov =(mc1rs(:,1+shiftTime:end-(pRecon.windowSize)))-1*(mc2rs(:,1:end-shiftTime));
 %         errmov =(mc1red(:,1+shiftTime:end-(pRecon.windowSize)))-1*(mc2red(:,1:end-shiftTime));
-%         errtot = ((errmov.^2));
-%         
-% %         figure; subplot(131); hist(mc1rz(:),40); subplot(132); hist(mc2rz(:),40); subplot(133); hist(errmov(:),40);
-%         
-%         mse(evInd,trainFractionInd) = sqrt(mean(errtot(:)));
-%         mss(evInd,trainFractionInd) = sqrt(var(errtot(:)));
-%         
-%         trainSizeMat(evInd,trainFractionInd) = trainFraction(trainFractionInd);
-%         evMat(evInd,trainFractionInd) = evArr(evInd);
-%         
-%         clear mc1 mc2 errmov errtot movieRecon
-%         
+        errtot = ((errmov.^2));
+        
+        figure; subplot(121); imagesc(mc1rs(:,:,1)); subplot(122); imagesc(mc2rs(:,:,1))
+         imv = 4; figure; subplot(121); imagesc(mc1rs(:,:,imv*80+1)); subplot(122); imagesc(mc2rs(:,:,imv*80+20));colormap gray %imagesc(sum(mc2rs(:,:,imv*80+[1:80]),3)); colormap gray
+%         figure; subplot(131); hist(mc1rz(:),40); subplot(132); hist(mc2rz(:),40); subplot(133); hist(errmov(:),40);
+        
+        mse(evInd,trainFractionInd) = sqrt(mean(errtot(:)));
+        mss(evInd,trainFractionInd) = sqrt(var(errtot(:)));
+        
+        trainSizeMat(evInd,trainFractionInd) = trainFraction(trainFractionInd);
+        evMat(evInd,trainFractionInd) = evArr(evInd);
+        
+        clear mc1 mc2 errmov errtot movieRecon
+        
 %     end
 % end
+
 % 
-% % 
 % figure; 
 % plot(1e0*trainSizeMat',mse','-x','linewidth',4)
 % % hold on;
@@ -332,6 +330,6 @@ figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(50+fr,:),[80 4
 % ylabel('Mean Square Error - Reconstruction','fontsize',15);
 % set(gca,'fontsize',13)
 % legend('1% SVs','5% SVs','10% SVs','20% SVs','40% SVs','60% SVs','80% SVs','100% SVs');
-% % 
-% % fr = 50;
-% % figure; subplot(121); imagesc(reshape(stimTest(:,fr),40,20)); subplot(122);  imagesc(reshape(stimRecon(:,fr),40,20));
+% 
+% fr = 50;
+% figure; subplot(121); imagesc(reshape(stimTest(:,fr),40,20)); subplot(122);  imagesc(reshape(stimRecon(:,fr),40,20));
