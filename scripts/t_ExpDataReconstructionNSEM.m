@@ -33,9 +33,11 @@ addpath(genpath(reconstructionRootPath));
 % time each frame is displayed for is: 0.00832750 s.
 
 % piece = 'WN-2012-09-27-3';
-
+% piece = 'WN-2013-10-10-0';
 % piece = 'WN-2013-08-19-6';
 piece = 'NSEM-2013-08-19-6';
+% piece = 'NSEM-2013-10-10-0';
+% piece = 'NSEM-2012-08-09-3';
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-CellData.mat']);
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-StimData.mat']);
 
@@ -179,7 +181,8 @@ pRecon.windowSize = 10;
 
 evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
 trainFraction = [0.2 0.4 0.6 0.8];
-zshift = 0;
+zshift = 0;figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
+
 cell_type = piece;
 
 for evInd = 5%length(evArr)
