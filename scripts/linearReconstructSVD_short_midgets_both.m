@@ -44,7 +44,9 @@ end
 disp('Calculating pseudoinverse...')
 %get pseudoiverse of respose matrix
 % corrTrain = pinv(respTrain);
-clear resp;
+if ~strcmpi(stimType,'wnZero')
+    clear resp;
+end
 
 % [Utrain, Strain, Vtrain] = svd(respTrain, 'econ');
 % wVector =  (V(:,includedComponents) * inv(S(includedComponents,includedComponents)) * (U(:,includedComponents))') * C;
@@ -148,55 +150,117 @@ if strcmpi(stimType,'ns')
     end
     
     
-elseif strcmpi(stimType,'nsZero')
+elseif strcmpi(stimType,'wnZero')
     
     %%%%% Find STA
 %     tstim = 2/119.5172;
-%     STA_length = 30;
+    STA_length = 30;
 %     movie_size = size(fitmovie{1});
-%     STA = zeros(movie_size(1),movie_size(2),STA_length,100);
+    STA = zeros(size(stim,1),size(resp,1));
 %     fitframes = movie_size(3);
-    stimD = single(stim(:,9+[1:60000]))-ones(10000,1)*mean(stim(:,9+[1:60000]));
-    for cellind = 6000%:length(fitspikes)
+    stimD = -.5+single(stim);%(:,9+[1:60000]))-ones(10000,1)*mean(stim(:,9+[1:60000]));
+    for cellind = 1:size(resp,1)
 %         sp_frame = floor(fitspikes{cellind}(:)/tstim);
-        sp_rel = find(respTrain(:,cellind));
-        for i = 1%:STA_length
-            STA(:,:,i,cellind) = (stimD*single(respTrain(9+[1:60000],cellind)));
+        sp_rel = find(resp(cellind,:));
+        for i = 25%:STA_length
+            % STA(:,cellind) = sum(stimD(:,(sp_rel)-STA_length+1+i),2);%(stimD*single(resp(cellind,(sp_rel)-STA_length+1+i))); % (sp_rel)-STA_length+1+i
+            STA(:,cellind) = sum(-.5+ single(stimD(:,(sp_rel)-STA_length+1+i)),2);
         end
     end
+    % figure; for cellind = 1:64; subplot(8,8,cellind); imagesc(reshape(squeeze(STA(:,cellind)'),[80 40])); colormap parula;  end;
+
+    clear stimD resp
 
     %%%%% Find max of STA
-    [mgr,mgc] = meshgrid(1:100,1:100);
+    clear mgr mgc fmaxr fmaxc
+    [mgr,mgc] = meshgrid(1:80,1:40);
     
-    [cmax,cind] = max(abs(filterMat),[],2);
-    [fmaxc,fmaxr] = ind2sub([100 100],cind);
+    [cmax,cind] = max(abs(STA));
+    [fmaxr,fmaxc] = ind2sub([80 40],cind);
     
-    mgrmat = mgr(:)*ones(1,size(fmaxr,1));
-    fmaxrmat = ones(size(mgrmat,1),1)*fmaxr';
+    mgrmat = mgr(:)*ones(1,size(fmaxr,2));
+    fmaxrmat = ones(size(mgrmat,1),1)*fmaxr;
     mgrd = ((mgrmat - fmaxrmat)').^2;
     
-    mgcmat = mgc(:)*ones(1,size(fmaxc,1));
-    fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
+    mgcmat = mgc(:)*ones(1,size(fmaxc,2));
+    fmaxcmat = ones(size(mgcmat,1),1)*fmaxc;
     mgcd = ((mgcmat - fmaxcmat)').^2;
     
-    dp = sqrt(mgrd+mgcd);
-    filterMat2 = filterMat;
-    filterMat2(dp>30) = 0;
-    %%%%%%%
+    [iv,iord] = sort(mgc(:),'ascend');
     
+    dp = sqrt(mgrd(:,iord)+mgcd(:,iord));
+    figure; imagesc(reshape(STA(:,40).*(dp(40,:)<12)',[80 40]));
+%     figure; imagesc(reshape(STA(:,100),[80 40]).*(reshape(dp(100,:)',[40 80])'<6))
+%     filterMat2 = filterMat;
+%     filterMat2(dp>5) = 0;
+    %%%%%%%
+%     trainTimes = 1:i1-numbins-shifttime;
+%     respTrain = uint8(zeros(length(trainTimes),size(resp,1)*numbins+1));
+%     respTrain(:,1) = uint8(ones(length(trainTimes),1));
+%     for t = 1:length(trainTimes)
+%         starttime = trainTimes(t)+1;
+%         endtime = trainTimes(t)+numbins;
+%         %     size(resp)
+%         %     size(respTrain)
+%         %     numbins
+%         respTrain(t,2:end) = uint8(reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
+%     end
+    %%%%%%%
+       pix = 1; pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+ 
+    batchsize = size(stim,1);
+    zeroRadius = 10;
+    filterMat = zeros(size(corrTrainSVD,1),size(stim,1));
+%         pixelTC = (1/255)*double(stim')-.5;%(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+
+% % % % % % % % % % % 
+%     for cellind = 1:5%:size(dp,1)
+%         cellind
+%         filter = zeros(1861,3200); clear filterTemp
+%     for pix = 1:batchsize:size(stim,1)-(batchsize-1)
+%         % pix
+% %         % 		[pix size(stim,1)-(batchsize-1) ]
+% %         pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+% %         pixelTC = (1)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)');
+% %             pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+%         %     filter = corrTrain*pixelTC;
+% %         filter = corrTrainSVD*pixelTC;
+% %         filterTemp = corrTrainSVD(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,:)*pixelTC(:,dp(cellind,:)<zeroRadius);
+%         filterTemp = corrTrainSVD*pixelTC(:,dp(cellind,:)<zeroRadius);
+%         filter(:,find(dp(cellind,:)<zeroRadius)) = filterTemp;
+%         %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
+%         %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
+% %         filterMat(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,pix:pix+(batchsize-1)) = filter;
+%         filterMat(:,pix:pix+(batchsize-1)) = filterMat+filter;
+%     end
+%     end
+% % % % % % % % % % % % 
+batchsize = 1;
+dpThresh = dp<4;
+filterMat = zeros(windowsize,size(stim,1));
+%  for cellind = 1:5%:size(dp,1)
+        cellind
+        filter = zeros(1861,3200); clear filterTemp
     for pix = 1:batchsize:size(stim,1)-(batchsize-1)
+        relcells = find(dpThresh(:,pix));
         % pix
-        % 		[pix size(stim,1)-(batchsize-1) ]
-        pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+%         % 		[pix size(stim,1)-(batchsize-1) ]
+%         pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
 %         pixelTC = (1)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)');
-        %     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
+%             pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
         %     filter = corrTrain*pixelTC;
-        filter = corrTrainSVD*pixelTC;
+%         filter = corrTrainSVD*pixelTC;
+%         filterTemp = corrTrainSVD(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,:)*pixelTC(:,dp(cellind,:)<zeroRadius);
+        filter = corrTrainSVD(2+(windowsize*(relcells-1)):2+(windowsize*(relcells))-1,:)*pixelTC;%(:,pix);%(:,dp(cellind,:)<zeroRadius);
+%         filter(:,find(dp(cellind,:)<zeroRadius)) = filterTemp;
         %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
         %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
+%         filterMat(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,pix:pix+(batchsize-1)) = filter;
         filterMat(:,pix:pix+(batchsize-1)) = filter;
     end
-
+%  end
+    
+    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
     
 else
     

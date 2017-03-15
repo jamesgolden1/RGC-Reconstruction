@@ -34,8 +34,8 @@ addpath(genpath(reconstructionRootPath));
 
 % piece = 'WN-2012-09-27-3';
 % piece = 'WN-2013-10-10-0';
-% piece = 'WN-2013-08-19-6';
-piece = 'NSEM-2013-08-19-6';
+piece = 'WN-2013-08-19-6';
+% piece = 'NSEM-2013-08-19-6';
 % piece = 'NSEM-2013-10-10-0';
 % piece = 'NSEM-2012-08-09-3';
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-CellData.mat']);
@@ -85,21 +85,23 @@ fitframes = movie_size(3);
 
 fitMovieRS = reshape(fitMovie,[movie_size(1)*movie_size(2),movie_size(3)]);
 
-for cellind = 10%:length(cellSpikes)
+for cellind = 1%:length(cellSpikes)
     sp_frame = floor(cellSpikes{cellind}(:)/tstim);
     %     sp_rel = find((sp_frame>STA_length)&(sp_frame<fitframes));
     sp_rel = find(sp_frame>STA_length);    
     
-    for i = 1:STA_length
+    for i = 25%1:STA_length
         % STA(:,i,cellind) = sum((fitMovieRSzm(:,(sp_frame(sp_rel)-STA_length+1)+i)),3);        
         % fitMovieMean = single(mean(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i),2));
         fitMovieRSzm =-.5+ single(fitMovieRS(:,sp_frame(sp_rel)-STA_length+1+i));% - fitMovieMean*ones(1,size(sp_rel,1));
         STA(:,i,cellind) = sum(fitMovieRSzm,2);
     end
 end
+% figure; imagesc(reshape(squeeze(STA(:,i,cellind)),[80 40]));
+% figure; for cellind = 1:64; subplot(8,8,cellind); imagesc(reshape(squeeze(STA(:,i,100+cellind)'),[80 40])); colormap parula;  end;
 
-t0 = squeeze((sum(sum(STA,1),3)));
-figure; plot(t0);
+% t0 = squeeze((sum(sum(STA,1),3)));
+% figure; plot(t0);
 
 %% View STA movie
 
@@ -181,11 +183,11 @@ pRecon.windowSize = 10;
 
 evArr = [.01 .05 .1 .2 .4 .6 .8 .99];
 trainFraction = [0.2 0.4 0.6 0.8];
-zshift = 0;figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
+zshift = 0;
 
 cell_type = piece;
 
-for evInd = 5%length(evArr)
+for evInd = length(evArr)
     for trainFractionInd = length(trainFraction)
         
         if pRecon.windowSize == 1
@@ -199,7 +201,8 @@ for evInd = 5%length(evArr)
         pRecon.percentSV = evArr(evInd);
         pRecon.trainFraction = trainFraction(trainFractionInd);
         pRecon.shiftTime = zshift;
-        pRecon.stimType = 'wn';
+%         pRecon.stimType = 'wn';
+        pRecon.stimType = 'wnZero'; 
         % RECONSTRUCTION CALL HERE
         [filterFile] = runReconstructSVD_fast_all(pRecon);
         % end
