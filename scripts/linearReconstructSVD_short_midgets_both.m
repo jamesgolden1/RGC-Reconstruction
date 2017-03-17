@@ -206,7 +206,8 @@ elseif strcmpi(stimType,'wnZero')
 %         respTrain(t,2:end) = uint8(reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
 %     end
     %%%%%%%
-       pix = 1; pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+    batchsize2 = 3200;
+       pix = 1; pixelTC = (1/255)*double(stim(pix:pix+(batchsize2-1),shifttime+trainTimes)')-.5;
  
     batchsize = size(stim,1);
     zeroRadius = 10;
@@ -236,12 +237,15 @@ elseif strcmpi(stimType,'wnZero')
 %     end
 % % % % % % % % % % % % 
 batchsize = 1;
-dpThresh = dp<4;
-filterMat = zeros(windowsize,size(stim,1));
+dpThresh = dp<12;
+filterMat = zeros(1861,size(stim,1));
 %  for cellind = 1:5%:size(dp,1)
         cellind
         filter = zeros(1861,3200); clear filterTemp
     for pix = 1:batchsize:size(stim,1)-(batchsize-1)
+        if ~mod(pix,500)
+            pix
+        end
         relcells = find(dpThresh(:,pix));
         % pix
 %         % 		[pix size(stim,1)-(batchsize-1) ]
@@ -251,16 +255,22 @@ filterMat = zeros(windowsize,size(stim,1));
         %     filter = corrTrain*pixelTC;
 %         filter = corrTrainSVD*pixelTC;
 %         filterTemp = corrTrainSVD(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,:)*pixelTC(:,dp(cellind,:)<zeroRadius);
-        filter = corrTrainSVD(2+(windowsize*(relcells-1)):2+(windowsize*(relcells))-1,:)*pixelTC;%(:,pix);%(:,dp(cellind,:)<zeroRadius);
+        relcellsarr = []; for k = 1:length(relcells); relcellsarr = [relcellsarr (1+(windowsize*(k-1))+[1:10])]; end;
+        filter = corrTrainSVD(relcellsarr,:)*pixelTC(:,pix);%(:,dp(cellind,:)<zeroRadius);
+        
+%         corrTemp(2+(windowsize*(k-1)):2+(windowsize*(k))-1,:) = corrTrainSVD(2+(windowsize*(k-1)):2+(windowsize*(k))-1,:);
+
+%         filter = *pixelTC(:,pix);%(:,dp(cellind,:)<zeroRadius);
 %         filter(:,find(dp(cellind,:)<zeroRadius)) = filterTemp;
         %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
         %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
 %         filterMat(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,pix:pix+(batchsize-1)) = filter;
-        filterMat(:,pix:pix+(batchsize-1)) = filter;
+        filterMat(relcellsarr,pix:pix+(batchsize-1)) = filter;%...
+%             filterMat(relcellsarr,pix:pix+(batchsize-1))+filter;
     end
 %  end
     
-    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
+    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(100+fr,:),[80 40])'); colormap parula;  end;
     
 else
     

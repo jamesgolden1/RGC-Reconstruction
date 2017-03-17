@@ -201,8 +201,8 @@ for evInd = length(evArr)
         pRecon.percentSV = evArr(evInd);
         pRecon.trainFraction = trainFraction(trainFractionInd);
         pRecon.shiftTime = zshift;
-%         pRecon.stimType = 'wn';
-        pRecon.stimType = 'wnZero'; 
+        pRecon.stimType = 'wn';
+%         pRecon.stimType = 'wnZero'; 
         % RECONSTRUCTION CALL HERE
         [filterFile] = runReconstructSVD_fast_all(pRecon);
         % end
