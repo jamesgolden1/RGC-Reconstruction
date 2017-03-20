@@ -194,7 +194,7 @@ elseif strcmpi(stimType,'wnZero')
     [iv,iord] = sort(mgc(:),'ascend');
     
     dp = sqrt(mgrd(:,iord)+mgcd(:,iord));
-    figure; ci =  110;
+    figure; ci =  160;
     subplot(121);
     imagesc(reshape(STA(:,ci)',[80 40]));
     subplot(122);
@@ -246,9 +246,11 @@ elseif strcmpi(stimType,'wnZero')
 %     end
 %     end
 % % % % % % % % % % % % 
+%%
 batchsize = 1;
 dpThresh = dp<5;
 filterMat = zeros(1861,size(stim,1));
+% respTrainS = single(respTrain');
 %  for cellind = 1:5%:size(dp,1)
         cellind
         filter = zeros(1861,3200); clear filterTemp
@@ -265,9 +267,9 @@ filterMat = zeros(1861,size(stim,1));
         %     filter = corrTrain*pixelTC;
 %         filter = corrTrainSVD*pixelTC;
 %         filterTemp = corrTrainSVD(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,:)*pixelTC(:,dp(cellind,:)<zeroRadius);
-        relcellsarr = []; for k = 1:length(relcells); relcellsarr = [relcellsarr (1+(windowsize*(k-1))+[1:10])]; end;
+        relcellsarr = []; for k = 1:length(relcells); relcellsarr = [relcellsarr (1+(windowsize*(relcells(k)-1))+[1:10])]; end;
         filter = corrTrainSVD(relcellsarr,:)*pixelTC(:,pix);%(:,dp(cellind,:)<zeroRadius);
-        
+%         filter = respTrainS(relcellsarr,:)*pixelTC(:,pix);
 %         corrTemp(2+(windowsize*(k-1)):2+(windowsize*(k))-1,:) = corrTrainSVD(2+(windowsize*(k-1)):2+(windowsize*(k))-1,:);
 
 %         filter = *pixelTC(:,pix);%(:,dp(cellind,:)<zeroRadius);
@@ -275,13 +277,18 @@ filterMat = zeros(1861,size(stim,1));
         %     recons_train(pix:pix+(batchsize-1),:) = (respTrain*filter)';
         %     recons_test(pix:pix+(batchsize-1),:) = (respTest*filter)';
 %         filterMat(2+(windowsize*(cellind-1)):2+(windowsize*(cellind))-1,pix:pix+(batchsize-1)) = filter;
-        filterMat(relcellsarr,pix:pix+(batchsize-1)) = filter;%...
-%             filterMat(relcellsarr,pix:pix+(batchsize-1))+filter;
+        filterMat(relcellsarr,pix:pix+(batchsize-1)) = ...
+            filterMat(relcellsarr,pix:pix+(batchsize-1))+filter;
     end
 %  end
     
-    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
+    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(1200+fr,:),[80 40])'); caxis([-8000 -7200]);colormap parula;  end;
     
+
+% % Visualize sum(abs(filters)) to see spatial extent
+figure; imagesc(reshape(sqrt(sum((filterMat.^2))),[80 40])')
+ph=1;
+%%
 else
     
     for pix = 1:batchsize:size(stim,1)-(batchsize-1)
