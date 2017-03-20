@@ -158,16 +158,21 @@ elseif strcmpi(stimType,'wnZero')
 %     movie_size = size(fitmovie{1});
     STA = zeros(size(stim,1),size(resp,1));
 %     fitframes = movie_size(3);
-    stimD = -.5+single(stim);%(:,9+[1:60000]))-ones(10000,1)*mean(stim(:,9+[1:60000]));
+    stimD = single(stim);%(:,9+[1:60000]))-ones(10000,1)*mean(stim(:,9+[1:60000]));
+%     meanStim = mean(stimD(:));
     for cellind = 1:size(resp,1)
 %         sp_frame = floor(fitspikes{cellind}(:)/tstim);
         sp_rel = find(resp(cellind,:));
         for i = 25%:STA_length
+            meanStim = (ones(3200,1)*mean((stimD(:,(sp_rel)-STA_length+1+i))));
             % STA(:,cellind) = sum(stimD(:,(sp_rel)-STA_length+1+i),2);%(stimD*single(resp(cellind,(sp_rel)-STA_length+1+i))); % (sp_rel)-STA_length+1+i
-            STA(:,cellind) = sum(-.5+ single(stimD(:,(sp_rel)-STA_length+1+i)),2);
+            STA(:,cellind) = sum(-meanStim + (stimD(:,(sp_rel)-STA_length+1+i)),2);
         end
+        clear meanStim
     end
-    % figure; for cellind = 1:64; subplot(8,8,cellind); imagesc(reshape(squeeze(STA(:,cellind)'),[80 40])); colormap parula;  end;
+    
+%     figure; imagesc(reshape(STA(:,40)',[80 40]));
+    figure; for cellind = 1:64; subplot(8,8,cellind); imagesc(reshape(squeeze(STA(:,cellind)'),[80 40])'); colormap parula;  end;
 
     clear stimD resp
 
@@ -189,7 +194,12 @@ elseif strcmpi(stimType,'wnZero')
     [iv,iord] = sort(mgc(:),'ascend');
     
     dp = sqrt(mgrd(:,iord)+mgcd(:,iord));
-    figure; imagesc(reshape(STA(:,40).*(dp(40,:)<12)',[80 40]));
+    figure; ci =  110;
+    subplot(121);
+    imagesc(reshape(STA(:,ci)',[80 40]));
+    subplot(122);
+%     figure;
+    imagesc(reshape(STA(:,ci).*(dp(ci,:)<12)',[80 40]));
 %     figure; imagesc(reshape(STA(:,100),[80 40]).*(reshape(dp(100,:)',[40 80])'<6))
 %     filterMat2 = filterMat;
 %     filterMat2(dp>5) = 0;
@@ -237,7 +247,7 @@ elseif strcmpi(stimType,'wnZero')
 %     end
 % % % % % % % % % % % % 
 batchsize = 1;
-dpThresh = dp<3;
+dpThresh = dp<5;
 filterMat = zeros(1861,size(stim,1));
 %  for cellind = 1:5%:size(dp,1)
         cellind
@@ -270,7 +280,7 @@ filterMat = zeros(1861,size(stim,1));
     end
 %  end
     
-    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(100+fr,:),[80 40])'); colormap parula;  end;
+    figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
     
 else
     

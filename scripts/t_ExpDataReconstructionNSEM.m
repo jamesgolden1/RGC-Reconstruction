@@ -34,8 +34,8 @@ addpath(genpath(reconstructionRootPath));
 
 % piece = 'WN-2012-09-27-3';
 % piece = 'WN-2013-10-10-0';
-piece = 'WN-2013-08-19-6';
-% piece = 'NSEM-2013-08-19-6';
+% piece = 'WN-2013-08-19-6';
+piece = 'NSEM-2013-08-19-6';
 % piece = 'NSEM-2013-10-10-0';
 % piece = 'NSEM-2012-08-09-3';
 load(['/Volumes/Lab/Users/Nora/ShareData/CarlosData/' piece '-CellData.mat']);
@@ -201,8 +201,8 @@ for evInd = length(evArr)
         pRecon.percentSV = evArr(evInd);
         pRecon.trainFraction = trainFraction(trainFractionInd);
         pRecon.shiftTime = zshift;
-        pRecon.stimType = 'wn';
-%         pRecon.stimType = 'wnZero'; 
+%         pRecon.stimType = 'wn';
+        pRecon.stimType = 'wnZero'; 
         % RECONSTRUCTION CALL HERE
         [filterFile] = runReconstructSVD_fast_all(pRecon);
         % end
@@ -216,7 +216,7 @@ load(filterFile);
 % % figure; imagesc(reshape(sum(abs(filterMat)),[80 40])')
 
 numFilters = size(filterMat,1);
-figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(00+fr,:),[80 40])'); colormap parula;  end;
+figure; for fr = 1:64; subplot(8,8,fr); imagesc(reshape(filterMat(100+fr,:),[80 40])'); colormap parula;  end;
 
 % figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(150+fr,:),[80 40])'); colormap parula;  end;
 
