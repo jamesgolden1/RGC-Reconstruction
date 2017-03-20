@@ -237,7 +237,7 @@ elseif strcmpi(stimType,'wnZero')
 %     end
 % % % % % % % % % % % % 
 batchsize = 1;
-dpThresh = dp<12;
+dpThresh = dp<3;
 filterMat = zeros(1861,size(stim,1));
 %  for cellind = 1:5%:size(dp,1)
         cellind
