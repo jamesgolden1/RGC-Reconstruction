@@ -106,7 +106,8 @@ disp('loading stim movie');
 % load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
 
 if ismac || isunix
-    load([reconstructionRootPath '/dat/' stimName]);
+%     load([reconstructionRootPath '/dat/' stimName]);
+    load('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/ns100_r2_10/ns100_jan1_mov3_mosaicAll_1246640.mat');
 else
     load([reconstructionRootPath '\dat\' stimName]);
 end

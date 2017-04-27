@@ -79,16 +79,16 @@ methods
         %   reconHealthy = recon('mosaicHealhty','naturalSceneBuild');
         
         p = inputParser;
-        addParameter(p,  'mosaicFile',@ischar);% ['mosaic_' num2str(round(cputime))], @ischar);
-        addParameter(p, 'buildFile',  @ischar);
-        addParameter(p, 'stimFile',   @ischar);
-        addParameter(p, 'respFile',   @ischar);
-        addParameter(p, 'filterFile', @ischar);
+        addParameter(p,  'mosaicFile','',@ischar);% ['mosaic_' num2str(round(cputime))], @ischar);
+        addParameter(p, 'buildFile',  '',@ischar);
+        addParameter(p, 'stimFile',   '',@ischar);
+        addParameter(p, 'respFile',   '',@ischar);
+        addParameter(p, 'filterFile', '',@ischar);
         addParameter(p, 'windowSize', 1, @isnumeric);
         addParameter(p, 'shiftTime',  0, @isnumeric);
         addParameter(p, 'percentSV',  100, @isnumeric);        
         
-        p.parse(mosaicFile, varargin{:});  
+        p.parse(varargin{:});  
         
         obj.mosaicFile = p.Results.mosaicFile;
         obj.buildFile = p.Results.buildFile;

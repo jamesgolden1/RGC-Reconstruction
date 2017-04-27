@@ -38,7 +38,7 @@ filterFile = ['pixium15_sm/filters_pix_feb21_sh0_sv' sprintf('%2d',100*evArr(evI
 
             pOpt.filterFile = filterFile;
             [movrecons_on_offHealthy, movrecons_on_offHealthy_dropout] = irOptimalReconSingle(pOpt);
-            
+             figure; ieMovie(movrecons_on_offHealthy);
     movieRecon = movrecons_on_offHealthy;
 
 %     clear movieComb
