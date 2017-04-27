@@ -87,7 +87,7 @@ methods
         addParameter(p, 'windowSize', 1, @isnumeric);
         addParameter(p, 'shiftTime',  0, @isnumeric);
         addParameter(p, 'percentSV',  100, @isnumeric);        
-        
+        p.KeepUnmatched = true;
         p.parse(varargin{:});  
         
         obj.mosaicFile = p.Results.mosaicFile;

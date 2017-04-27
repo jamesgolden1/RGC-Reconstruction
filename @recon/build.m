@@ -15,8 +15,10 @@ p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
-% mosaicFile = p.Results.mosaicFile;
+mosaicFile = p.Results.mosaicFile;
 buildFile = p.Results.buildFile;
+stimFile = p.Results.stimFile;
+respFile = p.Results.respFile;
 
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
@@ -173,7 +175,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 
 %%%%% loadSpikesAll %%%%5
-
+% load('test0_block_1_mosaicAll_23282.mat')
 %%
 if isempty(stimFile)
     stimFile = ['movie_' num2str(round(cputime*100))];

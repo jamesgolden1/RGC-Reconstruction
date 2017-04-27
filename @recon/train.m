@@ -13,6 +13,7 @@ p.addParameter('mosaicFile',[],@ischar);
 p.addParameter('trainFraction',1,@isnumeric);
 p.addParameter('shiftTime',0,@isnumeric);
 p.addParameter('stimType','ns',@ischar);
+p.KeepUnmatched = true;
 p.parse(varargin{:});
 filterFile = p.Results.filterFile;
 stimFileName = p.Results.stimFile;

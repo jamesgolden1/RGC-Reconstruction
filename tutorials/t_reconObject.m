@@ -1,82 +1,58 @@
+% t_reconObject
 % 
+% The recon object is used to reconstruct a movie stimulus from RGC spikes.
 % 
+% In order to use the recon object, one must be running isetbio from
+% vision@bertha.stanford.edu in order to access the imageNet stimulus
+% blocks.
 % 
-% pTrain.mosaicFile = 'mosaic_nsPhys';
-% pTrain.saveFile   = 'nsPhys';
-% % [mosaicFile, saveFile] = trainNaturalScenesPhys(pTrain);
+% The recon object is specified primarily by file names. Unfortunately, for
+% a large RGC mosaic (>1000 cells), the variables becomes so large that is
+% easier to store them on disk and call them when necessary.
 % 
-% % trainHealthy = recon.build(pTrain);
-% % recon.mosaicFile
-% % recon.saveFile / recon.buildFile
+% The recon object is built by specifying a number of parameters. The
+% object is then created. The 'build' method calls on isetbio to simulate
+% the retina through to RGCs in response to a large database of imageNet
+% patches.
 % 
-% mosaicFile = '_mosaicAll_413415'; 
-% movieFile = 'nsPhys/nsPhys_mov';
-% spikesFile = 'nsPhys/nsPhys_sp';
-% filterFile = ['nsPhys/filt1_sv99_' mosaicFile];
+% The 'train' method takes the RGC spike responses and stimulus images and
+% uses them to learn decoding filters.
 % 
-% pLoad.loadFile = ['nsPhys/' pTrain.saveFile];
-% pLoad.movieFile = movieFile;
-% pLoad.spikesFile = spikesFile;
-% pLoad.mosaicFile = mosaicFile;
-% % 
-% [movieFile, spikesFile] = loadSpikesAll(pLoad);
-% % % % % 
-% pRecon.movieFile = movieFile;
-% pRecon.spikesFile = spikesFile;
-% pRecon.filterFile = filterFile;
-% % % % % 
-% pRecon.mosaicFile = mosaicFile;
-% pRecon.windowSize = 1;
-% pRecon.percentSV = 0.99;
-% pRecon.shiftTime = 4;
-% [filterFile] = runReconstructSVD_fast_all(pRecon);
+% The 'plot' method visualizes the decoding filters, while the 'test'
+% method runs the reconstruction for a subset of data and evaluates the
+% accuracy of the reconstructions.
 % 
-% % trainHealthy = recon.train(pTrain);
-% % recon.buildFile
-% % recon.movieFile /recon.stimFile
-% % recon.spikesFile /recon.respFile
-% % recon.mosaicFile
-% % recon.filterFile
-% % recon.windowSize
-% % recon.percentSV
-% % recon.shiftTime
-% 
-% pTest.mosaicFile = mosaicFile;
-% pTest.filterFile = filterFile;s
-% testReconNS(pTest);
-% 
-% % testHealthy = recon.test(pTest)
-
+% JRG NP (Nikhil Parthsarathy) 4/2017
 
 %%
 
+% New mosaic
+mosaicFile = '_mosaicAll_23282';
+movieFile = 'test/ns100_jan1_mov3'; 
+spikesFile = 'test/ns100_jan1_sp3';
 
+% Old mosaic
+% mosaicFile = '_mosaicAll_1246640' ;
+% movieFile = 'ns100_r2_10/ns100_jan1_mov3'; 
+% spikesFile = 'ns100_r2_10/ns100_jan1_sp3';
 
-mosaicFile = '_mosaicAll_1246640' ;%['_' d1(dind).name(11:end-4)];% 
-movieFile = 'ns100_r2_10/ns100_jan1_mov3'; 
-spikesFile = 'ns100_r2_10/ns100_jan1_sp3';
-
+% Set filter file name
 evArr = [.2 .1 .3 .4];
 trainFraction = [.16 .5 .66 .83 1];
 evInd = 4; trainFractionInd = 5;
-filterFile = ['ns100_r2_10/filters4_ns100_feb6_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
+filterFile = ['test/filters4_ns100_feb6_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
 
 clear pRecon
-pRecon.buildFile = 'test0';
+pRecon.buildFile = 'test/test0';
 pRecon.stimFile = movieFile;
 pRecon.respFile = spikesFile;
 pRecon.filterFile = filterFile;
-
 pRecon.mosaicFile = mosaicFile;
 pRecon.windowSize = 1;
 pRecon.percentSV = 0.99;
 
 reconHealthy = recon(pRecon);
-
-reconHealthy.build(pRecon);
-
-% reconHealthy.train(pRecon);
-% 
-% reconHealthy.plot('filters');
-% 
-% reconHealthy.test(pRecon);
+% reconHealthy.build(pRecon);
+reconHealthy.train(pRecon);
+reconHealthy.plot('filters');
+reconHealthy.test(pRecon);
