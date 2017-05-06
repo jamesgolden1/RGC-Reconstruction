@@ -13,12 +13,14 @@ p.addParameter('mosaicFile',[],@ischar);
 p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
+p.addParameter('blockIn',1,@isnumeric);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 mosaicFile = p.Results.mosaicFile;
 buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
+blockIn = p.Results.blockIn;
 
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
@@ -32,22 +34,23 @@ patchEccentricity = 1.8; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 3.2;
+fov = 3.2/2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 12000;
+nSteps = 4000;%12000;%000;
 nBlocks = 15;%30;
 
 
-for blockNum =1%:nBlocks
+for blockNum =blockIn%1%:nBlocks
     tic
     
     blockNum
 %     load(filenameRGC, 'innerRetina');
     
     %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-    load('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_1.mat','movsm');
+%     load(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
+    movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat']);
     %           load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
     
     natScenes = movsm(1:100,1:100,randperm(nSteps));
@@ -66,7 +69,8 @@ for blockNum =1%:nBlocks
     % % params.vfov = 0.7;
     
     
-    iStimNS = ieStimulusMovieCMosaic(rand(100,100,1),coneParams);
+    % iStimNS = ieStimulusMovieCMosaic(rand(100,100,1),coneParams);  
+    iStimNS = ieStimulusMovieCMosaic(natScenes,coneParams);
     cMosaicNS = iStimNS.cMosaic;
     
     %% Bipolar
@@ -77,10 +81,11 @@ for blockNum =1%:nBlocks
         clear bpParams
         bpParams.cellType = cellType{cellTypeInd};
         
+        % FIX NEGATIVE AND POSITIVE HERE
         bpParams.ecc = patchEccentricity;
         bpParams.rectifyType = 1;
         bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
-        bpMosaic{cellTypeInd}.set('sRFcenter',1);
+        bpMosaic{cellTypeInd}.set('sRFcenter',4);
         bpMosaic{cellTypeInd}.set('sRFsurround',0);
         bpMosaic{cellTypeInd}.compute(cMosaicNS);
     end
@@ -105,7 +110,7 @@ for blockNum =1%:nBlocks
     rgcParams.type = cellType{4};
     innerRetina.mosaicCreate(rgcParams);
     
-%     innerRetina.compute(bpMosaic);
+    innerRetina.compute(bpMosaic);
     
     %%
     toc
@@ -128,11 +133,12 @@ for blockNum =1%:nBlocks
     whiteNoiseSmall = natScenes;
 
     if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/test/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '' mosaicFile '.mat'];
     else
         filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     end
-    save(filename1, 'spikesoutsm','whiteNoiseSmall');
+    % save(filename1, 'spikesoutsm','whiteNoiseSmall');
+    parsave(filename1, spikesoutsm, whiteNoiseSmall);
     toc
     close all
 end
@@ -140,93 +146,118 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%
 
-%%%%% loadSpikesAll %%%%5
-% load('test0_block_1_mosaicAll_23282.mat')
-%%
-if isempty(stimFile)
-    stimFile = ['movie_' num2str(round(cputime*100))];
-end
+%% loadSpikesAll %%%%5
+% % % % load('test0_block_1_mosaicAll_23282.mat')
+% %
+% if isempty(stimFile)
+%     stimFile = ['movie_' num2str(round(cputime*100))];
+% end
+% 
+% if isempty(respFile)
+%     respFile = ['spikes_' num2str(round(cputime*100))];
+% end
+% 
+% loadFile = buildFile;
+%  
+% if ismac || isunix
+% %     dNames = (dir([phospheneRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
+%  dNames = (dir([reconstructionRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
+% else
+% %     dNames = (dir([phospheneRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
+%  dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
+% end
+% % blocklength = 12000;
+% numReps = length(dNames);
+% % numCells= 36+64+169+225;
+% % spikeResp = zeros(numCells, blocklength*numReps);
+% if isunix || ismac
+% %     filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+%     filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+% else
+% %     filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+% filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+% end
+% 
+% matf = matfile(filename1);
+% szMov = size(matf.whiteNoiseSmall);
+% blocklength = szMov(3);
+% stim = zeros(szMov(1)*szMov(2),blocklength*numReps,'uint8');
+% clear matf
+% blockNum = 0;
+% for blockNumInd =[1:length(dNames) ]
+% % for blockNumInd =[1:12 21:50]
+%     blockNum = blockNum+1
+%     % filename1 = [reconstructionRootPath '\dat\WNstim_response_stx2_block_' num2str(blockNum) '.mat'];    
+%     % filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNumInd) '.mat'];    
+%     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];    
+%     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
+% 
+%     if isunix || ismac
+% %         filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%  filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%     else
+% %         filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%  filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%     end
+%     matf = matfile(filename1);
+%     spikesoutsm = matf.spikesoutsm;
+%     % Spikes in this variable for each block
+%     spikesout = double(spikesoutsm);
+%     pointer = (blockNum-1)*blocklength;
+%     
+%     for i = 1:blocklength
+%         blocksize = 10;
+%         endval = i*blocksize;
+%         if endval > size(spikesout,2)
+%             endval = size(spikesout,2);
+%         end
+%         startval = (i-1)*blocksize + 1;
+%         spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
+%     end
+%     clear spikesout
+%     clear spikesoutsm
+%     szMov = size(matf.whiteNoiseSmall);
+%     stimtmp = reshape(matf.whiteNoiseSmall,szMov(1)*szMov(2),blocklength);
+% %     stimtmp = uint8(128+double(stimtmp) - ones(size(stimtmp,1),1)*mean(stimtmp,1));
+%     stim(:,(blockNum-1)*blocklength +1 : blockNum*blocklength) = stimtmp;
+% 
+%     
+%     % Stimulus here
+%     % whiteNoiseSmall;
+% end
+% 
+% 
+% if isunix || ismac
+%     
+%     save([reconstructionRootPath '/dat/' respFile mosaicFile ],'spikeResp','-v7.3');
+%     save([reconstructionRootPath '/dat/' stimFile mosaicFile],'stim','-v7.3')
+% else
+%     
+%     save([reconstructionRootPath '\dat\' respFile mosaicFile],'spikeResp','-v7.3');
+%     save([reconstructionRootPath '\dat\' stimFile mosaicFile],'stim','-v7.3')
+% end
+% 
+% 
+% % %% Sta check
+% % resp = spikeResp;
+% %     for cellind = 2%1:size(resp,1)
+% %             meanStim = (ones(10000,1)*mean((stim)));
+% %             % STA(:,cellind) = sum(stimD(:,(sp_rel)-STA_length+1+i),2);%(stimD*single(resp(cellind,(sp_rel)-STA_length+1+i))); % (sp_rel)-STA_length+1+i
+% %             STA(:,cellind) = (-meanStim(:,1:end-6) + single(stim(:,1:end-6)))*single(spikeResp(40,7:end)');
+% % %         end
+% %         clear meanStim
+% %     end
+% %     
+% % %     figure; imagesc(reshape(STA(:,40)',[80 40]));
+% %     figure; for cellind = 1:64; subplot(8,8,cellind); imagesc(reshape(squeeze(STA(:,cellind)'),[80 40])'); colormap parula;  end;
 
-if isempty(respFile)
-    respFile = ['spikes_' num2str(round(cputime*100))];
-end
-
-loadFile = buildFile;
-%% 
-if ismac || isunix
-%     dNames = (dir([phospheneRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
- dNames = (dir([reconstructionRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
-else
-%     dNames = (dir([phospheneRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
- dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
-end
-% blocklength = 12000;
-numReps = length(dNames);
-% numCells= 36+64+169+225;
-% spikeResp = zeros(numCells, blocklength*numReps);
-if isunix || ismac
-%     filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-    filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-else
-%     filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-end
-
-matf = matfile(filename1);
-szMov = size(matf.whiteNoiseSmall);
-blocklength = szMov(3);
-stim = zeros(szMov(1)*szMov(2),blocklength*numReps,'uint8');
-clear matf
-blockNum = 0;
-for blockNumInd =[1:length(dNames) ]
-% for blockNumInd =[1:12 21:50]
-    blockNum = blockNum+1
-    % filename1 = [reconstructionRootPath '\dat\WNstim_response_stx2_block_' num2str(blockNum) '.mat'];    
-    % filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNumInd) '.mat'];    
-    % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];    
-    % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
-
-    if isunix || ismac
-%         filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
- filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
-    else
-%         filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
- filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
-    end
-    matf = matfile(filename1);
-    spikesoutsm = matf.spikesoutsm;
-    % Spikes in this variable for each block
-    spikesout = double(spikesoutsm);
-    pointer = (blockNum-1)*blocklength;
-    
-    for i = 1:blocklength
-        blocksize = 10;
-        endval = i*blocksize;
-        if endval > size(spikesout,2)
-            endval = size(spikesout,2);
-        end
-        startval = (i-1)*blocksize + 1;
-        spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
-    end
-    clear spikesout
-    clear spikesoutsm
-    szMov = size(matf.whiteNoiseSmall);
-    stimtmp = reshape(matf.whiteNoiseSmall,szMov(1)*szMov(2),blocklength);
-%     stimtmp = uint8(128+double(stimtmp) - ones(size(stimtmp,1),1)*mean(stimtmp,1));
-    stim(:,(blockNum-1)*blocklength +1 : blockNum*blocklength) = stimtmp;
-
-    
-    % Stimulus here
-    % whiteNoiseSmall;
-end
 
 
-if isunix || ismac
-    
-    save([reconstructionRootPath '/dat/' respFile mosaicFile ],'spikeResp','-v7.3');
-    save([reconstructionRootPath '/dat/' stimFile mosaicFile],'stim','-v7.3')
-else
-    
-    save([reconstructionRootPath '\dat\' respFile mosaicFile],'spikeResp','-v7.3');
-    save([reconstructionRootPath '\dat\' stimFile mosaicFile],'stim','-v7.3')
-end
+% Working STA!
+% cd /Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/test4
+% load('sp_may5_test4_mosaic_may5.mat')
+% load('mov_may5_test4_mosaic_may5.mat')
+% stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
+% for j = 2:30; sta2(:,j-1) = ((stimzm(:,1:end-(j-1))))*single(spikeResp(700,j:end)'); end;
+% figure; imagesc(sta2);
+% figure; ieMovie(reshape(sta2,[100 100 29]));

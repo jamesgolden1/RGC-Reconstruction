@@ -3,4 +3,4 @@ function plot(obj, varargin)
 
 load(obj.filterFile);
 % size(filterMat)
-figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(5800+fr,:),[100 100]));colormap parula;  end;
+figure; for fr = 1:25; subplot(5,5,fr); imagesc(reshape(filterMat(000+fr,:),[100 100]));colormap parula;  end;

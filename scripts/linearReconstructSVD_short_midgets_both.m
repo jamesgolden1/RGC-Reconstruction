@@ -18,7 +18,7 @@ numbins = windowsize;
 % shifttime = 9;
 disp('Creating training response matrix...')
 %Create the training response matrix (numtimepoints x numcells*numbins)
-trainTimes = 1:i1-numbins-shifttime;
+trainTimes = shifttime+1:i1-numbins-shifttime;
 respTrain = uint8(zeros(length(trainTimes),size(resp,1)*numbins+1));
 respTrain(:,1) = uint8(ones(length(trainTimes),1));
 for t = 1:length(trainTimes)
@@ -45,7 +45,7 @@ disp('Calculating pseudoinverse...')
 %get pseudoiverse of respose matrix
 % corrTrain = pinv(respTrain);
 if ~strcmpi(stimType,'wnZero')
-    clear resp;
+%     clear resp;
 end
 
 % [Utrain, Strain, Vtrain] = svd(respTrain, 'econ');
@@ -106,19 +106,21 @@ disp('loading stim movie');
 % load('C:\Users\James\Documents\matlab\github\RGC-Reconstruction\dat\movie_spikeResp_all0')
 
 if ismac || isunix
-%     load([reconstructionRootPath '/dat/' stimName]);
-    load('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/ns100_r2_10/ns100_jan1_mov3_mosaicAll_1246640.mat');
+    load([reconstructionRootPath '/dat/' stimName]);
+    stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
+    clear stim; stim = stimzm;
+%     load('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/ns100_r2_10/ns100_jan1_mov3_mosaicAll_1246640.mat');
 else
     load([reconstructionRootPath '\dat\' stimName]);
 end
 
-if strcmpi(stimType,'ns')
-% Zero mean for NS
-for blockNum = 1:floor(size(stim,2)/12000)
-    stim(:,(blockNum-1)*12000+1:blockNum*12000) = ...
-        uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
-end
-end
+% if strcmpi(stimType,'ns')
+% % Zero mean for NS
+% for blockNum = 1:floor(size(stim,2)/12000)
+%     stim2(:,(blockNum-1)*12000+1:blockNum*12000) = ...
+%         uint8(128+127*(double(stim(:,(blockNum-1)*12000+1:blockNum*12000)) - ones(size(stim,1),1)*mean(stim(:,(blockNum-1)*12000+1:blockNum*12000),1)));
+% end
+% end
 
 % load ../dat/movie_onMidget_long300.mat
 
@@ -140,7 +142,7 @@ if strcmpi(stimType,'ns')
     for pix = 1:batchsize:size(stim,1)-(batchsize-1)
         % pix
         % 		[pix size(stim,1)-(batchsize-1) ]
-        pixelTC = (1/255)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)')-.5;
+        pixelTC = double(stim(pix:pix+(batchsize-1),-shifttime+trainTimes)')-0;
 %         pixelTC = (1)*double(stim(pix:pix+(batchsize-1),shifttime+trainTimes)');
         %     pixelTC = double(stim(pix:pix+(batchsize-1),trainTimes)')-.5;
         %     filter = corrTrain*pixelTC;
@@ -157,20 +159,23 @@ elseif strcmpi(stimType,'wnZero')
 %     tstim = 2/119.5172;
     STA_length = 30;
 %     movie_size = size(fitmovie{1});
-    STA = zeros(size(stim,1),size(resp,1));
+    STA = zeros(size(stim,1),size(resp,1),STA_length);
 %     fitframes = movie_size(3);
     stimD = single(stim);%(:,9+[1:60000]))-ones(10000,1)*mean(stim(:,9+[1:60000]));
 %     meanStim = mean(stimD(:));
-    for cellind = 1:size(resp,1)
+    cellind = 5000%
+%     for cellind = 5000%1:size(resp,1)
 %         sp_frame = floor(fitspikes{cellind}(:)/tstim);
-        sp_rel = find(resp(cellind,:));
-        for i = 25%:STA_length
-            meanStim = (ones(3200,1)*mean((stimD(:,(sp_rel)-STA_length+1+i))));
+        sp_rel = 31:size(stimD,2);%find(resp(cellind,:));
+        
+        meanStim = ones(10000,1)*mean(stimD,1);%(:,(sp_rel)-STA_length+1+i))));
+        for i = [1:20]%:STA_length
+            i
             % STA(:,cellind) = sum(stimD(:,(sp_rel)-STA_length+1+i),2);%(stimD*single(resp(cellind,(sp_rel)-STA_length+1+i))); % (sp_rel)-STA_length+1+i
-            STA(:,cellind) = sum(-meanStim + (stimD(:,(sp_rel)-STA_length+1+i)),2);
+            STA(:,cellind,i) = sum(-meanStim(:,(sp_rel)-STA_length+1+i) + (stimD(:,(sp_rel)-STA_length+1+i)),2);
         end
         clear meanStim
-    end
+%     end
     
 %     figure; imagesc(reshape(STA(:,40)',[80 40]));
     figure; for cellind = 1:64; subplot(8,8,cellind); imagesc(reshape(squeeze(STA(:,cellind)'),[80 40])'); colormap parula;  end;
