@@ -26,45 +26,38 @@
 
 %%
 
-% New mosaic
-mosaicFile = '_test4_mosaic_may5';%_mosaicAll_23282';
-movieFile = 'test4/mov_may5'; 
-spikesFile = 'test4/sp_may5';
+mosaicFile = '_mosaic0';
+movieFile  = 'may7/mov'; 
+spikesFile = 'may7/sp';
+buildFile  = 'may7/build';
 
-
-% Old mosaic
-% mosaicFile = '_mosaicAll_1246640' ;
-% movieFile = 'ns100_r2_10/ns100_jan1_mov3'; 
-% spikesFile = 'ns100_r2_10/ns100_jan1_sp3';
-
-% Set filter file name
-% evArr = [.2 .1 .3 .4];
-% trainFraction = [.16 .5 .66 .83 1];
-% evInd = 4; trainFractionInd = 5;
-% filterFile = ['test4/filters_ns100_may1_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
-
-filterFile = ['test4/filters_may5'  mosaicFile];
+windowSize = 1;
+percentSV = .2;
+filterFile = ['may7/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize)];
 
 clear pRecon
-pRecon.buildFile = 'test4/build_may5';
+pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
 pRecon.respFile = spikesFile;
 pRecon.filterFile = filterFile;
 pRecon.mosaicFile = mosaicFile;
-pRecon.windowSize = 1;
-pRecon.percentSV = .5;
-% pRecon.stimType = 'wn';
+pRecon.windowSize = windowSize;
+pRecon.percentSV = percentSV;
+% pRecon.stimType = 'ns';
 
 reconHealthy = recon(pRecon);
 
-blockIn = 1;
+% blockIn = 1;
 
-% pool = parpool(16);
-% parfor blockIn = 1:16
-%     reconHealthy.build(pRecon,'blockIn',blockIn);
-% end
-% delete(pool);
+nCores = 12;
+pool = parpool(nCores);
+for ii = 1:11
+parfor blockIn = [12+nCores*(ii-1)+1:12+nCores*(ii)]
+    reconHealthy.build(pRecon,'blockIn',blockIn);
+end
+delete(pool);
+end
 
-reconHealthy.train(pRecon,'shifttime',15);
-reconHealthy.plot('filters');
+% reconHealthy.train(pRecon,'shifttime',15);
+% reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);

@@ -114,6 +114,9 @@ methods
     % Declare the method for plotting properties from the recon object
     h = plot(obj, varargin);
     
+    % Declare the movie method
+    obj = movie(obj);
+    
 %     function window(obj)
 %         obj.figureHandle = reconWindow(obj);
 %         % Tip: Retrieve guidata using
