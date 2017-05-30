@@ -73,61 +73,20 @@ for blockNum =blockIn%1%:nBlocks
 %     testmovieshort = (255*ieScale(hallMovieResize)); clear hallMovieResize;
     
     %%
-    %% Load image
-    clear coneParams
+    %% Load image       
     
-    % One frame of a WN stimulus
-    % Set parameters for size
+    primaParams.pixelWidth = .5*35e-6; % meters
+    primaParams.ecc = 1.8;       % mm
+    primaParams.fov = 1.7/1;     % deg
     
-    % coneParams.nSteps = nSteps;
-    % coneParams.row = 100; % should be set size to FOV
-    % coneParams.col = 100;
-    coneParams.fov = fov;
-    % % params.vfov = 0.7;
-    coneParams.startFrames = 0;
+    primaParams.pulseFreq = 100;           % Hz, electrode pulse frequency
+    primaParams.pulseDutyCycle = 1;        % Fraction of cycle pulse is on
+    primaParams.irradianceFraction = 1;    % Fraction of maximum irradiance
     
-%     iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:10),coneParams);  
-    iStimNS = ieStimulusMovieCMosaic(natScenes,coneParams);
-    cMosaicNS = iStimNS.cMosaic;
+    primaRecon = primaArray(natScenes,primaParams);
     
-    %% Bipolar
-    clear bpMosaic
-    
-    cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
-    for cellTypeInd = 1:4
-        clear bpParams
-        bpParams.cellType = cellType{cellTypeInd};
-        
-        % FIX NEGATIVE AND POSITIVE HERE
-        bpParams.ecc = patchEccentricity;
-        bpParams.rectifyType = 1;
-        bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
-        bpMosaic{cellTypeInd}.set('sRFcenter',4);
-        bpMosaic{cellTypeInd}.set('sRFsurround',0);
-        bpMosaic{cellTypeInd}.compute(cMosaicNS);
-    end
-    
-    %% RGC
-    clear params rgcParams
-    params.eyeRadius = patchEccentricity;
-    params.eyeAngle = 90;
-    innerRetina=ir(bpMosaic,params);
-    cellType = {'on parasol','off parasol','on midget','off midget'};
-    
-    rgcParams.centerNoise = 0;
-    rgcParams.model = 'LNP';
-    rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-    
-    rgcParams.type = cellType{1};
-    innerRetina.mosaicCreate(rgcParams);
-    rgcParams.type = cellType{2};
-    innerRetina.mosaicCreate(rgcParams);
-    rgcParams.type = cellType{3};
-    innerRetina.mosaicCreate(rgcParams);
-    rgcParams.type = cellType{4};
-    innerRetina.mosaicCreate(rgcParams);
-    
-    innerRetina.compute(bpMosaic);
+    primaRecon.compute(natScenes)
+    innerRetina = primaRecon.innerRetina;
     
     %%
     toc

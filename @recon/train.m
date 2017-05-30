@@ -30,7 +30,7 @@ buildFile = p.Results.buildFile;
 if isempty(filterFile)
     filterFile = ['filters_' num2str(round(cputime*100))];
 end
-% 
+% % 
 % loadSpikes(buildFile,stimFileName,respFileName,mosaicFile)
 %% run Linear reconstruction for on, off, and joint on/off training 
 

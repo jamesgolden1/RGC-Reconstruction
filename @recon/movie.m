@@ -22,7 +22,7 @@ patchEccentricity = 1.8; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 3.2;
+fov = 1.7;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
@@ -49,9 +49,11 @@ clear coneParams
 coneParams.fov = fov;
 % % params.vfov = 0.7;
 
+coneParams.startFrames = 0;
+    
 
 % iStimNS = ieStimulusMovieCMosaic(rand(100,100,1),coneParams);
-iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:10),coneParams);
+iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:150),coneParams);
 cMosaicNS = iStimNS.cMosaic;
 
 %% Bipolar
@@ -129,15 +131,18 @@ for i = 1:size(spikesoutsm,2)/10
     spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
 end
 
-save('spikeResp_hallway.mat','spikeResp');
+save('spikeResp_hallway_nc.mat','spikeResp');
+
+% load(obj.filterFile);
 
 %%
 spikeAug(1,:) = ones(1,size(spikeResp,2));
-spikeAug(2:5177,:) = spikeResp;
+spikeAug(2:9807,:) = spikeResp;
 % load('filters__mosaic0.mat')
 movRecon = filterMat'*spikeAug;
-
-figure; ieMovie(reshape(movRecon,[100 100 616]));
+movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
+nFramesPlay = 250;
+figure; ieMovie(movReconPlay(:,:,1:nFramesPlay));
 % save('hallwayReconMovie.mat','movRecon');
 
 %%
@@ -156,10 +161,18 @@ mgcmat = mgc(:)*ones(1,size(fmaxc,1));
 fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
 mgcd = ((mgcmat - fmaxcmat)').^2;
 
+
+% imagesc(signValWN(mind)*staim.*(.1+.9*reshape(exp(-.05*dp(1+paraIndPlus,:).^2),[100 100])));
+
 dp = sqrt(mgrd+mgcd);
-filterMat2 = filterMat;
-filterMat2(dp>5) = 0;
+% filterMat2 = filterMat;
+% filterMat2(dp>5) = 0;
+expFilter = 1.2*(exp(-.001*dp.^2));
+expFilter(expFilter>1) = 1;
+filterMat2 = filterMat.*expFilter;
 
 movRecon2 = filterMat2'*spikeAug;
 
-figure; ieMovie(reshape(movRecon2,[100 100 616]));
+movReconPlay2 = reshape(movRecon2,[100 100 size(spikeResp,2)]);
+% nFramesPlay = 200;
+figure; ieMovie(movReconPlay2(:,:,1:nFramesPlay));

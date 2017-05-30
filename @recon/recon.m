@@ -103,7 +103,10 @@ methods
     end
     
     % Declare the method for building the training data set    
-    [mosaicFile, saveFile] = build(obj, varargin);
+    [mosaicFile, saveFile] = build(obj, varargin);    
+    
+    % Declare the method for building the training data set    
+    [mosaicFile, saveFile] = buildPrima(obj, varargin);
     
     % Declare the method for learning the filters from the training set    
     [filterFile] = train(obj, varargin);

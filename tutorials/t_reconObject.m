@@ -27,13 +27,14 @@
 %%
 
 mosaicFile = '_mosaic0';
-movieFile  = 'may7/mov'; 
-spikesFile = 'may7/sp';
-buildFile  = 'may7/build';
+movieFile  = 'may26primaSmall/mov'; 
+spikesFile = 'may26primaSmall/sp';
+buildFile  = 'may26primaSmall/build';
 
 windowSize = 1;
-percentSV = .2;
-filterFile = ['may7/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize)];
+percentSV = .75;
+shifttime = 2;
+filterFile = ['may26primaSmall/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime)];
 
 clear pRecon
 pRecon.buildFile = buildFile;
@@ -48,16 +49,18 @@ pRecon.percentSV = percentSV;
 reconHealthy = recon(pRecon);
 
 % blockIn = 1;
+% 
+% nCores = 18;
+% pool = parpool(nCores);
+% for ii = 1:48
+% parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
+% %     reconHealthy.build(pRecon,'blockIn',blockIn);
+%     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
+% end
+% delete(pool);
+% end
 
-nCores = 12;
-pool = parpool(nCores);
-for ii = 1:11
-parfor blockIn = [12+nCores*(ii-1)+1:12+nCores*(ii)]
-    reconHealthy.build(pRecon,'blockIn',blockIn);
-end
-delete(pool);
-end
-
-% reconHealthy.train(pRecon,'shifttime',15);
-% reconHealthy.plot('filters');
+reconHealthy.train(pRecon,'shifttime',shifttime);
+reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);
+% reconHealthy.movie();
