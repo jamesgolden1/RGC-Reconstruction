@@ -99,46 +99,13 @@ innerRetina.compute(bpMosaic);
 
 %%
 toc
-%% Look at covariance matrix
-tic
-spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
-spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
-spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
-spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
+%% Get spikes to make reconstruction movie
 
-timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
-
-spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
-spikesoutsm(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
-spikesoutsm(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
-
-spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
-spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
-
-%     whiteNoiseSmall = natScenes;
-clear  spikesout1 spikesout2 spikesout3 spikesout4 
-%%
-
-spikesout = double(spikesoutsm);
-pointer = 0;%(blockNum-1)*blocklength;
-
-for i = 1:size(spikesoutsm,2)/10
-    blocksize = 10;
-    endval = i*blocksize;
-    if endval > size(spikesout,2)
-        endval = size(spikesout,2);
-    end
-    startval = (i-1)*blocksize + 1;
-    spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
-end
-
-% save('spikeResp_hallway_healthy2.mat','spikeResp');
-
-% load(obj.filterFile);
-
-clear spikesout spikesoutsm
+spikeResp = mosaicSpikes(innerRetina);
 
 %%
+
+% filterMat = obj.readFilter()
 
 rd = RdtClient('isetbio');
 rd.crp('/resources/data/istim');
@@ -158,36 +125,12 @@ figure; ieMovie(movReconPlay(:,:,1:nFramesPlay));
 
 clear movRecon
 %%
-
-
-[mgr,mgc] = meshgrid(1:100,1:100);
-
-[cmax,cind] = max(abs(filterMat),[],2);
-[fmaxc,fmaxr] = ind2sub([100 100],cind);
-
-mgrmat = mgr(:)*ones(1,size(fmaxr,1));
-fmaxrmat = ones(size(mgrmat,1),1)*fmaxr';
-mgrd = ((mgrmat - fmaxrmat)').^2;
-
-mgcmat = mgc(:)*ones(1,size(fmaxc,1));
-fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
-mgcd = ((mgcmat - fmaxcmat)').^2;
-
-
-% imagesc(signValWN(mind)*staim.*(.1+.9*reshape(exp(-.05*dp(1+paraIndPlus,:).^2),[100 100])));
-
-dp = sqrt(mgrd+mgcd);
-clear fmaxrmat fmaxcmat mgrmat mgrd mgcmat mgcd 
-% filterMat2 = filterMat;
-% filterMat2(dp>5) = 0;
-expFilter = 1.2*(exp(-.03*dp.^2));
-expFilter(expFilter>1) = 1;
-filterMat2 = filterMat.*expFilter;
-
+lambda = .01;
+filterMat2 = zeroFilter(filterMat,lambda);
 movRecon2 = filterMat2'*spikeAug;
 
 movReconPlay2 = reshape(movRecon2,[100 100 size(spikeResp,2)]);
 % nFramesPlay = 200;
 figure; ieMovie(movReconPlay2(:,:,1:nFramesPlay));
 
-clear movRecon2 dp expfilter
+clear movRecon2 
