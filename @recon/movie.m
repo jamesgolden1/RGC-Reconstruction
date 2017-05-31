@@ -1,6 +1,7 @@
 function obj = movie(obj)
-
-% 26*29+30*35+51*59+60*69
+% Generate the reconstruced hallway movie from the recon object.
+% 
+% 
 %%
 rsFactor = 1; stimSize = 100;
 
@@ -53,7 +54,7 @@ coneParams.startFrames = 0;
     
 
 % iStimNS = ieStimulusMovieCMosaic(rand(100,100,1),coneParams);
-iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:150),coneParams);
+iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:40),coneParams);
 cMosaicNS = iStimNS.cMosaic;
 
 %% Bipolar
@@ -115,7 +116,7 @@ spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(
 spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
 
 %     whiteNoiseSmall = natScenes;
-
+clear  spikesout1 spikesout2 spikesout3 spikesout4 
 %%
 
 spikesout = double(spikesoutsm);
@@ -131,9 +132,19 @@ for i = 1:size(spikesoutsm,2)/10
     spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
 end
 
-save('spikeResp_hallway_nc.mat','spikeResp');
+% save('spikeResp_hallway_healthy2.mat','spikeResp');
 
 % load(obj.filterFile);
+
+clear spikesout spikesoutsm
+
+%%
+
+rd = RdtClient('isetbio');
+rd.crp('/resources/data/istim');
+filterFile = 'filters_mosaic0_sv80_w1_sh4_may22.mat';
+data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+filterMat = data.filterMat; clear data;
 
 %%
 spikeAug(1,:) = ones(1,size(spikeResp,2));
@@ -141,10 +152,11 @@ spikeAug(2:9807,:) = spikeResp;
 % load('filters__mosaic0.mat')
 movRecon = filterMat'*spikeAug;
 movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
-nFramesPlay = 250;
+nFramesPlay = 40;
 figure; ieMovie(movReconPlay(:,:,1:nFramesPlay));
 % save('hallwayReconMovie.mat','movRecon');
 
+clear movRecon
 %%
 
 
@@ -165,9 +177,10 @@ mgcd = ((mgcmat - fmaxcmat)').^2;
 % imagesc(signValWN(mind)*staim.*(.1+.9*reshape(exp(-.05*dp(1+paraIndPlus,:).^2),[100 100])));
 
 dp = sqrt(mgrd+mgcd);
+clear fmaxrmat fmaxcmat mgrmat mgrd mgcmat mgcd 
 % filterMat2 = filterMat;
 % filterMat2(dp>5) = 0;
-expFilter = 1.2*(exp(-.001*dp.^2));
+expFilter = 1.2*(exp(-.03*dp.^2));
 expFilter(expFilter>1) = 1;
 filterMat2 = filterMat.*expFilter;
 
@@ -176,3 +189,5 @@ movRecon2 = filterMat2'*spikeAug;
 movReconPlay2 = reshape(movRecon2,[100 100 size(spikeResp,2)]);
 % nFramesPlay = 200;
 figure; ieMovie(movReconPlay2(:,:,1:nFramesPlay));
+
+clear movRecon2 dp expfilter

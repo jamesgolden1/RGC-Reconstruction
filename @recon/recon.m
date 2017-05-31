@@ -120,6 +120,9 @@ methods
     % Declare the movie method
     obj = movie(obj);
     
+    % Declare the publish method
+    obj = publish(obj);
+    
 %     function window(obj)
 %         obj.figureHandle = reconWindow(obj);
 %         % Tip: Retrieve guidata using

@@ -35,7 +35,7 @@ windowSize = 1;
 percentSV = .75;
 shifttime = 2;
 filterFile = ['may26primaSmall/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime)];
-
+% filterFile = 'current/filters_mosaic0_sv80_w1_sh4_may22.mat';
 clear pRecon
 pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
@@ -60,7 +60,7 @@ reconHealthy = recon(pRecon);
 % delete(pool);
 % end
 
-reconHealthy.train(pRecon,'shifttime',shifttime);
-reconHealthy.plot('filters');
+% reconHealthy.train(pRecon,'shifttime',shifttime);
+% reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);
-% reconHealthy.movie();
+reconHealthy.movie();
