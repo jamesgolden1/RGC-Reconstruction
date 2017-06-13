@@ -14,6 +14,7 @@ p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
+p.addParameter('stimTypeBuild','ns',@ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 mosaicFile = p.Results.mosaicFile;
@@ -21,6 +22,7 @@ buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
 blockIn = p.Results.blockIn;
+stimTypeBuild = p.Results.stimTypeBuild;
 
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
@@ -50,15 +52,23 @@ for blockNum =blockIn%1%:nBlocks
     
     %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
     %     load(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-    if blockNum <= 288
-        movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
-        
-        natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-    else
-        movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
-        
-        natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
+
+    if stimTypeBuild == 'ns'
+        if blockNum <= 288
+            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
+            
+            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
+        else
+            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
+            
+            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
+        end
+    elseif stimTypeBuild == 'wn'
+        natScenesRaw = (rand(100,100,nSteps));
+        natScenes = 255*round(natScenesRaw); clear natScenesRaw;
+            
     end
+    
 %               load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
 %     
 %     rsFactor =1; stimSize = 100;

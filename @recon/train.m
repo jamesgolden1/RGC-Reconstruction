@@ -12,6 +12,7 @@ p.addParameter('percentSV',0.5,@isnumeric);
 p.addParameter('mosaicFile',[],@ischar);
 p.addParameter('trainFraction',1,@isnumeric);
 p.addParameter('shiftTime',0,@isnumeric);
+p.addParameter('dropout',0,@isnumeric);
 p.addParameter('stimType','ns',@ischar);
 p.addParameter('buildFile',[],@ischar);
 p.KeepUnmatched = true;
@@ -26,12 +27,16 @@ trainSizeArray = p.Results.trainFraction;
 shiftTime = p.Results.shiftTime;
 stimType = p.Results.stimType;
 buildFile = p.Results.buildFile;
+dropout = p.Results.dropout;
 
 if isempty(filterFile)
     filterFile = ['filters_' num2str(round(cputime*100))];
 end
 % % 
-% loadSpikes(buildFile,stimFileName,respFileName,mosaicFile)
+
+if exist([stimFileName mosaicFile '.mat'],'file') ~= 2
+    loadSpikes(buildFile,stimFileName,respFileName,mosaicFile)
+end
 %% run Linear reconstruction for on, off, and joint on/off training 
 
 disp('Loading spike responses...')
@@ -71,10 +76,10 @@ spikeResp1 = srON;
 % figure; imagesc(scov); colormap parula;
 stimFileName = [stimFileName mosaicFile];
 for incInd = 1%:length(includedComponentsArray)
-    filterMat = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1,fileext, windowSize,includedComponentsArray(incInd),trainSizeArray(trainInd),shiftTime,stimType);
+    [filterMat,dropoutIndices] = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1,respFileName, windowSize,includedComponentsArray(incInd),trainSizeArray(trainInd),shiftTime,stimType,dropout);
 end
 
-save([reconstructionRootPath '/dat/' filterFile],'filterMat','-v7.3');
+save([reconstructionRootPath '/dat/' filterFile],'filterMat','dropoutIndices','-v7.3');
 
 
 function loadSpikes(buildFile,stimFile,respFile,mosaicFile)
@@ -155,12 +160,13 @@ for blockNumInd =[1:length(dNames) ]
 %     stimtmp = uint8(128+double(stimtmp) - ones(size(stimtmp,1),1)*mean(stimtmp,1));
     stim(:,(blockNum-1)*blocklength +1 : blockNum*blocklength) = stimtmp;
 
-    
     % Stimulus here
     % whiteNoiseSmall;
 end
 
-
+% stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
+% clear stim; stim = stimzm;
+    
 if isunix || ismac
     
     save([reconstructionRootPath '/dat/' respFile mosaicFile ],'spikeResp','-v7.3');

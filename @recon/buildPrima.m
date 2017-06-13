@@ -1,4 +1,4 @@
-function obj = build(obj, varargin)
+function obj = buildPrima(obj, varargin)
 %BUILD - builds training set for the recon object
 % Run natural scenes through the RGC array for the big four RGC cell types.
 % 
@@ -14,6 +14,7 @@ p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
+p.addParameter('stimTypeBuild','ns',@ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 mosaicFile = p.Results.mosaicFile;
@@ -21,6 +22,7 @@ buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
 blockIn = p.Results.blockIn;
+stimTypeBuild = p.Results.stimTypeBuild;
 
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
@@ -50,14 +52,20 @@ for blockNum =blockIn%1%:nBlocks
     
     %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
     %     load(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-    if blockNum <= 288
-        movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
-        
-        natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-    else
-        movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
-        
-        natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
+    if stimTypeBuild == 'ns'
+        if blockNum <= 288
+            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
+            
+            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
+        else
+            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
+            
+            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
+        end
+    elseif stimTypeBuild == 'wn'
+        natScenesRaw = (rand(100,100,nSteps));
+        natScenes = 192*round(natScenesRaw); clear natScenesRaw;
+            
     end
 %               load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
 %     
@@ -75,7 +83,7 @@ for blockNum =blockIn%1%:nBlocks
     %%
     %% Load image       
     
-    primaParams.pixelWidth = .5*35e-6; % meters
+    primaParams.pixelWidth = 1*35e-6; % meters
     primaParams.ecc = 1.8;       % mm
     primaParams.fov = 1.7/1;     % deg
     
