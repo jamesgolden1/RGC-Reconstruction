@@ -75,7 +75,7 @@ blockIn = 1;
 % delete(pool);
 % end
 
-reconHealthy.train(pRecon,'shifttime',shifttime);
-reconHealthy.plot('filters');
+% reconHealthy.train(pRecon,'shifttime',shifttime);
+% reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);
-% reconHealthy.movie();
+reconHealthy.movie();

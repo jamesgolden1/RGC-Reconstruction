@@ -1,6 +1,7 @@
 function obj = movie(obj)
-
-% 26*29+30*35+51*59+60*69
+% Generate the reconstruced hallway movie from the recon object.
+% 
+% 
 %%
 rsFactor = 1; stimSize = 100;
 
@@ -53,7 +54,7 @@ coneParams.startFrames = 0;
     
 
 % iStimNS = ieStimulusMovieCMosaic(rand(100,100,1),coneParams);
-iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:150),coneParams);
+iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:40),coneParams);
 cMosaicNS = iStimNS.cMosaic;
 
 %% Bipolar
@@ -98,23 +99,9 @@ innerRetina.compute(bpMosaic);
 
 %%
 toc
-%% Look at covariance matrix
-tic
-spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
-spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
-spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
-spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
+%% Get spikes to make reconstruction movie
 
-timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
-
-spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
-spikesoutsm(1:size(spikesout,1) ,1:size(spikesout,2) ) = spikesout;
-spikesoutsm(size(spikesout,1)+[1:size(spikesout2,1)],1:size(spikesout2,2) ) = spikesout2;
-
-spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
-spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
-
-%     whiteNoiseSmall = natScenes;
+spikeResp = mosaicSpikes(innerRetina);
 
 %%
 
@@ -132,48 +119,32 @@ for i = 1:size(spikesoutsm,2)/10
 end
 
 % save('spikeResp_hallway.mat','spikeResp');
+% filterMat = obj.readFilter()
 
-% load(obj.filterFile);
+rd = RdtClient('isetbio');
+rd.crp('/resources/data/istim');
+filterFile = 'filters_mosaic0_sv80_w1_sh4_may22.mat';
+data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+filterMat = data.filterMat; clear data;
 
 %%
 spikeAug(1,:) = ones(1,size(spikeResp,2));
 spikeAug(2:9807,:) = spikeResp;
 % load('filters__mosaic0.mat')
 movRecon = filterMat'*spikeAug;
-% movReconPlay = reshape(movRecon,[100 1f00 size(spikeResp,2)]);
-movReconPlay = reshape(movRecon,[100 100 600]);
-nFramesPlay = 600;
+movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
+nFramesPlay = 40;
 figure; ieMovie(movReconPlay(:,:,1:nFramesPlay));
 % save('hallwayReconMovie.mat','movRecon');
 
+clear movRecon
 %%
-
-
-[mgr,mgc] = meshgrid(1:100,1:100);
-
-[cmax,cind] = max(abs(filterMat),[],2);
-[fmaxc,fmaxr] = ind2sub([100 100],cind);
-
-mgrmat = mgr(:)*ones(1,size(fmaxr,1));
-fmaxrmat = ones(size(mgrmat,1),1)*fmaxr';
-mgrd = ((mgrmat - fmaxrmat)').^2;
-
-mgcmat = mgc(:)*ones(1,size(fmaxc,1));
-fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
-mgcd = ((mgcmat - fmaxcmat)').^2;
-
-
-% imagesc(signValWN(mind)*staim.*(.1+.9*reshape(exp(-.05*dp(1+paraIndPlus,:).^2),[100 100])));
-
-dp = sqrt(mgrd+mgcd);
-% filterMat2 = filterMat;
-% filterMat2(dp>5) = 0;
-expFilter = 1.2*(exp(-.001*dp.^2));
-expFilter(expFilter>1) = 1;
-filterMat2 = filterMat.*expFilter;
-
+lambda = .01;
+filterMat2 = zeroFilter(filterMat,lambda);
 movRecon2 = filterMat2'*spikeAug;
 
 movReconPlay2 = reshape(movRecon2,[100 100 size(spikeResp,2)]);
 % nFramesPlay = 200;
 figure; ieMovie(movReconPlay2(:,:,1:nFramesPlay));
+
+clear movRecon2 
