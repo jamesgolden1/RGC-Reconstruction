@@ -164,6 +164,10 @@ for blockNumInd =[1:length(dNames) ]
     % whiteNoiseSmall;
 end
 
+stim = (single(stim')-(ones(size(stim,2),1)*mean(stim,2)'));
+stim = stim';
+
+% stim = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
 % stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
 % clear stim; stim = stimzm;
     

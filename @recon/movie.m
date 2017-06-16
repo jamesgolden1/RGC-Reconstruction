@@ -58,43 +58,91 @@ iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:40),coneParams);
 cMosaicNS = iStimNS.cMosaic;
 
 %% Bipolar
-clear bpMosaic
+% clear bpMosaic
+% 
+% cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
+% for cellTypeInd = 1:4
+%     clear bpParams
+%     bpParams.cellType = cellType{cellTypeInd};
+%     
+%     % FIX NEGATIVE AND POSITIVE HERE
+%     bpParams.ecc = patchEccentricity;
+%     bpParams.rectifyType = 1;
+%     bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
+%     bpMosaic{cellTypeInd}.set('sRFcenter',4);
+%     bpMosaic{cellTypeInd}.set('sRFsurround',0);
+%     bpMosaic{cellTypeInd}.compute(cMosaicNS);
+% end
 
-cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
-for cellTypeInd = 1:4
-    clear bpParams
-    bpParams.cellType = cellType{cellTypeInd};
+% Make each type of bipolar mosaic
+cellType = {'ondiffuse','offdiffuse','onmidget','offmidget'};
+clear bpMosaicParams
+bpMosaicParams.rectifyType = 1;
+
+bpMosaic  = cell(1,length(cellType));
+bpNTrials = cell(1,length(cellType));
+for ii = 1:length(cellType)
     
-    % FIX NEGATIVE AND POSITIVE HERE
-    bpParams.ecc = patchEccentricity;
-    bpParams.rectifyType = 1;
-    bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
-    bpMosaic{cellTypeInd}.set('sRFcenter',4);
-    bpMosaic{cellTypeInd}.set('sRFsurround',0);
-    bpMosaic{cellTypeInd}.compute(cMosaicNS);
+    bpMosaicParams.cellType = cellType{ii};
+    
+    bpMosaic{ii} = bipolarMosaic(cMosaic, bpMosaicParams);
+    bpMosaic{ii}.set('sRFcenter',1);
+    bpMosaic{ii}.set('sRFsurround',0);
+    
+    [~, bpNTrialsCenterTemp, bpNTrialsSurroundTemp] = ...
+        bpMosaic{ii}.compute(cMosaic,'coneTrials',alignedC);
+    bpNTrials{ii} = bpNTrialsCenterTemp - bpNTrialsSurroundTemp;
+    
+end
+bpL.mosaic = bpMosaic;
+
+
+% %% RGC
+% clear params rgcParams
+% params.eyeRadius = patchEccentricity;
+% params.eyeAngle = 90;
+% innerRetina=ir(bpMosaic,params);
+% cellType = {'on parasol','off parasol','on midget','off midget'};
+% 
+% rgcParams.centerNoise = 0;
+% rgcParams.model = 'LNP';
+% %     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
+% 
+% rgcParams.type = cellType{1};
+% innerRetina.mosaicCreate(rgcParams);
+% rgcParams.type = cellType{2};
+% innerRetina.mosaicCreate(rgcParams);
+% rgcParams.type = cellType{3};
+% innerRetina.mosaicCreate(rgcParams);
+% rgcParams.type = cellType{4};
+% innerRetina.mosaicCreate(rgcParams);
+% 
+% innerRetina.compute(bpMosaic);
+
+clear rgcLayer irParams mosaicParams
+
+% Create retina ganglion cell layer object
+rgcL = rgcLayer(bpL);
+
+% There are various parameters you could set.  We will write a script
+% illustrating these later.  We need a description.
+mosaicParams.centerNoise = 0;
+mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
+% mosaicParams.axisVariance = .1;
+mosaicParams.type  = cellType;
+mosaicParams.model = 'GLM';
+
+% diameters = [5 5 3 3 10];  % In microns.
+
+cellType = {'on parasol','off parasol','on midget','off midget'};
+for ii = 1:length(cellType)
+%     mosaicParams.rfDiameter = diameters(ii);
+    mosaicParams.type = cellType{ii};
+    mosaicParams.inMosaic = 1;   % Could switch up and match inputs to outputs
+    rgcL.mosaicCreate(mosaicParams);
 end
 
-%% RGC
-clear params rgcParams
-params.eyeRadius = patchEccentricity;
-params.eyeAngle = 90;
-innerRetina=ir(bpMosaic,params);
-cellType = {'on parasol','off parasol','on midget','off midget'};
-
-rgcParams.centerNoise = 0;
-rgcParams.model = 'LNP';
-%     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-
-rgcParams.type = cellType{1};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{2};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{3};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{4};
-innerRetina.mosaicCreate(rgcParams);
-
-innerRetina.compute(bpMosaic);
+nTrials = 1; rgcL.set('numberTrials',nTrials);
 
 
 %%

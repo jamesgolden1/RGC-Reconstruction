@@ -65,6 +65,7 @@ for blockNum =blockIn%1%:nBlocks
     elseif stimTypeBuild == 'wn'
         natScenesRaw = (rand(100,100,nSteps));
         natScenes = 192*round(natScenesRaw); clear natScenesRaw;
+%         natScenes = round(192*natScenesRaw); clear natScenesRaw;
             
     end
 %               load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');

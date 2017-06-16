@@ -27,19 +27,21 @@
 %%
 clear
 
-folderName = 'june12prima';
+% folderName = 'june13wnprima_cont';
+folderName = 'june14prima';
 mosaicFile = '_mosaic0';
 
 movieFile  = fullfile(folderName, 'mov');
 spikesFile = fullfile(folderName, 'sp');
-buildFile  = fullfile(folderName, 'raw','build');
+buildFile  = fullfile(folderName, 'raw_binaryNew','build');
 
 % movieFile  = fullfile(reconstructionRootPath, 'dat', folderName, 'mov');
 % spikesFile = fullfile(reconstructionRootPath, 'dat', folderName, 'sp');
 % buildFile  = fullfile(reconstructionRootPath, 'dat', folderName, 'build');
 
 windowSize = 1;
-percentSV = .2;
+percentSV = .1;
+% shifttime = 2;
 shifttime = 2;
 dropout = 0;
 
@@ -63,11 +65,11 @@ pRecon.stimTypeBuild = 'wn';
 
 reconHealthy = recon(pRecon);
 
-blockIn = 1;
+% blockIn = 1;
 
 % nCores = 18;
 % pool = parpool(nCores);
-% for ii = [1:12 18:floor(576/nCores)]
+% for ii = 17:floor(576/nCores)%:floor(576/nCores)]
 % parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
 % %     reconHealthy.build(pRecon,'blockIn',blockIn);
 %     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
@@ -75,7 +77,7 @@ blockIn = 1;
 % delete(pool);
 % end
 
-% reconHealthy.train(pRecon,'shifttime',shifttime);
-% reconHealthy.plot('filters');
+reconHealthy.train(pRecon,'shifttime',shifttime);
+reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);
-reconHealthy.movie();
+% reconHealthy.movie();

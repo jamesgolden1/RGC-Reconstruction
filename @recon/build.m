@@ -36,7 +36,7 @@ patchEccentricity = 1.8; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
-fov = 3.2/4;
+fov = 1.7;% 3.2/2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
@@ -98,7 +98,7 @@ for blockNum =1%:nBlocks
     % % params.vfov = 0.7;
     
     
-    iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:50),coneParams);
+    iStimNS = ieStimulusMovieCMosaic(natScenes,coneParams);
     cMosaicNS = iStimNS.cMosaic;
     
     %% Bipolar
@@ -119,7 +119,7 @@ for blockNum =1%:nBlocks
     
     %% RGC
     clear params rgcParams
-    params.eyeRadius = .5;%patchEccentricity;
+    params.eyeRadius = patchEccentricity;
     params.eyeAngle = 90;
     innerRetina=ir(bpMosaic,params);
     cellType = {'on parasol','off parasol','on midget','off midget'};
@@ -127,16 +127,16 @@ for blockNum =1%:nBlocks
     rgcParams.centerNoise = 0;
     rgcParams.model = 'LNP';
 %     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-    rgcParams.axisVariance = -.1;
+    rgcParams.axisVariance = 0;
 %     rgcParams.rfDiameter = 2;
     rgcParams.type = cellType{1};
     innerRetina.mosaicCreate(rgcParams);
-%     rgcParams.type = cellType{2};
-%     innerRetina.mosaicCreate(rgcParams);
-%     rgcParams.type = cellType{3};
-%     innerRetina.mosaicCreate(rgcParams);
-%     rgcParams.type = cellType{4};
-%     innerRetina.mosaicCreate(rgcParams);
+    rgcParams.type = cellType{2};
+    innerRetina.mosaicCreate(rgcParams);
+    rgcParams.type = cellType{3};
+    innerRetina.mosaicCreate(rgcParams);
+    rgcParams.type = cellType{4};
+    innerRetina.mosaicCreate(rgcParams);
     
     innerRetina.compute(bpMosaic);
 %     innerRetina.mosaic{4}.window

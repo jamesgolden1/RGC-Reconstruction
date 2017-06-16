@@ -29,7 +29,7 @@ for t = 1:length(trainTimes)
 %     numbins
     respTrain(t,2:end) = uint8(reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
 end
-
+clear resp
 % disp('Creating testing response matrix...')
 % %Create the testing response matrix
 % testTimes = i1+1:i2-numbins;
