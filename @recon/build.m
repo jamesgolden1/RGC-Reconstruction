@@ -48,12 +48,7 @@ for blockNum =blockIn%:nBlocks
     tic
     
     blockNum
-%     load(filenameRGC, 'innerRetina');
-    
-    %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-
-    %     load(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-
+    %     natScenes = 255*ieScale(loadHallStimulus(20));
     if stimTypeBuild == 'ns'
         if blockNum <= 288
             movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
@@ -69,20 +64,7 @@ for blockNum =blockIn%:nBlocks
         natScenes = 255*round(natScenesRaw); clear natScenesRaw;
             
     end
-    
-%               load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
-%     
-%     rsFactor =1; stimSize = 100;
-%         load([phospheneRootPath '/dat/stimuli/hallMovie.mat'])
-%     szFrames = size(vidFrame,3);
-%     hallMovieResize = zeros(rsFactor*stimSize,rsFactor*stimSize,szFrames);
-%     for ii = 1:szFrames
-%         hallMovieResize(:,:,ii) = imresize(vidFrame(:,:,ii),[rsFactor*stimSize,rsFactor*stimSize]);
-%     end
-%     
-%     % Set hallway movie stimulus
-%     testmovieshort = (255*ieScale(hallMovieResize)); clear hallMovieResize;
-
+   
     
     %%
     %% Load image
@@ -102,55 +84,70 @@ for blockNum =blockIn%:nBlocks
     cMosaicNS = iStimNS.cMosaic;
     
     %% Bipolar
-    clear bpMosaic
+    %% Create a set of bipolar cell types in the bipolar mosaic
     
-    cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
-    for cellTypeInd = 1:4
-        clear bpParams
-        bpParams.cellType = cellType{cellTypeInd};
-        
-        bpParams.ecc = patchEccentricity;
-        bpParams.rectifyType = 1;
-        bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
-        bpMosaic{cellTypeInd}.set('sRFcenter',1);
-        bpMosaic{cellTypeInd}.set('sRFsurround',0);
-        bpMosaic{cellTypeInd}.compute(cMosaicNS);
+    clear bpL
+    
+    bpL = bipolarLayer(cMosaicNS);
+    
+    % Make each type of bipolar mosaic
+    cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
+    
+    % Stride isn't influencing yet.s
+    clear bpMosaicParams
+    bpMosaicParams.rectifyType = 1;  % Experiment with this
+    bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
+    bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
+    bpMosaicParams.spreadRatio  = 10;  % RF diameter w.r.t. input samples
+    
+    % Maybe we need a bipolarLayer.compute that performs this loop
+    for ii = 1:length(cellType)
+        bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
+        bpL.mosaic{ii}.compute();
     end
     
-    %% RGC
-    clear params rgcParams
+%     bpL.window;
 
-    params.eyeRadius = patchEccentricity;
-    params.eyeAngle = 90;
-    innerRetina=ir(bpMosaic,params);
-    cellType = {'on parasol','off parasol','on midget','off midget'};
     
+    %% RGC
+    
+    clear rgcL rgcParams
+    
+    % Create retina ganglion cell layer object
+    rgcL = rgcLayer(bpL);
+    
+    % There are various parameters you could set.  We will write a script
+    % illustrating these later.  We need a description.
     rgcParams.centerNoise = 0;
-    rgcParams.model = 'LNP';
-%     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-%     rng(20001);
-%     rgcParams.axisVariance = .085;
-%     rgcParams.centerNoise = .05;
-%     rgcParams.rfDiameter = 2;
-    rgcParams.type = cellType{1};
-    innerRetina.mosaicCreate(rgcParams);
-    rgcParams.type = cellType{2};
-    innerRetina.mosaicCreate(rgcParams);
-    rgcParams.type = cellType{3};
-    innerRetina.mosaicCreate(rgcParams);
-    rgcParams.type = cellType{4};
-    innerRetina.mosaicCreate(rgcParams);
+    rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
+    % mosaicParams.axisVariance = .1;
     
-    innerRetina.compute(bpMosaic);
-%     innerRetina.mosaic{4}.window
+    % 27*31+31*35+54*62+63*72
+    onPdiameter = 9.4;
+    diameters = [onPdiameter onPdiameter*.9 onPdiameter*.5 onPdiameter*.45];  % In microns.
+    
+    cellType = {'on parasol','off parasol','on midget','off midget'};
+    for ii = 1:length(cellType)
+        rgcParams.rfDiameter = diameters(ii);
+        rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
+    end
+    
+    nTrials = 1; rgcL.set('numberTrials',nTrials);
+    
+    %% Compute the inner retina response and visualize
+    
+    % Every mosaic has its input and properties assigned so we should be able
+    % to just run through all of them.
+    rgcL = rgcL.compute('bipolarScale',50,'bipolarContrast',1);
+    
     %%
     toc
     %% Look at covariance matrix
     tic
-    spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
-    spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
-    spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
-    spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
+    spikesout  = RGB2XWFormat(rgcL.mosaic{1}.get('spikes'));
+    spikesout2 = RGB2XWFormat(rgcL.mosaic{2}.get('spikes'));
+    spikesout3 = RGB2XWFormat(rgcL.mosaic{3}.get('spikes'));
+    spikesout4 = RGB2XWFormat(rgcL.mosaic{4}.get('spikes'));
     
     timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
     
