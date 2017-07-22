@@ -15,6 +15,9 @@ p.addParameter('shiftTime',0,@isnumeric);
 p.addParameter('dropout',0,@isnumeric);
 p.addParameter('stimType','ns',@ischar);
 p.addParameter('buildFile',[],@ischar);
+
+p.addParameter('pixelWidth',70,@isnumeric);
+p.addParameter('currentDecay',2,@isnumeric);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 filterFile = p.Results.filterFile;
@@ -29,14 +32,24 @@ stimType = p.Results.stimType;
 buildFile = p.Results.buildFile;
 dropout = p.Results.dropout;
 
+pixelWidth = p.Results.pixelWidth;
+currentDecay = p.Results.currentDecay;
+
 if isempty(filterFile)
     filterFile = ['filters_' num2str(round(cputime*100))];
 end
 % % 
 
-if exist([stimFileName mosaicFile '.mat'],'file') ~= 2
-    loadSpikes(buildFile,stimFileName,respFileName,mosaicFile)
+stimFileTest = [ stimFileName '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile];
+
+if exist([stimFileTest '.mat'],'file') ~= 2
+    loadSpikes(buildFile,stimFileName,respFileName,mosaicFile,pixelWidth,currentDecay)
 end
+
+
+% if exist([stimFileName mosaicFile '.mat'],'file') ~= 2
+%     loadSpikes(buildFile,stimFileName,respFileName,mosaicFile)
+% end
 %% run Linear reconstruction for on, off, and joint on/off training 
 
 disp('Loading spike responses...')
@@ -49,7 +62,9 @@ disp('Loading spike responses...')
 
 % matfON = matfile([reconstructionRootPath '\dat\' respFileName]);
 
-matfON = matfile([reconstructionRootPath '/dat/' respFileName mosaicFile]);
+% matfON = matfile([reconstructionRootPath '/dat/' respFileName mosaicFile]);
+
+matfON = matfile([reconstructionRootPath '/dat/' respFileName '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat']);
 
 % matfON = matfile('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/ns100_r2_10/ns100_jan1_sp3_mosaicAll_1246640');
 
@@ -74,15 +89,17 @@ spikeResp1 = srON;
 
 % scov = spikeResp1*spikeResp1';
 % figure; imagesc(scov); colormap parula;
-stimFileName = [stimFileName mosaicFile];
+% stimFileName = [stimFileName mosaicFile];
+stimFileName = [ stimFileName '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile];
+
 for incInd = 1%:length(includedComponentsArray)
     [filterMat,dropoutIndices] = linearReconstructSVD_short_midgets_both(stimFileName,spikeResp1,respFileName, windowSize,includedComponentsArray(incInd),trainSizeArray(trainInd),shiftTime,stimType,dropout);
 end
 
-save([reconstructionRootPath '/dat/' filterFile],'filterMat','dropoutIndices','-v7.3');
+save([reconstructionRootPath '/dat/' filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay)],'filterMat','dropoutIndices','-v7.3');
 
 
-function loadSpikes(buildFile,stimFile,respFile,mosaicFile)
+function loadSpikes(buildFile,stimFile,respFile,mosaicFile,pixelWidth,currentDecay)
 loadFile = buildFile;
 
 %% loadSpikesAll %%%%5
@@ -100,22 +117,26 @@ loadFile = buildFile;
  
 if ismac || isunix
 %     dNames = (dir([phospheneRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
- dNames = (dir([reconstructionRootPath '/dat/' loadFile '*block_*' mosaicFile '.mat']));
+ dNames = (dir([reconstructionRootPath '/dat/' loadFile '*block_*' '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat']));
 else
 %     dNames = (dir([phospheneRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
  dNames = (dir([reconstructionRootPath '\dat\' loadFile '*block_*' mosaicFile '.mat']));
 end
 % blocklength = 12000;
-numReps = length(dNames);
+numReps = length(dNames)
 % numCells= 36+64+169+225;
 % spikeResp = zeros(numCells, blocklength*numReps);
-if isunix || ismac
-%     filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-    filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-else
-%     filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
-end
+
+  filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(1) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'];
+ 
+  
+% if isunix || ismac
+% %     filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+%     filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) '_' mosaicFile '.mat'];
+% else
+% %     filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+% filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(1) mosaicFile '.mat'];
+% end
 
 matf = matfile(filename1);
 szMov = size(matf.whiteNoiseSmall);
@@ -130,14 +151,15 @@ for blockNumInd =[1:length(dNames) ]
     % filename1 = [reconstructionRootPath '\dat\WNstim_response_block_' num2str(blockNumInd) '.mat'];    
     % filename1 = [reconstructionRootPath '/dat/nsResponses/NSstim_response_betha_ns0_block_' num2str(blockNum) '.mat'];    
     % filename1 = [reconstructionRootPath '\dat\NSstim_response_overlap0_block_' num2str(blockNum) '.mat'];
-
-    if isunix || ismac
-%         filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
- filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
-    else
-%         filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
- filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
-    end
+  filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'];
+ 
+%     if isunix || ismac
+% %         filename1 = [phospheneRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%  filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+%     else
+% %         filename1 = [phospheneRootPath '\dat\' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%  filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(blockNum) mosaicFile '.mat'];
+%     end
     matf = matfile(filename1);
     spikesoutsm = matf.spikesoutsm;
     % Spikes in this variable for each block
@@ -164,19 +186,23 @@ for blockNumInd =[1:length(dNames) ]
     % whiteNoiseSmall;
 end
 
-stim = (single(stim')-(ones(size(stim,2),1)*mean(stim,2)'));
-stim = stim';
+% stim = (single(stim')-(ones(size(stim,2),1)*mean(stim,2)'));
+% stim = stim';
 
 % stim = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
 % stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
 % clear stim; stim = stimzm;
     
-if isunix || ismac
-    
-    save([reconstructionRootPath '/dat/' respFile mosaicFile ],'spikeResp','-v7.3');
-    save([reconstructionRootPath '/dat/' stimFile mosaicFile],'stim','-v7.3')
-else
-    
-    save([reconstructionRootPath '\dat\' respFile mosaicFile],'spikeResp','-v7.3');
-    save([reconstructionRootPath '\dat\' stimFile mosaicFile],'stim','-v7.3')
-end
+
+    save([reconstructionRootPath '/dat/' respFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'],'spikeResp','-v7.3');
+    save([reconstructionRootPath '/dat/' stimFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'],'stim','-v7.3')
+
+% if isunix || ismac
+%     
+%     save([reconstructionRootPath '/dat/' respFile '_' mosaicFile '.mat'],'spikeResp','-v7.3');
+%     save([reconstructionRootPath '/dat/' stimFile '_' mosaicFile '.mat'],'stim','-v7.3')
+% else
+%     
+%     save([reconstructionRootPath '\dat\' respFile mosaicFile],'spikeResp','-v7.3');
+%     save([reconstructionRootPath '\dat\' stimFile mosaicFile],'stim','-v7.3')
+% end

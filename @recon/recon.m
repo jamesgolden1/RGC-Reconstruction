@@ -106,13 +106,21 @@ methods
     [mosaicFile, saveFile] = build(obj, varargin);    
     
     % Declare the method for building the training data set    
+    [mosaicFile, saveFile] = buildLandolt(obj, varargin);    
+    
+    % Declare the method for building the training data set    
     [mosaicFile, saveFile] = buildPrima(obj, varargin);
+    
+    % Declare the method for building the training data set    
+    [mosaicFile, saveFile] = buildPrimaLandolt(obj, varargin);
     
     % Declare the method for learning the filters from the training set    
     [filterFile] = train(obj, varargin);
     
     % Declare the method for testing the accuracy of the recon filters
-    [testAccuracy] = test(obj, varargin);    
+    [testAccuracy] = test(obj, varargin); 
+    
+    obj = testCV(obj,stim,spikeResp,varargin);
     
     % Declare the method for plotting properties from the recon object
     h = plot(obj, varargin);

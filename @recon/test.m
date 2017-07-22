@@ -31,6 +31,9 @@ testmovieshort = (255*ieScale(hallMovieResize)); clear hallMovieResize;
 
 %%
 %% Load image
+
+if ~exist('spikeResp_hallway.mat','file')
+
 clear coneParams
 
 % One frame of a WN stimulus
@@ -106,6 +109,9 @@ spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spik
 
 % whiteNoiseSmall = natScenes;
 
+end
+
+%%
 % % % % % % % % % Feb 6
 % evArr = [.2 .1 .3 .4];
 %
@@ -118,88 +124,109 @@ spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spik
 % filterFile = ['ns100_r2_10/filters3_ns100_feb6_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
 
 % % % % % % % % % % % % Feb 22
-evArr = [.01 .02 .03 .04 .1 .2];
-trainFraction = [.16 .5 .66 .83 1];
-% already did trainFraction =1
-for evInd = 4%1:6
-for trainFractionInd = 5%1:5
-    [evInd trainFractionInd]
-% if ~(evInd==1 && trainFractionInd==1)
-
-% filterFile = ['ns100_r2_10/filters3_ns100_feb6_sh9_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
-% filterFile = ['pixium15_100/filters3_pix1_feb6_sh0_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
-filterFile = ['pixium15_sm/filters_pix_feb21_sh0_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
+% evArr = [.01 .02 .03 .04 .1 .2];
+% trainFraction = [.16 .5 .66 .83 1];
 
 
+mosaicFile = '_mosaic0';
+% shiftArr = [4 ]; 
+shiftArr = 2;
+shiftTime = shiftArr; shiftind = 1;
+windowSize = 1;
+percentSVarr =.05%[ .75 .50 .25 ]%[.05 .075 .1 .125]% [.2 .4 .6 .8 1];
+% percentSVarr = [.62 .38 .12]
+trainSizeArr = .8%[.2 .4 .6 .8];
 
-%     shiftval = 9;
-    shiftval = 0;
-    
-% mosaicFile = '_mosaicAll_35336498'; %pOpt.mosaicFile = mosaicFile;
-% filterFile = ['pixium15_100/filters3_pix1_feb6_sh0_sv' sprintf('%2d',100*evArr(evInd)) '_tr' sprintf('%2d',100*trainFraction(trainFractionInd))  mosaicFile];
-%     shiftval = 0;
+for percentSVind = 1%z:length(percentSVarr)
+    for trainSizeInd = 1:length(trainSizeArr)
         
-
-            pOpt.filterFile = filterFile;
-            [movrecons_on_offHealthy, movrecons_on_offHealthy_dropout] = irOptimalReconSingle(pOpt);
-             figure; ieMovie(movrecons_on_offHealthy);
-    movieRecon = movrecons_on_offHealthy;
-
-%     clear movieComb
-    szLen = 596;
-%     movieComb = 255*irradianceFraction*pulseDutyCycle*ieScale(movieRecon(:,:,1:szLen-shiftval+1));
-%     movieComb(:,rsFactor*stimSize+[1:rsFactor*stimSize],:) = 255*irradianceFraction*pulseDutyCycle*ieScale(testmovieshort(:,:,shiftval+1:szLen+1));
-%     maxc = max(movieComb(:)); minc = min(movieComb(:));
-
-
-%     mc01 = (movieRecon(:,:,1:szLen-shiftval+1));
-%     mc02 = (testmovieshort(:,:,shiftval+1:szLen+1));
-%     figure; subplot(121); hist(mc01(:),40); subplot(122); hist(mc02(:),40);
-%     
-%     fr0=25;
-%     mc011 = mc01(:,:,fr0); mc022 = mc02(:,:,fr0);
-%     
-%     figure; subplot(121); hist(mc011(:),40); subplot(122); hist(mc022(:),40);
-%     mc011rs = ieScale(mc011); mc022rs = ieScale(mc022);
-%     
-%     figure; 
-%     subplot(131); hist(mc011rs(:)-mean(mc011rs(:)),40); 
-%     subplot(132); hist(mc022rs(:)-mean(mc022rs(:)),40);
-%     subplot(133); hist(sqrt((mc011rs(:)-mean(mc011rs(:))-(mc022rs(:)-mean(mc022rs(:)))).^2),40);
-
-    mc1 = ieScale(movieRecon(:,:,1:szLen-shiftval+1));
-    mc2 = ieScale(testmovieshort(:,:,shiftval+1:szLen+1));
+        percentSV = percentSVarr(percentSVind);
+        shifttime = shiftArr(shiftind);
+        trainSize = trainSizeArr(trainSizeInd);
+%         filterFile = ['may22/filters/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_tr%d',100*trainSize)];
+        filterFile = ['june16prima/filters_wmean/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_tr%d',100*trainSize)];
+     
+        load(filterFile);
+%     shiftval = 9;
+%     shiftval = shiftTime+9;
     
+    spikeAug(1,:) = ones(1,size(spikeResp,2));
+    spikeAug(2:9807,:) = spikeResp;
+    % load('filters__mosaic0.mat')
+    movRecon = filterMat'*spikeAug;
+    movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
+%     nFramesPlay = 40;
+%     figure; ieMovie(movReconPlay(:,:,1:nFramesPlay));
+    % save('hallwayReconMovie.mat','movRecon');
+    
+    lambda = .01;
+    filterMat2 = zeroFilter(filterMat,lambda);
+    movRecon2 = filterMat2'*spikeAug;
+
+%     movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
+%     imSingle = testmovieshort(:,:,40); imMean = mean(imSingle(:));
+%     mtest = max(abs(imSingle(:)-imMean));
+%     imSingleRecon = movReconPlay(:,:,40); mtestrecon = max(abs(imSingleRecon(:)));
+%     figure; subplot(131); imagesc((testmovieshort(:,:,40)-imMean)/mtest); colorbar; colormap gray;
+%     
+%     subplot(132); imagesc((movReconPlay(:,:,40)/mtestrecon)); colorbar; colormap gray
+%     subplot(133); imagesc((movReconPlay(:,:,40)/mtestrecon)-(testmovieshort(:,:,40)-imMean)/mtest); colorbar; colormap gray
+
+%     clear movRecon
+    %
+%     lambda = .01;
+%     filterMat2 = zeroFilter(filterMat,lambda);
+%     movRecon2 = filterMat2'*spikeAug;
+
+    szLen = 550;
+    shiftval = shiftArr+1;
+%     shiftval = 5;
+    % shiftval = 3;
+    mc1 = (movReconPlay(:,:,shiftval+1:szLen+1));
+    mc2 = (testmovieshort(:,:,1:szLen-shiftval+1));
+
+%     mc1 = ieScale(movReconPlay(:,:,shiftval+1:szLen+1));
+%     mc2 = ieScale(testmovieshort(:,:,1:szLen-shiftval+1));
+%     clear bigMovie
+%     bigMovie(1:100,101:200,:) = mc1;  bigMovie(1:100,1:100,:) = mc2;
 %     errmov =(mc1-mean(mc1(:)))-(mc2-mean(mc2(:)));
 %     errtot = ((errmov.^2));
 
     mc1rs = RGB2XWFormat(mc1);
     mc2rs = RGB2XWFormat(mc2);
     
-    mc1rz = mc1rs - ones(size(mc1rs,1),1)*mean(mc1rs,1);    
-    mc2rz = mc2rs - ones(size(mc2rs,1),1)*mean(mc2rs,1);
+    mc1rz = mc1rs;% - ones(size(mc1rs,1),1)*mean(mc1rs,1);    
+    mc2rz = mc2rs;%%%% - ones(size(mc2rs,1),1)*mean(mc2rs,1);
+    
+%     std_recon = std(mc1rz(:));
+%     std_test = std(mc2rz(:));
+%     
+%     mc1rz = mc1rz*std_test/std_recon;
+    
     
     errmov =(mc1rz)-(mc2rz);
     errtot = ((errmov.^2));
 
-    mse(evInd,trainFractionInd) = sqrt(mean(errtot(:)));
-    mss(evInd,trainFractionInd) = sqrt(var(errtot(:)));
+    mse(percentSVind,trainSizeInd) = sqrt(mean(errtot(:)));
+    mss(percentSVind,trainSizeInd) = sqrt(var(errtot(:)));
     
-    trainSizeMat(evInd,trainFractionInd) = trainFraction(trainFractionInd);
-    evMat(evInd,trainFractionInd) = evArr(evInd);
+    trainSizeMat(percentSVind,trainSizeInd) = trainSizeArr(trainSizeInd);
+    evMat(percentSVind,trainSizeInd) = percentSVarr(percentSVind);
     
     clear mc1 mc2 errmov errtot movieRecon
 end
-mse(evInd,:)
+mse(percentSVind,:)
 end
 
 
 figure; 
-plot(1e6*trainSizeMat',mse','-x','linewidth',4)
+plot(1e6*trainSizeMat',mse'/255,'-x','linewidth',4)
 hold on;
 % plot(1e6*trainSizeMat',mseh','-x','linewidth',4)
-grid on; axis([0 1e6 .13 .19]);
+grid on; % axis([0 1e6 .13 .19]);
 xlabel('Training Set Size','fontsize',15); 
 ylabel('Mean Square Error - Reconstruction','fontsize',15);
 set(gca,'fontsize',15)
-legend('10% SVs','20% SVs','30% SVs','40% SVs');
+
+legend('25% SVs','50% SVs','75% SVs','location','sw')
+% legend('10% SVs','20% SVs','30% SVs','40% SVs');

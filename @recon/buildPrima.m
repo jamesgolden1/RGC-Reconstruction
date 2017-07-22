@@ -15,6 +15,9 @@ p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
 p.addParameter('stimTypeBuild','ns',@ischar);
+
+p.addParameter('pixelWidth',70,@isnumeric);
+p.addParameter('currentDecay',2,@isnumeric);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 mosaicFile = p.Results.mosaicFile;
@@ -23,6 +26,8 @@ stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
 blockIn = p.Results.blockIn;
 stimTypeBuild = p.Results.stimTypeBuild;
+pixelWidth = p.Results.pixelWidth;
+currentDecay = p.Results.currentDecay;
 
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
@@ -84,13 +89,15 @@ for blockNum =blockIn%1%:nBlocks
     %%
     %% Load image       
     
-    primaParams.pixelWidth = 1*35e-6; % meters
+    primaParams.pixelWidth = pixelWidth*1e-6; % meters
     primaParams.ecc = 1.8;       % mm
     primaParams.fov = 1.7/1;     % deg
     
     primaParams.pulseFreq = 100;           % Hz, electrode pulse frequency
     primaParams.pulseDutyCycle = 1;        % Fraction of cycle pulse is on
     primaParams.irradianceFraction = 1;    % Fraction of maximum irradiance
+    
+    primaParams.currentDecay = currentDecay;
     
     primaRecon = primaArray(natScenes,primaParams);
     
@@ -117,11 +124,9 @@ for blockNum =blockIn%1%:nBlocks
     
     whiteNoiseSmall = natScenes;
 
-    if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '' mosaicFile '.mat'];
-    else
-        filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
-    end
+    filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'];
+ 
+%     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat']
     % save(filename1, 'spikesoutsm','whiteNoiseSmall');
     parsave(filename1, spikesoutsm, whiteNoiseSmall);
     toc

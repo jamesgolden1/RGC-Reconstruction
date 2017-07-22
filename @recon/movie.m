@@ -127,6 +127,7 @@ rgcL = rgcLayer(bpL);
 % There are various parameters you could set.  We will write a script
 % illustrating these later.  We need a description.
 mosaicParams.centerNoise = 0;
+mosaicParams.axisVariance = 0;
 mosaicParams.ellipseParams = [1 1 0];  % Principle, minor and theta
 % mosaicParams.axisVariance = .1;
 mosaicParams.type  = cellType;

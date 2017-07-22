@@ -25,12 +25,12 @@
 % JRG NP (Nikhil Parthsarathy) 4/2017
 
 %%
-clear
+% clear
 
 % folderName = 'june13wnprima_cont';
 % folderName = 'june16prima';
-folderName = 'july9irr';
-mosaicFile = 'mosaic0';
+folderName = 'july11primaPitch';
+mosaicFile = '_mosaic0';
 
 movieFile  = fullfile(folderName, 'mov');
 spikesFile = fullfile(folderName, 'sp');
@@ -68,17 +68,34 @@ reconHealthy = recon(pRecon);
 
 blockIn = 1;
 
-% nCores = 18;
-% pool = parpool(nCores);
-% for ii = 1%:floor(576/nCores)%:floor(576/nCores)]
-% parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
-%     reconHealthy.build(pRecon,'blockIn',blockIn);
-%     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
-% end
-% delete(pool);
-% end
+pixelPitchArr = [70 70/2 70/4 70/8];% 70/16 70/32];
+currentDecayArr = [2 4 8 16];
 
+% for pitchInd = 4%[1:length(pixelPitchArr)]
+%     for currentDecayInd = 1%[1 2]%1:2%length(currentDecayArr)
+%         pRecon.pixelWidth = pixelPitchArr(pitchInd);
+%         pRecon.currentDecay = currentDecayArr(currentDecayInd);
+%         
+%         nCores = 18;
+%         pool = parpool(nCores);
+%         % NOTE: start at block 26 to get last 80% of image dataset
+%         for ii = 1:floor(576/nCores)
+%             parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
+%                 %     reconHealthy.build(pRecon,'blockIn',blockIn);
+%                 reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
+%             end
+%             delete(gcp);
+%         end
+%     end
+% end
+for pitchInd = [2 4]
+currentDecayInd = 1
+
+pRecon.pixelWidth = pixelPitchArr(pitchInd);
+pRecon.currentDecay = currentDecayArr(currentDecayInd);
+reconHealthy = recon(pRecon);
 reconHealthy.train(pRecon,'shifttime',shifttime);
+end
 % reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);
 % reconHealthy.movie();

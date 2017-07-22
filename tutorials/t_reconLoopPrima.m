@@ -7,19 +7,19 @@
 %%
 
 mosaicFile = '_mosaic0';
-movieFile  = 'may22/mov'; 
-spikesFile = 'may22/sp';
-buildFile  = 'may22/raw/build';
+movieFile  = 'june16prima/mov'; 
+spikesFile = 'june16prima/sp';
+buildFile  = 'june16prima/build';
 
 windowSize = 1;
 
-shiftArr = [4 ];
-percentSVarr =[ .75 .50 .25 ]%[.05 .075 .1 .125]% [.2 .4 .6 .8 1];
-% percentSVarr = [.625 .375];
-% percentSVarr = [.375];
-trainSizeArr = [.2 .4 .6 .8];
+shiftArr = [2 ];
+% percentSVarr =[ .75 .50 .25 ]%[.05 .075 .1 .125]% [.2 .4 .6 .8 1];
+percentSVarr = .05%%%%%%%%%%%%%[.625 .375 .125 .05]
+trainSizeArr =.8% [.2 .4 .6 .8];
+
 % trainSizeArr =.1+ [0 .2 .4 .6 .8];
-% trainSizeArr = .1:.1:.9
+
     for shiftind = 1:length(shiftArr);
 for percentSVind = 1:length(percentSVarr)
     for trainSizeInd = 1:length(trainSizeArr)
@@ -27,7 +27,7 @@ for percentSVind = 1:length(percentSVarr)
         percentSV = percentSVarr(percentSVind);
         shifttime = shiftArr(shiftind);
         trainSize = trainSizeArr(trainSizeInd);
-        filterFile = ['may22/filters_wmean/filters'  mosaicFile sprintf('_sv%2.0f',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_tr%2.0f',100*trainSize)];
+        filterFile = ['june16prima/filters_wmean/filters'  mosaicFile sprintf('_sv%2.0f',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_tr%2.0f',100*trainSize)];
         
         clear pRecon
         pRecon.buildFile = buildFile;

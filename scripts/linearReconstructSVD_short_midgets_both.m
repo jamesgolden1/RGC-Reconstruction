@@ -19,15 +19,15 @@ numbins = windowsize;
 disp('Creating training response matrix...')
 %Create the training response matrix (numtimepoints x numcells*numbins)
 trainTimes = shifttime+1:i1-numbins-shifttime;
-respTrain = uint8(zeros(length(trainTimes),size(resp,1)*numbins+1));
-respTrain(:,1) = uint8(ones(length(trainTimes),1));
+respTrain = (zeros(length(trainTimes),size(resp,1)*numbins+1));
+respTrain(:,1) = (ones(length(trainTimes),1));
 for t = 1:length(trainTimes)
     starttime = trainTimes(t)+1;
     endtime = trainTimes(t)+numbins;
 %     size(resp)
 %     size(respTrain)
 %     numbins
-    respTrain(t,2:end) = uint8(reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
+    respTrain(t,2:end) = (reshape(resp(:,starttime:endtime)',1,size(resp,1)*numbins));
 end
 clear resp
 % disp('Creating testing response matrix...')
@@ -87,11 +87,12 @@ else
     keepIndicesSort = [1:size(respTrain,2)];
 end
 
+% respSVD = single(respTrain(:,keepIndicesSort)); clear respTrain;
 
 % if exist([fileext  '_svd.mat'],'file') ~= 2
     
     tic
-    [Utrain, Strain, Vtrain] = svd(single(respTrain(:,keepIndicesSort)), 'econ');
+    [Utrain, Strain, Vtrain] = svd(respTrain(:,keepIndicesSort), 'econ');
     toc
 %     disp([fileext  '_svd_dropout80.mat'])
 %     save(['spike_svd.mat'],'Utrain','Strain','Vtrain','-v7.3');
@@ -141,8 +142,10 @@ disp('loading stim movie');
 if ismac || isunix
     load([reconstructionRootPath '/dat/' stimName]);
     if abs(mean(stim(:,3))) > .01
-        stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
-        clear stim; stim = stimzm;
+%         stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
+        
+%         stimzm = (single(stim)-(ones(size(stim,1),1)*mean(stim,1)));
+%         clear stim; stim = stimzm;
     end
 %     load('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/ns100_r2_10/ns100_jan1_mov3_mosaicAll_1246640.mat');
 else
