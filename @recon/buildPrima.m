@@ -53,11 +53,9 @@ for blockNum =blockIn%1%:nBlocks
     tic
     
     blockNum
-    %     load(filenameRGC, 'innerRetina');
     
-    %      load([ reconstructionRootPath  '/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-    %     load(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(blockNum) '.mat'],'movsm');
-    if stimTypeBuild == 'ns'
+%         natScenes = 255*ieScale(loadHallStimulus(20));
+   if stimTypeBuild == 'ns'
         if blockNum <= 288
             movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
             
@@ -73,19 +71,6 @@ for blockNum =blockIn%1%:nBlocks
 %         natScenes = round(192*natScenesRaw); clear natScenesRaw;
             
     end
-%               load([ reconstructionRootPath  '\dat\imagenetBlocks\movsm_' num2str(blockNum) '.mat'],'movsm');
-%     
-%     rsFactor =1; stimSize = 100;
-%         load([phospheneRootPath '/dat/stimuli/hallMovie.mat'])
-%     szFrames = size(vidFrame,3);
-%     hallMovieResize = zeros(rsFactor*stimSize,rsFactor*stimSize,szFrames);
-%     for ii = 1:szFrames
-%         hallMovieResize(:,:,ii) = imresize(vidFrame(:,:,ii),[rsFactor*stimSize,rsFactor*stimSize]);
-%     end
-%     
-%     % Set hallway movie stimulus
-%     testmovieshort = (255*ieScale(hallMovieResize)); clear hallMovieResize;
-    
     %%
     %% Load image       
     
