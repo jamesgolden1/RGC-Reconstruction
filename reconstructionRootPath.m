@@ -8,8 +8,8 @@ function rootPath=reconstructionRootPath()
 % Example:
 %   fullfile(isetbioRootPath,'data')
 
-rootPath=which('reconstructionRootPath');
-
+% rootPath=which('reconstructionRootPath');
+rootPath = '/Volumes/Lab/Users/james/current/RGC-Reconstruction/';
 [rootPath,~,~]=fileparts(rootPath);
 
 return

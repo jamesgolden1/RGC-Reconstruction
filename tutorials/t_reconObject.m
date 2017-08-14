@@ -27,9 +27,11 @@
 %%
 clear
 
-% folderName = 'june13wnprima_cont';
-% folderName = 'june16prima';
-folderName = 'july9irr';
+pRecon.pixelWidth = 70/2;
+% folderName = 'aug122';
+folderName = 'aug122prima35';
+
+% folderName = 'aug8';
 mosaicFile = 'mosaic0';
 
 movieFile  = fullfile(folderName, 'mov');
@@ -43,7 +45,7 @@ buildFile  = fullfile(folderName, 'raw','build');
 windowSize = 1;
 percentSV = .1;
 % shifttime = 2;
-shifttime = 2;
+shifttime = 4;%17;%4;%19;%4;
 dropout = 0;
 
 filterFile  = fullfile(folderName,...    
@@ -52,7 +54,6 @@ filterFile  = fullfile(folderName,...
 %     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
 %     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime)]);
 
-clear pRecon
 pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
 pRecon.respFile = spikesFile;
@@ -62,22 +63,23 @@ pRecon.windowSize = windowSize;
 pRecon.percentSV = percentSV;
 pRecon.dropout = dropout;
 pRecon.stimTypeBuild = 'ns';
-% pRecon.stimTypeBuild = 'wn';
+% pRecon.stimTypeBuild = 'wn'; 
 
 reconHealthy = recon(pRecon);
-
+ 
 blockIn = 1;
-
-% nCores = 18;
-% pool = parpool(nCores);
-% for ii = 1%:floor(576/nCores)%:floor(576/nCores)]
-% parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
+nCores = 24;
+pool = parpool(nCores);
+for ii = 1:26%27%:floor(576/nCores)%:floor(576/nCores)]
+parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
 %     reconHealthy.build(pRecon,'blockIn',blockIn);
-%     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
-% end
-% delete(pool);
-% end
-
+    reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
+%     reconHealthy.buildHallway(pRecon);
+%     reconHealthy.buildPrimaHallway(pRecon);
+end
+delete(pool);
+end
+delete(gcp);
 reconHealthy.train(pRecon,'shifttime',shifttime);
 % reconHealthy.plot('filters');
 % reconHealthy.test(pRecon);

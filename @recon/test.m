@@ -32,62 +32,78 @@ testmovieshort = (255*ieScale(hallMovieResize)); clear hallMovieResize;
 %%
 %% Load image
 
-if ~exist('spikeResp_hallway.mat','file')
+if 1%~exist('spikeResp_hallway.mat','file')
 
 clear coneParams
 
 % One frame of a WN stimulus
 % Set parameters for size
-
-% coneParams.nSteps = nSteps;
-% coneParams.row = 100; % should be set size to FOV
-% coneParams.col = 100;
-coneParams.fov = fov;
-% % params.vfov = 0.7;
-coneParams.startFrames = 0;
-
-iStimNS = ieStimulusMovieCMosaic(testmovieshort(:,:,1:100),coneParams);
-% iStimNS = ieStimulusMovieCMosaic(natScenes,coneParams);
-cMosaicNS = iStimNS.cMosaic;
-
-%% Bipolar
-clear bpMosaic
-
-cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
-for cellTypeInd = 1:4
-    clear bpParams
-    bpParams.cellType = cellType{cellTypeInd};
+    coneParams.cmNoiseFlag = 'random';
+    coneParams.osNoiseFlag = 'random';
+    % % params.vfov = 0.7;
     
-    % FIX NEGATIVE AND POSITIVE HERE
-    bpParams.ecc = patchEccentricity;
-    bpParams.rectifyType = 1;
-    bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
-    bpMosaic{cellTypeInd}.set('sRFcenter',4);
-    bpMosaic{cellTypeInd}.set('sRFsurround',0);
-    bpMosaic{cellTypeInd}.compute(cMosaicNS);
-end
+    
+    iStimNS = ieStimulusMovieCMosaic(testmovieshort(1:55),coneParams);
+    cMosaicNS = iStimNS.cMosaic;
+    
+    %% Bipolar
+    %% Create a set of bipolar cell types in the bipolar mosaic
+    
+    clear bpL
+    
+    bpL = bipolarLayer(cMosaicNS);
+    
+    % Make each type of bipolar mosaic
+    cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
+    
+    % Stride isn't influencing yet.s
+    clear bpMosaicParams
+    bpMosaicParams.rectifyType = 1;  % Experiment with this
+    bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
+    bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
+    bpMosaicParams.spreadRatio  = 10;  % RF diameter w.r.t. input samples
+    bpMosaicParams.ampCenter = 1.3;%1.5 _2
+    bpMosaicParams.ampSurround = 1;%.5
+    % Maybe we need a bipolarLayer.compute that performs this loop
+    for ii = 1:length(cellType)
+        bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
+        bpL.mosaic{ii}.compute();
+    end
+    
+%     bpL.window;
 
-%% RGC
-clear params rgcParams
-params.eyeRadius = patchEccentricity;
-params.eyeAngle = 90;
-innerRetina=ir(bpMosaic,params);
-cellType = {'on parasol','off parasol','on midget','off midget'};
+    
+    %% RGC
+    
+    clear rgcL rgcParams
+    
+    % Create retina ganglion cell layer object
+    rgcL = rgcLayer(bpL);
+    
+    % There are various parameters you could set.  We will write a script
+    % illustrating these later.  We need a description.
+    rgcParams.centerNoise = 0;
+    rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
+    % mosaicParams.axisVariance = .1;
+    
+    % 27*31+31*35+54*62+63*72
+    onPdiameter = 9.4;
+    diameters = [onPdiameter onPdiameter*.9 onPdiameter*.5 onPdiameter*.45];  % In microns.
+    
+    cellType = {'on parasol','off parasol','on midget','off midget'};
+    for ii = 1:length(cellType)
+        rgcParams.rfDiameter = diameters(ii);
+        rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
+    end
+    
+    nTrials = 1; rgcL.set('numberTrials',nTrials);
+    
+    %% Compute the inner retina response and visualize
+    
+    % Every mosaic has its input and properties assigned so we should be able
+    % to just run through all of them.
+    rgcL = rgcL.compute('bipolarScale',50,'bipolarContrast',1);
 
-rgcParams.centerNoise = 0;
-rgcParams.model = 'LNP';
-rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-
-rgcParams.type = cellType{1};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{2};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{3};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{4};
-innerRetina.mosaicCreate(rgcParams);
-
-innerRetina.compute(bpMosaic);
 
 %%
 toc

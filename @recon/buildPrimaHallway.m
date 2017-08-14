@@ -1,4 +1,4 @@
-function obj = buildPrima(obj, varargin)
+function obj = buildPrimaHallway(obj, varargin)
 %BUILD - builds training set for the recon object
 % Run natural scenes through the RGC array for the big four RGC cell types.
 % 
@@ -49,36 +49,11 @@ nSteps = 500;%000;
 nBlocks = 15;%30;
 
 
-for blockNum =blockIn%1%:nBlocks
     tic
     
-    blockNum
     
-%         natScenes = 255*ieScale(loadHallStimulus(20));
-   if stimTypeBuild == 'ns'
-        if blockNum <= 288
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-        else
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
-        end
-    elseif stimTypeBuild == 'wn'
-        natScenesRaw = (rand(100,100,nSteps));
-        natScenes = 192*round(natScenesRaw); clear natScenesRaw;
-%         natScenes = round(192*natScenesRaw); clear natScenesRaw;
-            
-   end
-    
-   
-%     testInds = [1:100:500-10];
-%     natScenesAll = natScenes;
-%     natScenes = zeros(size(natScenesAll));
-%     for ti = 0:99
-%     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
-%     end
+movieIn = 255*ieScale(loadHallStimulus(200));
+
     %%
     %% Load image       
     
@@ -92,15 +67,16 @@ for blockNum =blockIn%1%:nBlocks
     
     primaParams.currentDecay = currentDecay;
     
-    primaRecon = primaArray(natScenes,primaParams);
+    primaRecon = primaArray(movieIn,primaParams);
     
-    primaRecon.compute(natScenes)
+    primaRecon.compute(movieIn)
     innerRetina = primaRecon.innerRetina;
     
     %%
     toc
     %% Look at covariance matrix
     tic
+%     spikesoutsm = mosaicSpikes(innerRetina);
     
     spikesout   = RGB2XWFormat(innerRetina.mosaic{1}.get('spikes'));    
     spikesout2  = RGB2XWFormat(innerRetina.mosaic{2}.get('spikes'));    
@@ -121,12 +97,12 @@ for blockNum =blockIn%1%:nBlocks
     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
     
-    whiteNoiseSmall = natScenes;
+    whiteNoiseSmall = movieIn;
 
     %     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'];
 
     if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        filename1 = [reconstructionRootPath '/dat/' buildFile '_hallway' '_' mosaicFile '.mat'];
     else
         filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
     end
@@ -135,30 +111,58 @@ for blockNum =blockIn%1%:nBlocks
     %     close all
     
     %     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat']
-    % save(filename1, 'spikesoutsm','whiteNoiseSmall');
-    parsave(filename1, spikesoutsm, whiteNoiseSmall);
-    toc
-    close all
+    save(filename1, 'spikesoutsm','whiteNoiseSmall');
+%     save(filename1, spikesoutsm, whiteNoiseSmall);
+    
+    loadSpikesPitch(buildFile,stimFile,respFile,mosaicFile,pixelWidth,currentDecay,filename1)
+    
+
+function loadSpikesPitch(buildFile,stimFile,respFile,mosaicFile,pixelWidth,currentDecay,filename1)
+loadFile = buildFile;
+
+% dNames = (dir([reconstructionRootPath '/dat/' loadFile '*block_*' '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) mosaicFile '.mat']));
+
+numReps = 1;%length(dNames);
+% filename1 = [reconstructionRootPath '/dat/' loadFile '_block_' num2str(451) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) mosaicFile '.mat'];
+
+matf = matfile(filename1);
+szMov = size(matf.whiteNoiseSmall);
+blocklength = szMov(3);
+stim = zeros(szMov(1)*szMov(2),blocklength*numReps,'uint8');
+clear matf
+blockNum = 0;
+
+for blockNumInd =1%[1:length(dNames) ]
+    % for blockNumInd =[1:12 21:50]
+    blockNum = blockNum+1
+    
+    matf = matfile(filename1);
+    spikesoutsm = matf.spikesoutsm;
+    % Spikes in this variable for each block
+    spikesout = double(spikesoutsm);
+    pointer = (blockNum-1)*blocklength;
+    
+    for i = 1:blocklength
+        blocksize = 10;
+        endval = i*blocksize;
+        if endval > size(spikesout,2)
+            endval = size(spikesout,2);
+        end
+        startval = (i-1)*blocksize + 1;
+        spikeResp(:,pointer+i) = sum(spikesout(:,startval:endval),2);
+    end
+    clear spikesout
+    clear spikesoutsm
+    szMov = size(matf.whiteNoiseSmall);
+    stimtmp = reshape(matf.whiteNoiseSmall,szMov(1)*szMov(2),blocklength);
+    %     stimtmp = uint8(128+double(stimtmp) - ones(size(stimtmp,1),1)*mean(stimtmp,1));
+    stim(:,(blockNum-1)*blocklength +1 : blockNum*blocklength) = stimtmp;
+    
+    % Stimulus here
+    % whiteNoiseSmall;
 end
 
 
-% Working STA!
-% cd /Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/test4
-% load('sp_may5_test4_mosaic_may5.mat')
-% load('mov_may5_test4_mosaic_may5.mat')
-% stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
-% for j = 2:30; sta2(:,j-1) = ((stimzm(:,1:end-(j-1))))*single(spikeResp(700,j:end)'); end;
-% figure; imagesc(sta2);
-% figure; ieMovie(reshape(sta2,[100 100 29]));
 
-% sta = stimzm(:,1:end-14)*single(spikeResp(:,15:end)');
-% figure; imagesc(reshape(sta(:,4700),[100 100]))
-
-% % for computing mean spike rate
-% s1= (spikeResp(1:837,:)); mean(s1(:))
-% sum(length(vertcat(innerRetina.mosaic{2}.cellLocation{:})))
-% s1= (spikeResp(838:838+1085,:)); mean(s1(:))
-% sum(length(vertcat(innerRetina.mosaic{3}.cellLocation{:})))
-%  s1= (spikeResp(838+1085+1:838+1085+3348,:)); mean(s1(:))
-% sum(length(vertcat(innerRetina.mosaic{4}.cellLocation{:})))
-% s1= (spikeResp(838+1085+3348+1:838+1085+3348+4526,:)); mean(s1(:))
+save([reconstructionRootPath '/dat/' respFile '_hallway_' mosaicFile ],'spikeResp','-v7.3');
+save([reconstructionRootPath '/dat/' stimFile '_hallway_' mosaicFile],'stim','-v7.3')
