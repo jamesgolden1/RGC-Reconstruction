@@ -74,7 +74,7 @@ stimTest = stimTestzm;
     
 
 rd = RdtClient('isetbio');
-rd.crp('/resources/data/istim');
+rd.crp('/resources/data/reconstruction');
 filterFile = 'filtersmosaic0_sv50_w1_sh17_dr0.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterMat = data.filterMat; clear data;
