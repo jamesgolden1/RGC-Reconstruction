@@ -172,6 +172,8 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     %     close all
     
     %     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat']
+    mkdir(fullfile(reconstructionRootPath, 'dat','aug122test/raw'));
+    mkdir(fullfile(reconstructionRootPath, 'dat','aug122/raw'));
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
 %     save(filename1, spikesoutsm, whiteNoiseSmall);
     
