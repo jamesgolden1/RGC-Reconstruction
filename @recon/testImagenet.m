@@ -72,15 +72,25 @@ stimTest = stimTestzm;
 %     for trainSizeInd = 1:length(trainSizeArr)
 %     filterFileFull = fullfile(reconstructionRootPath,'dat',[filterFile '.mat']);
     
-    if isempty(pixelWidth)
-    filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-    [filterFile '.mat']);
-        
-    else
-    filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-    [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
-    end
-        load(filterFileFull);
+
+rd = RdtClient('isetbio');
+rd.crp('/resources/data/istim');
+filterFile = 'filtersmosaic0_sv50_w1_sh17_dr0.mat';
+data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+filterMat = data.filterMat; clear data;
+% % % % % % % % % % 
+%     if isempty(pixelWidth)
+%     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+%     [filterFile '.mat']);
+%         
+%     else
+%     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+%     [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
+%     end
+%         load(filterFileFull);
+% % % % % % % 
+
+
 %     shiftval = 9;
 %     shiftval = shiftTime+9;
     
