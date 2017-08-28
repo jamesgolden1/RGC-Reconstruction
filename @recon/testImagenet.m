@@ -72,13 +72,20 @@ stimTest = stimTestzm;
 %     for trainSizeInd = 1:length(trainSizeArr)
 %     filterFileFull = fullfile(reconstructionRootPath,'dat',[filterFile '.mat']);
     
+% old isetbio commit 2b8fe22
+% rd = RdtClient('isetbio');
+% rd.crp('/resources/data/istim');
+% filterFile = 'filtersmosaic0_sv50_w1_sh17_dr0.mat';
+% data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+% filterMat = data.filterMat; clear data;
 
+% up to date w master
 rd = RdtClient('isetbio');
-rd.crp('/resources/data/istim');
-filterFile = 'filtersmosaic0_sv50_w1_sh17_dr0.mat';
+rd.crp('/resources/data/reconstruction');
+filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterMat = data.filterMat; clear data;
-% % % % % % % % % % 
+% % % % % % % % % % % 
 %     if isempty(pixelWidth)
 %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
 %     [filterFile '.mat']);
@@ -88,8 +95,6 @@ filterMat = data.filterMat; clear data;
 %     [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
 %     end
 %         load(filterFileFull);
-% % % % % % % 
-
 
 %     shiftval = 9;
 %     shiftval = shiftTime+9;

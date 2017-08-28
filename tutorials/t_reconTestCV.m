@@ -4,12 +4,12 @@
 
 
 clear
- 
-% 
-folderNameTrain = 'aug122';
-folderNameTest = 'aug122test';
-% folderNameTrain = 'aug122prima9';
-% folderNameTest = 'aug122prima9test';
+
+folderNameTrain = 'aug27';
+folderNameTest = 'aug27test';
+
+% folderNameTrain = 'aug23sp';
+% folderNameTest = 'aug23sptest';
 
 pixelWidth = 70/8;
 currentDecay = 2;
@@ -21,7 +21,7 @@ mosaicFile = 'mosaic0';
 windowSize = 1;
 percentSV = .5;%.25;%.12;
 % shifttime = 2;
-shifttime = 17;
+shifttime = 15;
 dropout = 0;
 
 filterFile  = fullfile(folderNameTrain,...    

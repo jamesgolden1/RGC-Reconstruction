@@ -45,7 +45,7 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 20;%000;
+nSteps = 100;%000;
 nBlocks = 15;%30;
 
 
@@ -65,8 +65,8 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     % coneParams.row = 100; % should be set size to FOV
     % coneParams.col = 100;
     coneParams.fov = fov;
-    coneParams.cmNoiseFlag = 'random';
-    coneParams.osNoiseFlag = 'random';
+    coneParams.cmNoiseFlag = 'none';
+    coneParams.osNoiseFlag = 'none';
     % % params.vfov = 0.7;
     
     
@@ -129,7 +129,7 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     
     % Every mosaic has its input and properties assigned so we should be able
     % to just run through all of them.
-    rgcL.compute('bipolarScale',250,'bipolarContrast',1);
+    rgcL.compute('bipolarScale',1*250,'bipolarContrast',1);
     
 
     

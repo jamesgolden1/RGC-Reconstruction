@@ -65,12 +65,12 @@ for blockNum =blockIn%:nBlocks
             
     end
 
-    testInds = [1:10:500-10];
-    natScenesAll = natScenes;
-    natScenes = zeros(size(natScenesAll));
-    for ti = 0:9
-    natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
-    end
+%     testInds = [1:10:500-10];
+%     natScenesAll = natScenes;
+%     natScenes = zeros(size(natScenesAll));
+%     for ti = 0:9
+%     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
+%     end
     %%
     %% Load image
     clear coneParams
@@ -82,8 +82,8 @@ for blockNum =blockIn%:nBlocks
     % coneParams.row = 100; % should be set size to FOV
     % coneParams.col = 100;
     coneParams.fov = fov;
-    coneParams.cmNoiseFlag = 'random';
-    coneParams.osNoiseFlag = 'random';
+    coneParams.cmNoiseFlag = 'none';
+    coneParams.osNoiseFlag = 'none';
     % % params.vfov = 0.7;
     
     
@@ -105,9 +105,9 @@ for blockNum =blockIn%:nBlocks
     bpMosaicParams.rectifyType = 1;  % Experiment with this
     bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
     bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
-    bpMosaicParams.spreadRatio  = 10;  % RF diameter w.r.t. input samples
-    bpMosaicParams.ampCenter = 1.3;%1.5 _2
-    bpMosaicParams.ampSurround = 1;%.5
+    bpMosaicParams.spreadRatio  = 9;  % RF diameter w.r.t. input samples
+    bpMosaicParams.ampCenter = 1;%1.3;%1.5 _2
+    bpMosaicParams.ampSurround = .5;%1;%.5
     % Maybe we need a bipolarLayer.compute that performs this loop
     for ii = 1:length(cellType)
         bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
@@ -130,7 +130,7 @@ for blockNum =blockIn%:nBlocks
     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
     % mosaicParams.axisVariance = .1;
     
-    % 27*31+31*35+54*62+63*72
+    % 28*32+31*35+55*63+61*70
     onPdiameter = 9.4;
     diameters = [onPdiameter onPdiameter*.9 onPdiameter*.5 onPdiameter*.45];  % In microns.
     
