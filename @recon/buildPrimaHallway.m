@@ -45,7 +45,7 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 500;%000;
+nSteps = 100;%000;
 nBlocks = 15;%30;
 
 

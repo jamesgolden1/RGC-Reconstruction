@@ -45,7 +45,7 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 500;%000;
+nSteps = 5;%000;
 nBlocks = 15;%30;
 
 
@@ -54,23 +54,23 @@ for blockNum =blockIn%1%:nBlocks
     
     blockNum
     
-%         natScenes = 255*ieScale(loadHallStimulus(20));
-   if stimTypeBuild == 'ns'
-        if blockNum <= 288
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-        else
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
-        end
-    elseif stimTypeBuild == 'wn'
-        natScenesRaw = (rand(100,100,nSteps));
-        natScenes = 192*round(natScenesRaw); clear natScenesRaw;
-%         natScenes = round(192*natScenesRaw); clear natScenesRaw;
-            
-   end
+        natScenes = 255*ieScale(loadHallStimulus(20));
+%    if stimTypeBuild == 'ns'
+%         if blockNum <= 288
+%             movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
+%             
+%             natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
+%         else
+%             movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
+%             
+%             natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
+%         end
+%     elseif stimTypeBuild == 'wn'
+%         natScenesRaw = (rand(100,100,nSteps));
+%         natScenes = 192*round(natScenesRaw); clear natScenesRaw;
+% %         natScenes = round(192*natScenesRaw); clear natScenesRaw;
+%             
+%    end
     
    
 %     testInds = [1:100:500-10];

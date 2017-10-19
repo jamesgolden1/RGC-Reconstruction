@@ -27,8 +27,8 @@
 %%
 clear
 
-pRecon.pixelWidth = 70/2;
-folderName = 'aug122test';
+pRecon.pixelWidth = 70/1;
+folderName = 'aug27prima70test';
 % folderName = 'aug122prima35';
 
 % folderName = 'aug8';
@@ -67,15 +67,15 @@ pRecon.stimTypeBuild = 'ns';
 
 reconHealthy = recon(pRecon);
  
-% blockIn = 1;
+blockIn = 1;
 % nCores = 24;
 % pool = parpool(nCores);
 % for ii = 1:26%27%:floor(576/nCores)%:floor(576/nCores)]
 % parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
 % %     reconHealthy.build(pRecon,'blockIn',blockIn);
 %     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
-    reconHealthy.buildHallway(pRecon);
-% %     reconHealthy.buildPrimaHallway(pRecon);
+%     reconHealthy.buildHallway(pRecon);
+    reconHealthy.buildPrimaHallway(pRecon);
 % end
 % delete(pool);
 % end

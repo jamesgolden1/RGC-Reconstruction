@@ -6,12 +6,18 @@
 clear
  
 % 
-folderNameTrain = 'aug122';
-folderNameTest = 'aug122test';
-% folderNameTrain = 'aug122prima9';
-% folderNameTest = 'aug122prima9test';
+% folderNameTrain = 'aug27';
+% folderNameTest = 'aug27test';
 
-pixelWidth = 70/8;
+folderNameTrain = 'aug27prima70';
+folderNameTest = 'aug27prima70test';
+
+% folderNameTrain = 'aug23sp';
+% folderNameTest = 'aug23sptest';
+% folderNameTrain = 'august/aug122prima70';
+% folderNameTest = 'august/aug122prima70test';
+
+pixelWidth = 70/2;
 currentDecay = 2;
 % folderNameTrain = 'july25prima18';
 % % folderNameTest  = 'aug1prima18test';
@@ -19,15 +25,15 @@ currentDecay = 2;
 
 mosaicFile = 'mosaic0';
 windowSize = 1;
-percentSV = .5;%.25;%.12;
+percentSV = .05;%.25;%.12;
 % shifttime = 2;
-shifttime = 17;
+shifttime = 4;%15;%4;%17;
 dropout = 0;
 
 filterFile  = fullfile(folderNameTrain,...    
-    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
+    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout) '_aug27']);
 
-% pRecon.pixelWidth = pixelWidth;
+pRecon.pixelWidth = pixelWidth;
 pRecon.currentDecay = currentDecay;
 pRecon.mosaicFile = mosaicFile;
 pRecon.filterFile = filterFile;
@@ -38,4 +44,4 @@ pRecon.dropout = dropout;
 
 reconHealthy = recon(pRecon);
 
-mse = reconHealthy.testImagenet(pRecon);
+% mseArr = reconHealthy.testImagenet(pRecon);

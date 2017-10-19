@@ -74,20 +74,20 @@ stimTest = stimTestzm;
     
 
 rd = RdtClient('isetbio');
-rd.crp('/resources/data/reconstruction');
+rd.crp('/resources/data/istim');
 filterFile = 'filtersmosaic0_sv50_w1_sh17_dr0.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterMat = data.filterMat; clear data;
 % % % % % % % % % % 
-%     if isempty(pixelWidth)
-%     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-%     [filterFile '.mat']);
-%         
-%     else
-%     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-%     [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
-%     end
-%         load(filterFileFull);
+    if isempty(pixelWidth)
+    filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+    [filterFile '.mat']);
+        
+    else
+    filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+    [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
+    end
+        load(filterFileFull);
 % % % % % % % 
 
 
@@ -109,6 +109,13 @@ filterMat = data.filterMat; clear data;
     filterMat2 = zeroFilter(filterMat,lambda);
     movRecon2 = filterMat2'*spikeAug;
     
+%     p2.vname = ['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/current/aug20_hallway_recon2.avi']
+%     p2.vname = ['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/current/aug20_hallway_recon_pros18_filt0025.avi']
+%     p2.vname = ['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/current/aug20_hallway_recon_pros35_filt0005.avi']
+%     p2.save = true;
+%     p2.FrameRate = 25;
+% 
+%     figure; ieMovie(reshape(movRecon2,[100 100 size(movRecon2,2)]),p2);
     figure; ieMovie(reshape(movRecon2,[100 100 size(movRecon2,2)]));
 % % % % % % % % % % % %     
 %     % works for healthy

@@ -45,7 +45,7 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 20;%000;
+nSteps = 10;%000;
 nBlocks = 15;%30;
 
 
@@ -54,6 +54,11 @@ nBlocks = 15;%30;
     
 natScenes = 255*ieScale(loadHallStimulus(nSteps));
 
+% nSteps = 20;
+% load([fullfile(phospheneRootPath,'dat','stimuli','silver_small.mat')])
+% imMovie = repmat(im1,[1 1 nSteps]);
+% imMovie(:,:,1) = zeros(100,100);
+% natScenes = 255*ieScale(imMovie);
     %%
     %% Load image
     clear coneParams
@@ -65,8 +70,8 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     % coneParams.row = 100; % should be set size to FOV
     % coneParams.col = 100;
     coneParams.fov = fov;
-    coneParams.cmNoiseFlag = 'random';
-    coneParams.osNoiseFlag = 'random';
+    coneParams.cmNoiseFlag = 'none';
+    coneParams.osNoiseFlag = 'none';
     % % params.vfov = 0.7;
     
     

@@ -172,7 +172,8 @@ end
 
 rd = RdtClient('isetbio');
 rd.crp('/resources/data/istim');
-filterFile = 'filters_mosaic0_sv80_w1_sh4_may22.mat';
+filterFile = 'barMovie.mat';
+% filterFile = 'filters_mosaic0_sv80_w1_sh4_may22.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterMat = data.filterMat; clear data;
 

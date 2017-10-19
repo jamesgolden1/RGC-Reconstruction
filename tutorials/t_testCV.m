@@ -298,3 +298,6 @@ xlabel('RMSE, Electrode Spacing = 70 microns','fontsize',16);
  title(sprintf('Recon Error vs. Electrode Spacing, Prosthesis Learning\nRegression Slope %1.2f',f1),'fontsize',16);
  
 set(gca,'fontsize',16);
+
+% title(sprintf('Recon Error vs. Electrode Spacing, No Learning, Only On\nRegression Slope %1.2f',.93),'fontsize',16);
+ 

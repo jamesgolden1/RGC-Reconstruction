@@ -6,7 +6,7 @@ function obj = publish(obj)
 %%
 rd = RdtClient('isetbio');
 rd.credentialsDialog;
-rd.crp('/resources/data/istim');
+rd.crp('/resources/data/reconstruction');
 
 fname = fullfile(reconstructionRootPath, 'dat/', [obj.filterFile '.mat']);
 % fname = fullfile(reconstructionRootPath, 'dat/current/', 'filters_mosaic0_sv75_w1_sh2_may26primaSmall.mat');
