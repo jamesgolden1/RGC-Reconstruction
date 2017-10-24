@@ -5,8 +5,10 @@
 
 clear
 
-folderNameTrain = 'aug27';
-folderNameTest = 'aug27test';
+folderNameTrain = 'aug30';
+folderNameTest = 'aug29test';
+% folderNameTrain = 'aug27prima9';
+% folderNameTest = 'aug29prima9hallrng';
 
 % folderNameTrain = 'aug23sp';
 % folderNameTest = 'aug23sptest';
@@ -19,9 +21,9 @@ currentDecay = 2;
 
 mosaicFile = 'mosaic0';
 windowSize = 1;
-percentSV = .5;%.25;%.12;
+percentSV = .5;%.5;%.25;%.12;
 % shifttime = 2;
-shifttime = 15;
+shifttime = 15;%15;
 dropout = 0;
 
 filterFile  = fullfile(folderNameTrain,...    
@@ -38,4 +40,4 @@ pRecon.dropout = dropout;
 
 reconHealthy = recon(pRecon);
 
-mse = reconHealthy.testImagenet(pRecon);
+mse1 = reconHealthy.testImagenet(pRecon);

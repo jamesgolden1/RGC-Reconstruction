@@ -14,6 +14,8 @@ p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
+p.addParameter('startInd',1,@isnumeric);
+p.addParameter('testFlag',0,@isnumeric);
 p.addParameter('stimTypeBuild','ns',@ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
@@ -22,6 +24,8 @@ buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
 blockIn = p.Results.blockIn;
+startInd = p.Results.startInd;
+testFlag = p.Results.testFlag;
 stimTypeBuild = p.Results.stimTypeBuild;
 
 if isempty(buildFile)
@@ -64,11 +68,22 @@ for blockNum =blockIn%:nBlocks
         natScenes = 255*round(natScenesRaw); clear natScenesRaw;
             
     end
+    
+    if testFlag
+    
+    testInds = (startInd-1)+[1:20:500-20];
+    natScenesAll = natScenes;
+    natScenes = zeros(size(natScenesAll));
+    for ti = 0:19
+    natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
+    end
+    
+    end
 
-%     testInds = [1:10:500-10];
+%     testInds = [1:25:500-20];
 %     natScenesAll = natScenes;
 %     natScenes = zeros(size(natScenesAll));
-%     for ti = 0:9
+%     for ti = 0:24%19s
 %     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
 %     end
     %%
@@ -146,7 +161,7 @@ for blockNum =blockIn%:nBlocks
     
     % Every mosaic has its input and properties assigned so we should be able
     % to just run through all of them.
-    rgcL.compute('bipolarScale',250,'bipolarContrast',1);
+    rgcL.compute('bipolarScale',50,'bipolarContrast',1);
     
     %%
     toc
@@ -168,10 +183,20 @@ for blockNum =blockIn%:nBlocks
     
     whiteNoiseSmall = natScenes;
 
-    if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+    if testFlag
+        if ismac || isunix
+            filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
+        else
+            filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
+        end
+        
     else
-        filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        
+        if ismac || isunix
+            filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        else
+            filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        end
     end
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc

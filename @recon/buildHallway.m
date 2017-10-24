@@ -45,7 +45,7 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 100;%000;
+nSteps = 550;%000;
 nBlocks = 15;%30;
 
 
@@ -69,7 +69,7 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     coneParams.osNoiseFlag = 'none';
     % % params.vfov = 0.7;
     
-    
+    load('rngSeedTraining.mat'); rng(s1);
     iStimNS = ieStimulusMovieCMosaic(natScenes,coneParams);
     cMosaicNS = iStimNS.cMosaic;
     
@@ -88,9 +88,9 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     bpMosaicParams.rectifyType = 1;  % Experiment with this
     bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
     bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
-    bpMosaicParams.spreadRatio  = 10;  % RF diameter w.r.t. input samples
-    bpMosaicParams.ampCenter = 1.3;%1.5 _2
-    bpMosaicParams.ampSurround = 1;%.5
+    bpMosaicParams.spreadRatio  = 9;  % RF diameter w.r.t. input samples
+    bpMosaicParams.ampCenter = 1.5;%1.5 _2
+    bpMosaicParams.ampSurround = .5;%.5
     % Maybe we need a bipolarLayer.compute that performs this loop
     for ii = 1:length(cellType)
         bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
@@ -129,7 +129,7 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     
     % Every mosaic has its input and properties assigned so we should be able
     % to just run through all of them.
-    rgcL.compute('bipolarScale',1*250,'bipolarContrast',1);
+    rgcL.compute('bipolarScale',2*50,'bipolarContrast',1);
     
 
     
@@ -172,8 +172,8 @@ natScenes = 255*ieScale(loadHallStimulus(nSteps));
     %     close all
     
     %     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat']
-    mkdir(fullfile(reconstructionRootPath, 'dat','aug122test/raw'));
-    mkdir(fullfile(reconstructionRootPath, 'dat','aug122/raw'));
+%     mkdir(fullfile(reconstructionRootPath, 'dat','aug122test/raw'));
+%     mkdir(fullfile(reconstructionRootPath, 'dat','aug122/raw'));
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
 %     save(filename1, spikesoutsm, whiteNoiseSmall);
     
