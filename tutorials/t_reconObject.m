@@ -28,8 +28,12 @@
 clear
 
 pRecon.pixelWidth = 70/2;
-folderName = 'aug122test';
-% folderName = 'aug122prima35';
+% folderName = 'aug30';
+
+% folderName = 'sep20hall100'; pRecon.testFlag = 1;
+% folderName = 'sep20prima35test'; pRecon.testFlag = 1;
+folderName = 'sep20prima35hall'; pRecon.testFlag = 1;
+% folderName = 'sep20prima35test'; pRecon.numTest = 20;
 
 % folderName = 'aug8';
 mosaicFile = 'mosaic0';
@@ -43,9 +47,9 @@ buildFile  = fullfile(folderName, 'raw','build');
 % buildFile  = fullfile(reconstructionRootPath, 'dat', folderName, 'build');
 
 windowSize = 1;
-percentSV = .1;
+percentSV = .25;%.5;%.05;%.5;%.5;
 % shifttime = 2;
-shifttime = 4;%17;%4;%19;%4;
+shifttime = 3;%15;%4;%15;%17;%5;
 dropout = 0;
 
 filterFile  = fullfile(folderName,...    
@@ -67,17 +71,19 @@ pRecon.stimTypeBuild = 'ns';
 
 reconHealthy = recon(pRecon);
  
-% blockIn = 1;
-% nCores = 24;
+% blockIn = 1; startInd = 1;
+% nCores = 18;
 % pool = parpool(nCores);
-% for ii = 1:26%27%:floor(576/nCores)%:floor(576/nCores)]
+% for startInd = 5:20
+% for ii = 27:1:32%28:2:32%1:26%27%:floor(576/nCores)%:floor(576/nCores)]
 % parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
-% %     reconHealthy.build(pRecon,'blockIn',blockIn);
-%     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
-    reconHealthy.buildHallway(pRecon);
-% %     reconHealthy.buildPrimaHallway(pRecon);
+%     reconHealthy.build(pRecon,'blockIn',blockIn,'startInd',startInd);
+% %     reconHealthy.buildPrima(pRecon,'blockIn',blockIn,'startInd',startInd);
+%     reconHealthy.buildHallway(pRecon);
+    reconHealthy.buildPrimaHallway(pRecon);
 % end
 % delete(pool);
+% end
 % end
 % delete(gcp);
 % reconHealthy.train(pRecon,'shifttime',shifttime);

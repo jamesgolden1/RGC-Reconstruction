@@ -282,10 +282,19 @@ xlabel('RMSE, Electrode Spacing = 70 microns','fontsize',16);
  %%
  
  
-load('mse_35um_prosthesis.mat'); mse35 = mse;
-load('mse_70um_prosthesis.mat'); mse70 = mse;
- 
- figure; scatter(squeeze(mse70(1,1,:))/255,squeeze(mse35(1,1,:))/255); 
+% load('mse_35um_prosthesis.mat'); mse35 = mse;
+% load('mse_70um_prosthesis.mat'); mse70 = mse;
+%  
+% load('errmean35_2.mat'); mse35 = sqrt(errmean);
+% load('errmean70_2.mat'); mse70 = sqrt(errmean);
+
+% % /Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/sep8prima35test
+% load('errmean35_nolearn_on_l1_td_sep9.mat'); mse35 = sqrt(errmean);
+% load('errmean70_nolearn_on_l1_td_sep9.mat'); mse70 = sqrt(errmean);
+
+load('errmean35_nolearn_onoff_l1_td_sep9.mat'); mse35 = sqrt(errmean);
+load('errmean70_nolearn_onoff_l1_td_sep9.mat'); mse70 = sqrt(errmean);
+ figure; scatter(squeeze(mse70)/255,squeeze(mse35)/255); 
  hold on; line([0 100]/255,[0 100]/255,'color','k','linewidth',2); 
 axis equal; grid on;
 axis([0 0.4 0 0.4]);
@@ -295,6 +304,30 @@ hold on; plot(.01:.01:.4,f1*[.01:.01:.4],'r','linewidth',3);
 
 xlabel('RMSE, Electrode Spacing = 70 microns','fontsize',16);
  ylabel('RMSE, Electrode Spacing = 35 microns','fontsize',16);
+ title(sprintf('Recon Error vs. Electrode Spacing, No Learning Only On\nRegression Slope %1.2f',f1),'fontsize',16);
+ 
+set(gca,'fontsize',16);
+
+%%
+
+
+% load('errmean35_2.mat'); mse35 = sqrt(errmean);
+% load('errmean70_2.mat'); mse70 = sqrt(errmean);
+
+load('errmean35_nolearn_on_sep7.mat'); mse35 = sqrt(errmean);
+load('errmean70_nolearn_on_sep7.mat'); mse70 = sqrt(errmean);
+
+ figure; scatter(squeeze(mse70)/255,squeeze(mse35)/255); 
+ hold on; line([0 100]/255,[0 100]/255,'color','k','linewidth',2); 
+axis equal; grid on;
+axis([0 0.3 0 0.3]);
+ 
+f1 = squeeze(mse70')/255\squeeze(mse35')/255;
+hold on; plot(.01:.01:.4,f1*[.01:.01:.4],'r','linewidth',3);
+
+xlabel('RMSE, Electrode Spacing = 70 microns','fontsize',16);
+ ylabel('RMSE, Electrode Spacing = 35 microns','fontsize',16);
  title(sprintf('Recon Error vs. Electrode Spacing, Prosthesis Learning\nRegression Slope %1.2f',f1),'fontsize',16);
  
 set(gca,'fontsize',16);
+

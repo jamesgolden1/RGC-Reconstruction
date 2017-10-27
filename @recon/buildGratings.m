@@ -7,7 +7,9 @@ function obj = buildGratings(obj, varargin)
 %   buildFile - a string that is used to store the spikes and the movie stim
 %
 % See also: trainAndTest.m
-%
+
+%%
+
 p = inputParser;
 p.addParameter('mosaicFile',[],@ischar);
 p.addParameter('buildFile',[],@ischar);
@@ -18,9 +20,19 @@ p.addParameter('stimTypeBuild','ns',@ischar);
 p.addParameter('nTrials',100,@isnumeric);
 p.addParameter('contrast',0.1,@isnumeric);
 
-p.addParameter('gratingSpFreq',25,@isnumeric);
+p.addParameter('pixelWidth',70,@isnumeric);
+p.addParameter('currentDecay',2,@isnumeric);
 
-p.addParameter('horizontalFlag',false,@islogical);
+p.addParameter('gratingSpFreq',25,@isnumeric);
+p.addParameter('horizontalFlag',false,@isnumeric);
+p.addParameter('folderNameTrain','',@ischar);
+p.addParameter('folderNameTest','',@ischar);
+p.addParameter('filterFile','',@ischar);
+p.addParameter('windowSize','',@isnumeric);
+p.addParameter('percentSV','',@isnumeric);
+p.addParameter('shifttime','',@isnumeric);
+
+p.addParameter('rngInput',1,@isnumeric);
 
 p.KeepUnmatched = true;
 p.parse(varargin{:});
@@ -32,12 +44,52 @@ blockIn = p.Results.blockIn;
 stimTypeBuild = p.Results.stimTypeBuild;
 nTrials = p.Results.nTrials;
 contrast = p.Results.contrast;
+horizontalFlag = p.Results.horizontalFlag;
+
 gratingSpFreq = p.Results.gratingSpFreq;
 
-horizontalFlag = p.Results.horizontalFlag;
-if isempty(buildFile)
-    buildFile = ['primaLandolt_training_' num2str(round(cputime*100))];
-end
+pixelWidth = p.Results.pixelWidth;
+currentDecay = p.Results.currentDecay;
+folderNameTrain = p.Results.folderNameTrain;
+folderNameTest = p.Results.folderNameTest;
+filterFile = p.Results.filterFile;
+windowSize = p.Results.windowSize;
+percentSV = p.Results.percentSV;
+shifttime  = p.Results.shifttime;
+rngInput = p.Results.rngInput;
+%%
+
+
+% p = inputParser;
+% p.addParameter('mosaicFile',[],@ischar);
+% p.addParameter('buildFile',[],@ischar);
+% p.addParameter('stimFile',[],@ischar);
+% p.addParameter('respFile',[],@ischar);
+% p.addParameter('blockIn',1,@isnumeric);
+% p.addParameter('stimTypeBuild','ns',@ischar);
+% p.addParameter('nTrials',100,@isnumeric);
+% p.addParameter('contrast',0.1,@isnumeric);
+% 
+% p.addParameter('gratingSpFreq',25,@isnumeric);
+% 
+% p.addParameter('horizontalFlag',false,@islogical);
+% 
+% p.KeepUnmatched = true;
+% p.parse(varargin{:});
+% mosaicFile = p.Results.mosaicFile;
+% buildFile = p.Results.buildFile;
+% stimFile = p.Results.stimFile;
+% respFile = p.Results.respFile;
+% blockIn = p.Results.blockIn;
+% stimTypeBuild = p.Results.stimTypeBuild;
+% nTrials = p.Results.nTrials;
+% contrast = p.Results.contrast;
+% gratingSpFreq = p.Results.gratingSpFreq;
+% 
+% horizontalFlag = p.Results.horizontalFlag;
+% if isempty(buildFile)
+%     buildFile = ['primaLandolt_training_' num2str(round(cputime*100))];
+% end
 
 tic
 
@@ -56,107 +108,141 @@ nSteps = 16;
 % gapsize0 = gap;
 % landoltStim = imgLandoltC('orientation',orient0,'gapsize',gapsize0);
 
+%%
+
 numCols = 100; numRows = 100; % gratingSpFreq = 50;
 % gratingsMovieRow = sin((2*pi/(numCols/gratingSpFreq))*[1:numCols]);
-gratingsMovieRow = sin((2*pi/(numCols/gratingSpFreq))*[1:numCols] + pi/2);
-% gratingsMovieIm= (ones(numRows,1)*gratingsMovieRow)';%*tempFreq;
+gratingsMovieRow = 127+contrast*127*sin((2*pi/(numCols/gratingSpFreq))*[1:numCols] + pi/2);
 if horizontalFlag
     gratingsMovieIm= (ones(numRows,1)*gratingsMovieRow)';%*tempFreq;
 else
     
     gratingsMovieIm= (ones(numRows,1)*gratingsMovieRow);%*tempFreq;
 end
+    
 gratingsMovie = repmat(gratingsMovieIm,[1 1 nSteps]);
 
-% Need factor of two on contrast for accurate match
-gratingsMovieContrast = (2*contrast)*(.5*gratingsMovie(1:100,1:100,:));
-gratingsMovieContrast(end,end,:) = .5; gratingsMovieContrast(1,end,:) = -.5;
+gratingsMovieContrast = (gratingsMovie(1:100,1:100,:));
 gratingsMovieContrast(:,:,1) = zeros(100,100);
-gratingsMovieContrast = 128+127*gratingsMovieContrast;
+
 %% Reconstruction filter parameters
 
 
-mosaicFile = '_mosaic0';
-windowSize = 1;
-shiftArr = 4;
-shiftTime = shiftArr; shiftind = 1;
-percentSVarr =[.25]; percentSVind = 1;
-trainSizeArr = [.8]; trainSizeInd = 1;
-
-percentSV = percentSVarr(percentSVind);
-shifttime = shiftArr(shiftind);
-trainSize = trainSizeArr(trainSizeInd);
-filterFile = ['may22/filters_wmean/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_tr%d',100*trainSize)];
-% filterFile = ['june16prima/filters/filters'  mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_tr%d',100*trainSize)];
-
 load(filterFile);
 
+
+% lambda = .01;
+% filterMat2 = zeroFilter(filterMat,lambda);
+% clear filterMat;
 %% Load image
-clear coneParams
-coneParams.fov = fov;
-
-coneParams.cmNoiseFlag = 'random';
-coneParams.osNoiseFlag = 'random';
-iStimNS = ieStimulusMovieCMosaic((gratingsMovieContrast),coneParams);
-cMosaicNS = iStimNS.cMosaic;
-
-% Bipolar
-clear bpMosaic
-
-cellType = {'ondiffuse','offdiffuse','onmidget','offmidget','onSBC'};
-for cellTypeInd = 1:4
-    clear bpParams
-    bpParams.cellType = cellType{cellTypeInd};
+    %% Load image
+    clear coneParams
     
-    bpParams.ecc = patchEccentricity;
-    bpParams.rectifyType = 1;
-    bpMosaic{cellTypeInd} = bipolar(cMosaicNS, bpParams);
-    bpMosaic{cellTypeInd}.set('sRFcenter',1);
-    bpMosaic{cellTypeInd}.set('sRFsurround',0);
-    bpMosaic{cellTypeInd}.compute(cMosaicNS);
-end
+    % One frame of a WN stimulus
+    % Set parameters for size
+    
+    % coneParams.nSteps = nSteps;
+    % coneParams.row = 100; % should be set size to FOV
+    % coneParams.col = 100;
+    coneParams.fov = fov;
+    coneParams.cmNoiseFlag = 'none';
+    coneParams.osNoiseFlag = 'none';
+    coneParams.startFrames =0;
+    coneParams.endFrames = 0;
+    % % params.vfov = 0.7;
+    
+    
+    load('rngSeedTraining.mat'); rng(s1);
+    iStimNS = ieStimulusMovieCMosaic(gratingsMovieContrast,coneParams);
+    cMosaicNS = iStimNS.cMosaic;
+    
+    % Bipolar
+    % Create a set of bipolar cell types in the bipolar mosaic
+    
+    clear bpL
+    
+    bpL = bipolarLayer(cMosaicNS);
+    
+    % Make each type of bipolar mosaic
+    cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
+    
+    % Stride isn't influencing yet.s
+    clear bpMosaicParams
+    bpMosaicParams.rectifyType = 1;  % Experiment with this
+    bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
+    bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
+    bpMosaicParams.spreadRatio  = 9;  % RF diameter w.r.t. input samples
+    bpMosaicParams.ampCenter = 1;%1.3;%1.5 _2
+    bpMosaicParams.ampSurround = .5;%1;%.5
+    % Maybe we need a bipolarLayer.compute that performs this loop
+    for ii = 1:length(cellType)
+        bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
+        bpL.mosaic{ii}.compute();
+    end
+    
+%     bpL.window;
 
-% RGC
-clear params rgcParams
-params.eyeRadius = patchEccentricity;
-params.eyeAngle = 90;
-innerRetina=ir(bpMosaic,params);
-cellType = {'on parasol','off parasol','on midget','off midget'};
-
-rgcParams.centerNoise = 0;
-rgcParams.model = 'LNP';
-%     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-rgcParams.axisVariance = 0;
-%     rgcParams.rfDiameter = 2;
-rgcParams.type = cellType{1};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{2};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{3};
-innerRetina.mosaicCreate(rgcParams);
-rgcParams.type = cellType{4};
-innerRetina.mosaicCreate(rgcParams);
+    
+    % RGC
+    
+    clear rgcL rgcParams
+    
+    % Create retina ganglion cell layer object
+    rgcL = rgcLayer(bpL);
+    
+    % There are various parameters you could set.  We will write a script
+    % illustrating these later.  We need a description.
+    rgcParams.centerNoise = 0;
+    rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
+    % mosaicParams.axisVariance = .1;
+    
+    % 28*32+31*35+55*63+61*70
+    onPdiameter = 9.4;
+    diameters = [onPdiameter onPdiameter*.9 onPdiameter*.5 onPdiameter*.45];  % In microns.
+    
+    cellType = {'on parasol','off parasol','on midget','off midget'};
+    for ii = 1:length(cellType)
+        rgcParams.rfDiameter = diameters(ii);
+        rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
+    end
+    
+    rgcL.set('numberTrials',1);
+    
+    % Compute the inner retina response and visualize
+    
+    % Every mosaic has its input and properties assigned so we should be able
+%     % to just run through all of them.
+%     rgcL.compute('bipolarScale',50,'bipolarContrast',1);
+    
+    rng(rngInput);
 
 for iTrial = 1:nTrials
     tic
     iTrial
-    innerRetina.compute(bpMosaic);
-%     innerRetina.mosaic{4}.window
+
+    cMosaicNS.computeCurrent();
+    for ii = 1:length(cellType)
+%         bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
+        bpL.mosaic{ii}.compute();
+    end
+    rgcL.compute('bipolarScale',50,'bipolarContrast',1);
     
     %% Get spikes and make reconstruction
     
-    spikeResp = mosaicSpikes(innerRetina);
+    spikeResp = mosaicSpikes(rgcL);
     % save('spikeResp_primaLandolt.mat','spikeResp');
     
     % load(filterFile);
     spikeAug(1,:) = ones(1,size(spikeResp,2));
-    spikeAug(2:9807,:) = spikeResp;
+    spikeAug(2:9717,:) = spikeResp;
     movRecon = filterMat'*spikeAug;
     
-    movTrials(:,iTrial) = -movRecon(:,8); % tested 8th frame w code below
+    % change to 13?
+    movTrials(:,iTrial) = movRecon(:,11); % tested 11th frame w code below
     
-    movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
-    figure; ieMovie(movReconPlay);
+    spikeTrials(:,iTrial) = spikeAug(:,11);
+%     movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
+    % figure; ieMovie(movReconPlay);
     % save('hallwayReconMovie.mat','movRecon');
     
     % lambda = .05;
@@ -164,18 +250,24 @@ for iTrial = 1:nTrials
     % movRecon2 = filterMat2'*spikeAug;
     toc
     ph=1;
+% end
+
+if mod(iTrial,50)==0
+    trialReconPlay = reshape(movTrials,[100 100 size(movTrials,2)]);
+    
+    % save(fullfile(reconstructionRootPath,'dat','july17gratings','healthyH',[sprintf('recon_%4d.mat',10000*contrast)]),'trialReconPlay');
+    
+    
+    if horizontalFlag
+        save(fullfile(reconstructionRootPath,'dat',folderNameTest,'cont',[sprintf('recon_freqH%4d_cont%6d.mat',100*gratingSpFreq,1e5*contrast)]),'trialReconPlay','contrast','spikeTrials');
+        %   save(fullfile(reconstructionRootPath,'dat',folderNameTest,[sprintf('primaRecon_freqH%4d_cont%4d.mat',100*gratingSpFreq,1000*contrast)]),'trialReconPlay');
+        %
+    else
+        save(fullfile(reconstructionRootPath,'dat',folderNameTest,'cont',[sprintf('recon_freq%4d_cont%6d.mat',100*gratingSpFreq,1e5*contrast)]),'trialReconPlay','contrast','spikeTrials');
+        
+    end
+    
 end
-
-trialReconPlay = reshape(movTrials,[100 100 size(movTrials,2)]);
-
-% save(fullfile(reconstructionRootPath,'dat','july17gratings','healthyH',[sprintf('recon_%4d.mat',10000*contrast)]),'trialReconPlay');
-
-
-if horizontalFlag
-    save(fullfile(reconstructionRootPath,'dat','july17gratings','healthyFreqH',[sprintf('recon_freqH%4d.mat',100*gratingSpFreq)]),'trialReconPlay');
-
-else
-        save(fullfile(reconstructionRootPath,'dat','july17gratings','healthyFreq',[sprintf('recon_freq%4d.mat',100*gratingSpFreq)]),'trialReconPlay');
 
 end
 %% Find best frame
@@ -186,9 +278,10 @@ end
 % movReconNorm = std0*movRecon0./(ones(10000,1)*stdRecon0);
 % % movRecon0 = movRecon - ones(10000,1)*me an(movRecon);
 % 
-% errMov = (movReconNorm - (single(gratingsMovieImage(:))*ones(1,32)));
+% errMov = (movReconNorm - (single(gratingsMovieImage(:))*ones(1,size(spikeResp,2))));
 % 
 % % errMov = (movReconNorm - RGB2XWFormat(gratingsMovieContrast));
 % size(errMov)
-% mse = mean(errMov.^2);
-% figure; plot(mse)
+% mse1 = mean(errMov.^2);
+% figure; plot(mse1)
+% [mv,mi] = min(mse1)

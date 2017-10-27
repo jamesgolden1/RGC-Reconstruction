@@ -14,6 +14,9 @@ p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
+
+p.addParameter('startInd',1,@isnumeric);
+p.addParameter('testFlag',0,@isnumeric);
 p.addParameter('stimTypeBuild','ns',@ischar);
 
 p.addParameter('pixelWidth',70,@isnumeric);
@@ -25,10 +28,11 @@ buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
 blockIn = p.Results.blockIn;
+startInd = p.Results.startInd;
 stimTypeBuild = p.Results.stimTypeBuild;
 pixelWidth = p.Results.pixelWidth;
 currentDecay = p.Results.currentDecay;
-
+testFlag = p.Results.testFlag;
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
 end
@@ -48,6 +52,7 @@ nPixels = 100;
 nSteps = 500;%000;
 nBlocks = 15;%30;
 
+rng(1504);
 
 for blockNum =blockIn%1%:nBlocks
     tic
@@ -73,10 +78,20 @@ for blockNum =blockIn%1%:nBlocks
    end
     
    
-%     testInds = [1:100:500-10];
+    if testFlag
+   
+    testInds = (startInd-1)+[1:20:500-20];
+    natScenesAll = natScenes;
+    natScenes = zeros(size(natScenesAll));
+    for ti = 0:19
+    natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
+    end
+    end
+    
+%    testInds = [1:10:500-10];
 %     natScenesAll = natScenes;
 %     natScenes = zeros(size(natScenesAll));
-%     for ti = 0:99
+%     for ti = 0:9
 %     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
 %     end
     %%
@@ -126,9 +141,9 @@ for blockNum =blockIn%1%:nBlocks
     %     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'];
 
     if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
     else
-        filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
     end
     %     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     %     toc

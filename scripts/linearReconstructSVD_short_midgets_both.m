@@ -143,9 +143,9 @@ if ismac || isunix
     load([reconstructionRootPath '/dat/' stimName]);
     if abs(mean(stim(:,3))) > .01
 %         stimzm = (single(stim)-(ones(size(stim,2),1)*mean(stim,2)')');
-        
-%         stimzm = (single(stim)-(ones(size(stim,1),1)*mean(stim,1)));
-%         clear stim; stim = stimzm;
+        disp('zero mean');
+        stimzm = (single(stim)-(ones(size(stim,1),1)*mean(stim,1)));
+        clear stim; stim = stimzm;
     end
 %     load('/Volumes/Lab/Users/james/RGC-Reconstruction/dat/ns100_r2_10/ns100_jan1_mov3_mosaicAll_1246640.mat');
 else

@@ -14,6 +14,8 @@ p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
+p.addParameter('startInd',1,@isnumeric);
+p.addParameter('testFlag',0,@isnumeric);
 p.addParameter('stimTypeBuild','ns',@ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
@@ -22,6 +24,8 @@ buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
 respFile = p.Results.respFile;
 blockIn = p.Results.blockIn;
+startInd = p.Results.startInd;
+testFlag = p.Results.testFlag;
 stimTypeBuild = p.Results.stimTypeBuild;
 
 if isempty(buildFile)
@@ -64,13 +68,24 @@ for blockNum =blockIn%:nBlocks
         natScenes = 255*round(natScenesRaw); clear natScenesRaw;
             
     end
-
-    testInds = [1:10:500-10];
+    
+    if testFlag
+    
+    testInds = (startInd-1)+[1:20:500-20];
     natScenesAll = natScenes;
     natScenes = zeros(size(natScenesAll));
-    for ti = 0:9
+    for ti = 0:19
     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
     end
+    
+    end
+
+%     testInds = [1:25:500-20];
+%     natScenesAll = natScenes;
+%     natScenes = zeros(size(natScenesAll));
+%     for ti = 0:24%19s
+%     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
+%     end
     %%
     %% Load image
     clear coneParams
@@ -82,8 +97,8 @@ for blockNum =blockIn%:nBlocks
     % coneParams.row = 100; % should be set size to FOV
     % coneParams.col = 100;
     coneParams.fov = fov;
-    coneParams.cmNoiseFlag = 'random';
-    coneParams.osNoiseFlag = 'random';
+    coneParams.cmNoiseFlag = 'none';
+    coneParams.osNoiseFlag = 'none';
     % % params.vfov = 0.7;
     
     
@@ -105,9 +120,9 @@ for blockNum =blockIn%:nBlocks
     bpMosaicParams.rectifyType = 1;  % Experiment with this
     bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
     bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
-    bpMosaicParams.spreadRatio  = 10;  % RF diameter w.r.t. input samples
-    bpMosaicParams.ampCenter = 1.3;%1.5 _2
-    bpMosaicParams.ampSurround = 1;%.5
+    bpMosaicParams.spreadRatio  = 9;  % RF diameter w.r.t. input samples
+    bpMosaicParams.ampCenter = 1;%1.3;%1.5 _2
+    bpMosaicParams.ampSurround = .5;%1;%.5
     % Maybe we need a bipolarLayer.compute that performs this loop
     for ii = 1:length(cellType)
         bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
@@ -130,7 +145,7 @@ for blockNum =blockIn%:nBlocks
     rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
     % mosaicParams.axisVariance = .1;
     
-    % 27*31+31*35+54*62+63*72
+    % 28*32+31*35+55*63+61*70
     onPdiameter = 9.4;
     diameters = [onPdiameter onPdiameter*.9 onPdiameter*.5 onPdiameter*.45];  % In microns.
     
@@ -146,7 +161,7 @@ for blockNum =blockIn%:nBlocks
     
     % Every mosaic has its input and properties assigned so we should be able
     % to just run through all of them.
-    rgcL.compute('bipolarScale',250,'bipolarContrast',1);
+    rgcL.compute('bipolarScale',50,'bipolarContrast',1);
     
     %%
     toc
@@ -168,10 +183,20 @@ for blockNum =blockIn%:nBlocks
     
     whiteNoiseSmall = natScenes;
 
-    if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+    if testFlag
+        if ismac || isunix
+            filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
+        else
+            filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
+        end
+        
     else
-        filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        
+        if ismac || isunix
+            filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        else
+            filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
+        end
     end
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc

@@ -45,14 +45,14 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps = 500;%000;
+nSteps =550;%000;
 nBlocks = 15;%30;
 
 
     tic
     
     
-movieIn = 255*ieScale(loadHallStimulus(200));
+movieIn = 255*ieScale(loadHallStimulus(nSteps));
 
     %%
     %% Load image       
