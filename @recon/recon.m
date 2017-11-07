@@ -120,6 +120,9 @@ methods
     % Declare the method for building the training data set    
     [mosaicFile, saveFile] = buildPrimaHallway(obj, varargin);
     
+    % Declare the method for building the the prima mosaic   
+    [obj, primaRecon] = buildPrimaMosaic(obj, varargin);
+    
     % Declare the method for learning the filters from the training set    
     [filterFile] = train(obj, varargin);
     

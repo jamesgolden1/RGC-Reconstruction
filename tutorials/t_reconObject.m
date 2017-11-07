@@ -27,7 +27,7 @@
 %%
 clear
 
-pRecon.pixelWidth = 70/2;
+pRecon.pixelWidth = 70/1;
 % folderName = 'aug30';
 
 % folderName = 'sep20hall100'; pRecon.testFlag = 1;
