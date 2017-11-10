@@ -26,33 +26,20 @@ filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterNS = data.filterMat; clear data;
 
-% rd = RdtClient('isetbio');
-% rd.crp('/resources/data/reconstruction');
+rd = RdtClient('isetbio');
+rd.crp('/resources/data/reconstruction');
+filterFile = 'filtersmosaic0_sv05_w1_sh4_dr0_pitch_70_decay_2_aug29.mat';
+% filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat'
 % filterFile = 'filtersmosaic0_sv10_w1_sh4_dr0_pitch_70_decay_2.mat';
 % rd.crp('/resources/data/istim');
 % filterFile = 'filters_mosaic0_sv10_w1_sh2_dr0.mat';
-% data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-% filterPros = data.filterMat; clear data;
-filterPros = filterNS;
-
-%% Get max location of each filter for zooming
-[mgr,mgc] = meshgrid(1:100,1:100);
-
-[cmax,cind] = max(abs(filterNS),[],2);
-[fmaxc,fmaxr] = ind2sub([100 100],cind);
-
-mgrmat = mgr(:)*ones(1,size(fmaxr,1));
-fmaxrmat = ones(size(mgrmat,1),1)*fmaxr';
-mgrd = ((mgrmat - fmaxrmat)').^2;
-
-mgcmat = mgc(:)*ones(1,size(fmaxc,1));
-fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
-mgcd = ((mgcmat - fmaxcmat)').^2;
-
-dp = sqrt(mgrd+mgcd);
+data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+filterPros = data.filterMat; clear data;
+% filterPros = filterNS;
 
 %% Choose cells to look at
 
+% Total number of cells in each mosaic
 % 28*32+31*35+1:28*32+31*35+55*63+1
 
 onParasolInd = 1+28*32;
@@ -61,10 +48,7 @@ onMidgetInd = offParasolInd+55*63;
 offMidgetInd = onMidgetInd+4371;
 moff = [0 onParasolInd offParasolInd onMidgetInd offMidgetInd];
 
-
 cellArr = [122 322 874 1134];
-
-pltCtr = 1;
 
 titleStr{1} = 'on parasol';
 titleStr{2} = 'off parasol';
@@ -77,7 +61,7 @@ signValWN = [1 1 1 1];
 signVal = [1 1 1 1];
 mindCtr = 1;
 
-for mosind =2%[1 2 3 4]
+for mosind =1:2%[1 2 3 4]
     figure;
     set(gcf,'position',[440   367   385   431]);
     ha = tight_subplot(2,2,[.01 .03],[.1 .01],[.01 .01]);
@@ -101,6 +85,8 @@ for mosind =2%[1 2 3 4]
     
     hold on;
     
+    pltCtr = 1;
+
     for mind = 1:nCells
         
         paraInd = cellArr(mind);
@@ -126,9 +112,9 @@ set(gcf,'PaperPositionMode','auto')
 % print(gcf,'-dsvg',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/healthy' num2str(mosind) '.svg'])
 
 %% Prosthesis filters
-pltCtr = 1;
+
 mindCtr = 1;
-for mosind =2%[1 2 3 4]
+for mosind =1:2%[1 2 3 4]
     figure;
     
     set(gcf,'position',[440   367   385   431]);
@@ -159,6 +145,7 @@ for mosind =2%[1 2 3 4]
     end
     
     hold on;
+    pltCtr = 1;
     for mind = 1:nCells
         
         paraInd = cellArr(mind);

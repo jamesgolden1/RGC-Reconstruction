@@ -1,29 +1,28 @@
-% f_7_landolt
+% f_7_gratings
 %
 % Golden, J. R., Erickson-Davis, C., Cottaris, N. P., Parthasarathy, N.,
 % Rieke, F., Brainard, D. H., Wandell, B. A., & Chichilnisky, E. J. (2017). Simulation
 % of visual perception and learning with a retinal prosthesis. bioRxiv,
 % 206409.
 %
-% Fig 7 psychometric curve for Landolt C contrast detection.
+% Fig 7 psychometric curve for gratings contrast detection.
 %
-% Plots the psychometric curves for Landolt C contrast detection. Fits
+% Plots the psychometric curves for gratings contrast detection. Fits
 % datapoints to a psychometric function.
 %
 % 2017 JRG (c) isetbio team
-% [formerly make_psychometric_curve_landolt_sep21]
+% [formerly make_psychometric_curve_gratings_sep22_fit]
 
 %% Load data and set up plot - healthy reconstruction
 
 clear
 
-% cd([reconstructionRootPath '/dat/landolt_sep20/'])
-% load('ws_healthy_landolt_sep20_4reps.mat','contrastArr','Pbig');
-% load('healthy_landolt_sep20_accuracy.mat');
+% load('ws_gratings_healthy_sep20_4reps_filt05_comb.mat','contrastArr','Pbig');
+% load('healthy_gratings_sep20_accuracy.mat');
 
 rd = RdtClient('isetbio');
 rd.crp('/resources/data/reconstruction');
-filterFile = 'healthy_landolt_sep20_accuracy.mat';
+filterFile = 'healthy_gratings_sep20_accuracy.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 contrastArr = data.contrastArr;
 healhyAccuracy = data.Pbig;
@@ -74,22 +73,28 @@ legend('Healthy','Prosthesis','location','nw');
 title('Landolt C Orientation Discrimination');
 
 %% Load data and set up plot - prosthesis reconstruction
-% load('ws_prima_landolt_sep20_4reps.mat','contrastArr','Pbig');
-% load('prosthesis_landolt_sep20_accuracy.mat');
+% load('ws_gratings_prima_sep17_4reps_out0.mat','contrastArr','Pbig');
+% load('prosthesis_gratings_sep20_accuracy.mat');
+
 rd = RdtClient('isetbio');
 rd.crp('/resources/data/reconstruction');
-filterFile = 'prosthesis_landolt_sep20_accuracy.mat';
+filterFile = 'prosthesis_gratings_sep20_accuracy.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 contrastArr = data.contrastArr;
 prosthesisAccuracy = data.Pbig;
 
 % freqArr2(1,1,:) = contrastArr;
+% 
+% contAdd = ones(1,1,6);
+% contAdd(1,1,:) = [55.9375   63.4375   62.1875   69.6875   75.0000   89.6875];
+% Pbig(1,:,17:22)=contAdd;
+% contrastArr(17:22) = [.002:.001:.007];
 
 radVal=1;
 [~,sortInd] = sort(contrastArr(1:end),'ascend');
 contrastArrSorted = contrastArr((sortInd));
 
-prosthesisAccuracySorted = squeeze(mean(prosthesisAccuracy(radVal,:,:)));
+prosthesisAccuracySorted = squeeze((prosthesisAccuracy(radVal,:,:)));
 
 %% Fit psychometric curve - prosthesis reconstruction
 % [xData, yData] = prepareCurveData(freqArrSort(:),Pbigsort(sortInd));

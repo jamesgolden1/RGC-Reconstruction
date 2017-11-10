@@ -88,10 +88,9 @@ spikeResp = mosaicSpikes(primaRecon.innerRetina);
 %     load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27/filtersmosaic0_sv50_w1_sh15_dr0.mat')
 % load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27prima70/filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat')
 
-
 rd = RdtClient('isetbio');
 rd.crp('/resources/data/reconstruction');
-filterFile = 'filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat';
+filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterMat = data.filterMat; clear data;
 

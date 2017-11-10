@@ -17,13 +17,20 @@
 
 %% Load data - no learning
 
-cd('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/sep20_err')
-load('errmean35_nolearn_sep20.mat')
-errmean35 = errmeanout;
-load('errmean70_nolearn_sep20.mat')
-errmean70 = errmeanout;
+% cd('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/sep20_err')
+% load('errmean35_nolearn_sep20.mat')
+% errmean35noLearn = errmeanout;
+% load('errmean70_nolearn_sep20.mat')
+% errmean70noLearn = errmeanout;
+load('errmeanall_sep20.mat');
 
-zi = find(errmeanout~=0);
+rd = RdtClient('isetbio');
+rd.crp('/resources/data/reconstruction');
+filterFile = 'errmeanall_sep20.mat';
+data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+
+
+zi = find(data.errmean70noLearn~=0);
 
 %% Plot data points - no learning
 % dscatter shows density of scatter plot
@@ -32,15 +39,15 @@ figure;
 set(gcf,'position',[20         361        1408         413]);
 subplot(131);
 hold on;
-dscatter(sqrt(errmean70(zi)')/255,sqrt(errmean35(zi)')/255);
-dscatter(sqrt(errmean70(zi)')/255,sqrt(errmean35(zi)')/255,'plottype','contour',...
+dscatter(sqrt(data.errmean70noLearn(zi)')/255,sqrt(data.errmean35noLearn(zi)')/255);
+dscatter(sqrt(data.errmean70noLearn(zi)')/255,sqrt(data.errmean35noLearn(zi)')/255,'plottype','contour',...
     'filled',1,'bins',4*[64 64],'msize',40,'smoothing',20);
 
 hold on; line([0 0.35],[0 0.35],'color','k','linewidth',2);
 grid on; axis square
 axis([0 .3 0 .3]);
 
-f1=sqrt(errmean70')/255\sqrt(errmean35')/255;
+f1=sqrt(data.errmean70noLearn')/255\sqrt(data.errmean35noLearn')/255;
 hold on; plot(.01:.01:.4,f1*[.01:.01:.4],'r','linewidth',1.5);
 
 title(sprintf('Reconstruction Error, No Learning \nRegression Slope %1.2f',f1),'fontsize',16);
@@ -54,25 +61,25 @@ set(gcf,'PaperPositionMode','auto')
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/prosthesis_35vs70_scatter_nolearning_sep20.pdf']);
 
 %% Load data - no learning, only on
-load('errmean35_nolearn_onlyon_sep20.mat')
-errmean35 = errmeanout;
-load('errmean70_nolearn_onlyon_sep20.mat')
-errmean70 = errmeanout;
+% load('errmean35_nolearn_onlyon_sep20.mat')
+% errmean35onlyOn = errmeanout;
+% load('errmean70_nolearn_onlyon_sep20.mat')
+% errmean70onlyOn = errmeanout;
 
-zi = find(errmeanout~=0);
+zi = find(data.errmean70onlyOn~=0);
 
 % figure;
 subplot(132);
 hold on;
 
-dscatter(sqrt(errmean70(zi)')/255,sqrt(errmean35(zi)')/255);
-dscatter(sqrt(errmean70(zi)')/255,sqrt(errmean35(zi)')/255,'plottype','contour','filled',1,'bins',4*[64 64]);
+dscatter(sqrt(data.errmean70onlyOn(zi)')/255,sqrt(data.errmean35onlyOn(zi)')/255);
+dscatter(sqrt(data.errmean70onlyOn(zi)')/255,sqrt(data.errmean35onlyOn(zi)')/255,'plottype','contour','filled',1,'bins',4*[64 64]);
 
 hold on; line([0 0.35],[0 0.35],'color','k','linewidth',2);
 grid on; axis square
 axis([0 .3 0 .3]);
 
-f1=sqrt(errmean70')/255\sqrt(errmean35')/255;
+f1=sqrt(data.errmean70onlyOn')/255\sqrt(data.errmean35onlyOn')/255;
 
 hold on; plot(.01:.01:.4,f1*[.01:.01:.4],'r','linewidth',1.5);
 
@@ -91,25 +98,25 @@ set(gcf,'PaperPositionMode','auto')
 % load('errmean70_2.mat')
 % errmean70 = errmean;
 
-load('errmean35_learn_sep20.mat')
-errmean35 = errmeanout;
-load('errmean70_learn_sep20.mat')
+% load('errmean35_learn_sep20.mat')
+% errmean35learn = errmeanout;
+% load('errmean70_learn_sep20.mat')
+% 
+% errmean70learn = errmeanout;
 
-errmean70 = errmeanout;
-
-zi = find(errmeanout~=0);
+zi = find(data.errmean70learn~=0);
 
 subplot(133);
 hold on;
 
-dscatter(sqrt(errmean70(zi)')/255,sqrt(errmean35(zi)')/255);
-dscatter(sqrt(errmean70(zi)')/255,sqrt(errmean35(zi)')/255,'plottype','contour','bins',4*[64 64]);
+dscatter(sqrt(data.errmean70learn(zi)')/255,sqrt(data.errmean35learn(zi)')/255);
+dscatter(sqrt(data.errmean70learn(zi)')/255,sqrt(data.errmean35learn(zi)')/255,'plottype','contour','bins',4*[64 64]);
 
 grid on;
 axis([0 .3 0 .3]); axis square
 hold on; line([0 0.35],[0 0.35],'color','k','linewidth',2);
 
-f1=sqrt(errmean70')/255\sqrt(errmean35')/255;
+f1=sqrt(data.errmean70learn')/255\sqrt(data.errmean35learn')/255;
 
 hold on; plot(.01:.01:.4,f1*[.01:.01:.4],'r','linewidth',1);
 
