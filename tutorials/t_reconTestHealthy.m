@@ -7,8 +7,8 @@ clear
 
 folderNameTrain = 'aug30';
 
-% folderNameTest = 'sep20test';
-folderNameTest = 'sep20hall100';
+folderNameTest = 'sep20test'; testShift = 11;
+% folderNameTest = 'sep20hall100';
 % folderNameTest = 'aug29hall';
 % folderNameTrain = 'aug27prima9';
 % folderNameTest = 'aug29prima9hallrng';
@@ -28,6 +28,7 @@ percentSV = .5;%.5;%.25;%.12;
 % shifttime = 2;
 shifttime = 15;%15;
 dropout = 0;
+spatialFilterLambda = .06; 
 
 filterFile  = fullfile(folderNameTrain,...    
     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
@@ -40,7 +41,12 @@ pRecon.stimFile = folderNameTest;
 pRecon.windowSize = windowSize;
 pRecon.percentSV = percentSV;
 pRecon.dropout = dropout; 
-
-reconHealthy = recon(pRecon);
-
-mse1 = reconHealthy.testImagenet(pRecon);
+pRecon.spatialFilterLambda = spatialFilterLambda;
+for testShift = 1%:20
+    
+    pRecon.testShift = testShift;
+    
+    reconHealthy = recon(pRecon);
+    
+    mse1 = reconHealthy.testImagenet(pRecon);
+end
