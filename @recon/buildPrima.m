@@ -1,28 +1,36 @@
 function obj = buildPrima(obj, varargin)
-%BUILD - builds training set for the recon object
+%BUILDPRIMA - builds training set for the recon object with prosthesis
 % Run natural scenes through the RGC array for the big four RGC cell types.
 % 
-% inputs:
-%   mosaicFile - a string that is used to save the mosaic file
-%   buildFile - a string that is used to store the spikes and the movie stim
+% Loads appropriate stimulus based on 'stimTypeBuild' setting with the
+% 'generateStimulus' function. 'ns500' runs a set of images for demo
+% purposes, where the reconstruction is computed and the error is
+% caluculated and compared with benchmarks.'ns' loads natural scenes from
+% the imagenet database, but only when the script is being run from the
+% appropriate Stanford server.
 % 
-% See also: trainAndTest.m
+% The primaArray object builds the bipolar and RGC mosaics as well as the
+% prosthesis array used to stimulate the bipolar layer. 
+% 
+% Once the responses are computed, the spikes and stimuli are saved to a
+% mat file.
 %
+
 p = inputParser;
-p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('mosaicFile','mosaic0',@ischar);
 p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('blockIn',1,@isnumeric);
-
 p.addParameter('startInd',1,@isnumeric);
 p.addParameter('testFlag',0,@isnumeric);
 p.addParameter('stimTypeBuild','ns',@ischar);
-
 p.addParameter('pixelWidth',70,@isnumeric);
 p.addParameter('currentDecay',2,@isnumeric);
+
 p.KeepUnmatched = true;
 p.parse(varargin{:});
+
 mosaicFile = p.Results.mosaicFile;
 buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
@@ -33,6 +41,7 @@ stimTypeBuild = p.Results.stimTypeBuild;
 pixelWidth = p.Results.pixelWidth;
 currentDecay = p.Results.currentDecay;
 testFlag = p.Results.testFlag;
+
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
 end
@@ -48,58 +57,23 @@ patchEccentricity = 1.8; % mm
 fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
-nPixels = 100;
 nSteps = 500;%000;
-nBlocks = 15;%30;
 
 rng(1504);
 
 for blockNum =blockIn%1%:nBlocks
+    %% Get stimulus
     tic
     
     blockNum
-    
-%         natScenes = 255*ieScale(loadHallStimulus(20));
-   if stimTypeBuild == 'ns'
-        if blockNum <= 288
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-        else
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
-        end
-    elseif stimTypeBuild == 'wn'
-        natScenesRaw = (rand(100,100,nSteps));
-        natScenes = 192*round(natScenesRaw); clear natScenesRaw;
-%         natScenes = round(192*natScenesRaw); clear natScenesRaw;
-            
-   end
-    
-   
-    if testFlag
-   
-    testInds = (startInd-1)+[1:20:500-20];
-    natScenesAll = natScenes;
-    natScenes = zeros(size(natScenesAll));
-    for ti = 0:19
-    natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
-    end
-    end
-    
-%    testInds = [1:10:500-10];
-%     natScenesAll = natScenes;
-%     natScenes = zeros(size(natScenesAll));
-%     for ti = 0:9
-%     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
-%     end
-    %%
-    %% Load image       
+        
+    stimScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag);
+        
+    %% Build mosaic and prosthesis array
     
     primaParams.pixelWidth = pixelWidth*1e-6; % meters
-    primaParams.ecc = 1.8;       % mm
-    primaParams.fov = 1.7/1;     % deg
+    primaParams.ecc = patchEccentricity;       % mm
+    primaParams.fov = fov;     % deg
     
     primaParams.pulseFreq = 100;           % Hz, electrode pulse frequency
     primaParams.pulseDutyCycle = 1;        % Fraction of cycle pulse is on
@@ -107,26 +81,21 @@ for blockNum =blockIn%1%:nBlocks
     
     primaParams.currentDecay = currentDecay;
     
-    primaRecon = primaArray(natScenes,primaParams);
+    primaRecon = primaArray(stimScenes,primaParams);
     
-    primaRecon.compute(natScenes)
+    primaRecon.compute(stimScenes)
     innerRetina = primaRecon.innerRetina;
     
-    %%
     toc
-    %% Look at covariance matrix
+    
+    %% Get spikes
     tic
     
     spikesout   = RGB2XWFormat(innerRetina.mosaic{1}.get('spikes'));    
     spikesout2  = RGB2XWFormat(innerRetina.mosaic{2}.get('spikes'));    
     spikesout3  = RGB2XWFormat(innerRetina.mosaic{3}.get('spikes'));
     spikesout4  = RGB2XWFormat(innerRetina.mosaic{4}.get('spikes'));
-    
-%     spikesout  = RGB2XWFormat(mosaicGet(innerRetina.mosaic{1},'spikes'));
-%     spikesout2 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{2},'spikes'));
-%     spikesout3 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{3},'spikes'));
-%     spikesout4 = RGB2XWFormat(mosaicGet(innerRetina.mosaic{4},'spikes'));
-    
+       
     timeBins = max([size(spikesout,2) size(spikesout2,2) size(spikesout3,2) size(spikesout4,2)]);
     
     spikesoutsm = zeros(size(spikesout,1)+ size(spikesout2,1)+size(spikesout3,1)+size(spikesout4,1), timeBins,'uint8');
@@ -136,14 +105,18 @@ for blockNum =blockIn%1%:nBlocks
     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
     
-    whiteNoiseSmall = natScenes;
+    %% Save spikes and movie
+    whiteNoiseSmall = stimScenes;
 
     %     filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '_' mosaicFile '.mat'];
-
-    if ismac || isunix
-        filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
+    if ~exist(fullfile(reconstructionRootPath,'dat',buildFile(1:end-5)),'dir')
+        mkdir(fullfile(reconstructionRootPath,'dat',buildFile(1:end-5)));
+    end
+    
+    if testFlag        
+            filename1 = fullfile(reconstructionRootPath,'dat',[ buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat']);
     else
-        filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
+            filename1 = fullfile(reconstructionRootPath,'dat',[ buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat']);
     end
     %     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     %     toc

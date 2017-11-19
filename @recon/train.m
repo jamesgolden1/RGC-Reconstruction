@@ -7,7 +7,7 @@ p = inputParser;
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
 p.addParameter('filterFile',[],@ischar);
-p.addParameter('windowSize',8,@isnumeric);
+p.addParameter('windowSize',1,@isnumeric);
 p.addParameter('percentSV',0.5,@isnumeric);
 p.addParameter('mosaicFile',[],@ischar);
 p.addParameter('trainFraction',1,@isnumeric);

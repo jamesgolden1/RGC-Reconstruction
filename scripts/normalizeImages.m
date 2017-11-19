@@ -1,9 +1,20 @@
-function [imRefNorm, imTestNorm, matchShift, mse1, medcc, errmean, ccrec] = normalizeImages(imRef, imTest)
+function [imRefNorm, imTestNorm, matchShift, mse1, medcc, errmean, ccrec] = normalizeImages(imRef, imTest, varargin)
 % Takes two sets of images in XW format and sets mean to zero and STD equal
 % to the STD of imRef.
 
 
 %% Set reference images to zero mean
+
+
+p = inputParser;
+p.KeepUnmatched = true;
+p.addRequired('imRef');
+p.addRequired('imTest');
+p.addParameter('skipValue',20,@isnumeric);
+
+p.parse(imRef, imTest, varargin{:});
+
+skipValue = p.Results.skipValue;
 
 stimTest = single(imRef);
 stimTestzm = ((stimTest)-(ones(size(stimTest,1),1)*mean(stimTest,1)));
@@ -29,7 +40,7 @@ imTestNorm =  movTestZeroMean.*(ones(size(movTestZeroMean,1),1)*(movRefStd./movT
 
 for shiftval = 0:30
     
-    errmov = single(stimTest(:,1:20:szLen-shiftval+0))-imTestNorm(:,shiftval+1:20:szLen+0);
+    errmov = single(stimTest(:,1:skipValue:szLen-shiftval+0))-imTestNorm(:,shiftval+1:skipValue:szLen+0);
     errtot = ((errmov.^2));
     
     msesh(shiftval+1,1:size(errtot,2)) = (mean(errtot));
@@ -37,26 +48,29 @@ for shiftval = 0:30
 end
 
 
-[mv,mi] = min(mseshm);
+[mv,mi] = min(mseshm); %#ok<ASGLU>
 matchShift = mi-1;
 
 %% Find mse
 errMov = imRefNorm - imTestNorm;
 
 errmean = mean(errMov.^2);
-mse1 = sqrt(mean(errmean))/255;
+mse1 = sqrt(median(errmean(errmean~=0)))/255;
 
 %% Find correlation
 tshift = matchShift;
 ccrec = zeros(size(imTestNorm,2),1);
 recctr = 0;
+warning('off','MATLAB:rankDeficientMatrix');
 for ii = 1:size(imTestNorm,2)-tshift
     
     %     for ii = 1:size(movReconNorm,2)-18
     recctr=recctr+1;
-    ccrec(recctr) = (single(imTestNorm(:,ii+tshift))\stimTest(:,ii+0));
+    ccrec(recctr) = (single(imTestNorm(:,ii+tshift))\stimTest(:,ii+0)); 
     
 end
+
+warning('on','MATLAB:rankDeficientMatrix');
 medcc = median(ccrec(ccrec<1&ccrec~=0));
 
 end

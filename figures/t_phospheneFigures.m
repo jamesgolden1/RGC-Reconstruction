@@ -20,4 +20,4 @@ f_6;
 
 f_7_landolt;
 
-% f_7_gratings;
+f_7_gratings;

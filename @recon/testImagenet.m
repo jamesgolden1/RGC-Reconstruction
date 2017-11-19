@@ -1,5 +1,5 @@
-function mse = testImagenet(obj,varargin)
-% Computes MSe for movie.
+function [mse1,cc] = testImagenet(obj,varargin)
+% Computes MSE for movie.
 
 
 p = inputParser;
@@ -8,7 +8,7 @@ p.addParameter('respFile',[],@ischar);
 p.addParameter('filterFile',[],@ischar);
 p.addParameter('windowSize',8,@isnumeric);
 p.addParameter('percentSV',0.5,@isnumeric);
-p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('mosaicFile','mosaic0',@ischar);
 p.addParameter('trainFraction',1,@isnumeric);
 p.addParameter('shiftTime',0,@isnumeric);
 p.addParameter('dropout',0,@isnumeric);
@@ -17,10 +17,11 @@ p.addParameter('buildFile',[],@ischar);
 
 p.addParameter('testShift',0,@isnumeric);
 
-p.addParameter('spatialFilterLambda',.001,@isnumeric);
+p.addParameter('spatialFilterLambda',[],@isnumeric);
 p.addParameter('onlyOnFlag',0,@isnumeric);
 p.addParameter('pixelWidth',[],@isnumeric);
 p.addParameter('currentDecay',2,@isnumeric);
+p.addParameter('testFlag',2,@isnumeric);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 filterFile = p.Results.filterFile;
@@ -39,7 +40,7 @@ spatialFilterLambda = p.Results.spatialFilterLambda;
 onlyOnFlag = p.Results.onlyOnFlag;
 pixelWidth = p.Results.pixelWidth;
 currentDecay = p.Results.currentDecay;
-
+testFlag = p.Results.testFlag;
 %
 % p = inputParser;
 % p.addRequired('obj');
@@ -55,11 +56,17 @@ currentDecay = p.Results.currentDecay;
 %% Get image stimuli and measured spikes
 
 if isempty(regexpi(stimFileName,'hall')) && (testShift ==0)
-    spikeFile = fullfile(reconstructionRootPath,'dat',stimFileName,['sp_' mosaicFile '.mat']);
+    spikeFile = fullfile(reconstructionRootPath,'dat',[stimFileName '_' mosaicFile '.mat']);
     load(spikeFile);
     
-    stimFile = fullfile(reconstructionRootPath,'dat',stimFileName,['mov_' mosaicFile '.mat']);
+    stimFile = fullfile(reconstructionRootPath,'dat',[respFileName '_' mosaicFile '.mat']);
     load(stimFile);
+
+%     spikeFile = fullfile(reconstructionRootPath,'dat',stimFileName,['sp_' mosaicFile '.mat']);
+%     load(spikeFile);
+%     
+%     stimFile = fullfile(reconstructionRootPath,'dat',stimFileName,['mov_' mosaicFile '.mat']);
+%     load(stimFile);
 
 elseif isempty(regexpi(stimFileName,'hall')) && (testShift > 0)
  
@@ -89,35 +96,47 @@ stimTestzm = ((stimTest)-(ones(size(stimTest,1),1)*mean(stimTest,1)));
 stimTest = stimTestzm;
 
 %% Get reconstruction filters from RDT
+% 
 
-% for percentSVind = 1:length(percentSVarr)
-%     for trainSizeInd = 1:length(trainSizeArr)
-%     filterFileFull = fullfile(reconstructionRootPath,'dat',[filterFile '.mat']);
-    
-% old isetbio commit 2b8fe22
-% rd = RdtClient('isetbio');
-% rd.crp('/resources/data/istim');
-% filterFile = 'filtersmosaic0_sv50_w1_sh17_dr0.mat';
-% data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-% filterMat = data.filterMat; clear data;
 
-% up to date w master
-% rd = RdtClient('isetbio');
-% rd.crp('/resources/data/reconstruction');
-% filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
-% data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-% filterMat = data.filterMat; clear data;
+
 % % % % % % % % % % % 
     if isempty(pixelWidth)
-    filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-    [filterFile '.mat']);
+        %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+        %     [filterFile '.mat']);
         
+        rd = RdtClient('isetbio');
+        rd.crp('/resources/data/reconstruction');
+        filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
+        data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+        filterMat = data.filterMat; clear data;
+        
+        if isempty(spatialFilterLambda)
+            spatialFilterLambda = 0.06;
+        end
     else
-    filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-    [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
-    end
-        load(filterFileFull);
+%          load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2.mat')
+%
+        %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+        %     [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
+        rd = RdtClient('isetbio');
+        rd.crp('/resources/data/reconstruction');
+        filterFile = 'filtersmosaic0_sv05_w1_sh4_dr0_pitch_70_decay_2_aug29.mat';
+%         filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat'
+        % filterFile = 'filtersmosaic0_sv10_w1_sh4_dr0_pitch_70_decay_2.mat';
+        % rd.crp('/resources/data/istim');
+        % filterFile = 'filters_mosaic0_sv10_w1_sh2_dr0.mat';
+        data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+        filterMat = data.filterMat; clear data;
 
+        if isempty(spatialFilterLambda)
+            spatialFilterLambda = 0.001;
+        end
+    end
+%         load(filterFileFull);
+
+% load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv50_w1_sh15_dr0.mat');
+%
 %     shiftval = 9;
 %     shiftval = shiftTime+9;
     
@@ -153,8 +172,9 @@ stimTest = stimTestzm;
     if ~onlyOnFlag
         movRecon2 = filterMat2'*(spikeAug(:,1:shortFrames));
         
-        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2);
+        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20);
         movRecon2 = filterMat2'*(spikeAug(:,matchShift+1:20:szLen+0));
+        spikeReduced = uint8(spikeAug(:,matchShift+1:20:szLen+0));
     else
         
         spikeOn = zeros(size(spikeAug));
@@ -165,25 +185,26 @@ stimTest = stimTestzm;
         movRecon2 = filterMat2'*(spikeOn(:,1:shortFrames));
         
         
-        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2);
+        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20);
    
         movRecon2 = filterMat2'*(spikeOn(:,matchShift+1:20:szLen+0));
+        spikeReduced = uint8(spikeOn(:,matchShift+1:20:szLen+0));
     end
    
+    stimReduced = single(stim(:,matchShift+1:20:szLen+0));
     % This functions computes zero mean and STDEV normalized images for
     % test set, and measures MSE and correlation.
-    [imRefNorm, imTestNorm, ~, mse1, cc, mseAll, ccAll] = normalizeImages(stimTest(:,1:20:szLen-matchShift+0),movRecon2);
+    [imRefNorm, imTestNorm, ~, mse1, cc, mseAll, ccAll] = normalizeImages(stimTest(:,1:20:szLen-matchShift+0),movRecon2,'skipValue',1);
     [mse1 cc]
     errMov = imRefNorm - imTestNorm;
-   
-   if ~onlyOnFlag
+      if ~onlyOnFlag
        if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'results'),'dir')
            mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'results'));
        end
        
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'mseAll','ccAll');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced');
        
        
    else
@@ -194,7 +215,7 @@ stimTest = stimTestzm;
        
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/spikeReduced_' num2str(testShift) '.mat']),'mseAll','ccAll');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced');
 
    end
    

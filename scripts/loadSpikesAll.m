@@ -9,6 +9,7 @@ function [movieFile, spikesFile] = loadSpikesAll(varargin)
 % See also: trainAndTest.m
 %
 p = inputParser;
+p.KeepUnmatched = true;
 p.addParameter('loadFile',[],@ischar);
 p.addParameter('movieFile',[],@ischar);
 p.addParameter('spikesFile',[],@ischar);

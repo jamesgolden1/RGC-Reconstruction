@@ -37,6 +37,23 @@ data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 filterPros = data.filterMat; clear data;
 % filterPros = filterNS;
 
+%% Get max location of each filter for zooming
+[mgr,mgc] = meshgrid(1:100,1:100);
+
+% Find row and col location of max value
+[cmax,cind] = max(abs(filterNS),[],2);
+[fmaxc,fmaxr] = ind2sub([100 100],cind);
+
+mgrmat = mgr(:)*ones(1,size(fmaxr,1));
+fmaxrmat = ones(size(mgrmat,1),1)*fmaxr';
+mgrd = ((mgrmat - fmaxrmat)').^2;
+
+mgcmat = mgc(:)*ones(1,size(fmaxc,1));
+fmaxcmat = ones(size(mgcmat,1),1)*fmaxc';
+mgcd = ((mgcmat - fmaxcmat)').^2;
+
+dp = sqrt(mgrd+mgcd);
+
 %% Choose cells to look at
 
 % Total number of cells in each mosaic
@@ -90,7 +107,7 @@ for mosind =1:2%[1 2 3 4]
     for mind = 1:nCells
         
         paraInd = cellArr(mind);
-        paraIndPlus = cellArr(mind)+moff(mosind)
+        paraIndPlus = cellArr(mind)+moff(mosind);
         mindCtr = mindCtr+1;
         
         axes(ha(pltCtr));
@@ -149,7 +166,7 @@ for mosind =1:2%[1 2 3 4]
     for mind = 1:nCells
         
         paraInd = cellArr(mind);
-        paraIndPlus = cellArr(mind)+moff(mosind)
+        paraIndPlus = cellArr(mind)+moff(mosind);
         mindCtr = mindCtr+1;
                 
         axis off

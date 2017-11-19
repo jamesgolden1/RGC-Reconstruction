@@ -2,14 +2,22 @@ function obj = build(obj, varargin)
 %BUILD - builds training set for the recon object
 % Run natural scenes through the RGC array for the big four RGC cell types.
 % 
-% inputs:
-%   mosaicFile - a string that is used to save the mosaic file
-%   buildFile - a string that is used to store the spikes and the movie stim
+% Loads appropriate stimulus based on 'stimTypeBuild' setting with the
+% 'generateStimulus' function. 'ns500' runs a set of images for demo
+% purposes, where the reconstruction is computed and the error is
+% caluculated and compared with benchmarks.'ns' loads natural scenes from
+% the imagenet database, but only when the script is being run from the
+% appropriate Stanford server.
 % 
-% See also: trainAndTest.m
+% 'mosaicResponse' builds the large cone, bipolar and RGC mosaics in
+% isetbio used for reconstruction.
+% 
+% Once the responses are computed, the spikes and stimuli are saved to a
+% mat file.
+% 
 %
 p = inputParser;
-p.addParameter('mosaicFile',[],@ischar);
+p.addParameter('mosaicFile','mosaic0',@ischar);
 p.addParameter('buildFile',[],@ischar);
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
@@ -17,8 +25,10 @@ p.addParameter('blockIn',1,@isnumeric);
 p.addParameter('startInd',1,@isnumeric);
 p.addParameter('testFlag',0,@isnumeric);
 p.addParameter('stimTypeBuild','ns',@ischar);
+
 p.KeepUnmatched = true;
 p.parse(varargin{:});
+
 mosaicFile = p.Results.mosaicFile;
 buildFile = p.Results.buildFile;
 stimFile = p.Results.stimFile;
@@ -36,136 +46,34 @@ tic
 %% Parameters to alter
 
 % Retinal patch eccentricity
-patchEccentricity = 1.8; % mm
+% patchEccentricity = 1.8; % mm
 
 % Field of view/stimulus size
 % Set horizontal field of view
 fov = 1.7;% 3.2/2;
 
 % Stimulus length = nSteps*nBlocks;
-nPixels = 100;
 nSteps = 500;
-nBlocks = 15;%30;
+
 rng(1504);
 
 for blockNum =blockIn%:nBlocks
+    %% Get stimulus
+    
     tic
     
     blockNum
     %     natScenes = 255*ieScale(loadHallStimulus(20));
-    if stimTypeBuild == 'ns'
-        if blockNum <= 288
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-        else
-            movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);
-            
-            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
-        end
-    elseif stimTypeBuild == 'wn'
-        natScenesRaw = (rand(100,100,nSteps));
-        natScenes = 255*round(natScenesRaw); clear natScenesRaw;
-            
-    end
     
-    if testFlag
+    stimScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag);
+     
+    %% Build mosaic and get response
     
-    testInds = (startInd-1)+[1:20:500-20];
-    natScenesAll = natScenes;
-    natScenes = zeros(size(natScenesAll));
-    for ti = 0:19
-    natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
-    end
-    
-    end
+    [rgcL, bpL, cMosaicNS, iStimNS] = mosaicResponse(stimScenes, fov);
 
-%     testInds = [1:25:500-20];
-%     natScenesAll = natScenes;
-%     natScenes = zeros(size(natScenesAll));
-%     for ti = 0:24%19s
-%     natScenes(:,:,testInds+ti) = natScenesAll(:,:,testInds);
-%     end
-    %%
-    %% Load image
-    clear coneParams
-    
-    % One frame of a WN stimulus
-    % Set parameters for size
-    
-    % coneParams.nSteps = nSteps;
-    % coneParams.row = 100; % should be set size to FOV
-    % coneParams.col = 100;
-    coneParams.fov = fov;
-    coneParams.cmNoiseFlag = 'none';
-    coneParams.osNoiseFlag = 'none';
-    % % params.vfov = 0.7;
-    
-    
-    iStimNS = ieStimulusMovieCMosaic(natScenes,coneParams);
-    cMosaicNS = iStimNS.cMosaic;
-    
-    %% Bipolar
-    %% Create a set of bipolar cell types in the bipolar mosaic
-    
-    clear bpL
-    
-    bpL = bipolarLayer(cMosaicNS);
-    
-    % Make each type of bipolar mosaic
-    cellType = {'on diffuse','off diffuse','on midget','off midget','on sbc'};
-    
-    % Stride isn't influencing yet.s
-    clear bpMosaicParams
-    bpMosaicParams.rectifyType = 1;  % Experiment with this
-    bpMosaicParams.spread  = 1;  % RF diameter w.r.t. input samples
-    bpMosaicParams.stride  = 1;  % RF diameter w.r.t. input samples
-    bpMosaicParams.spreadRatio  = 9;  % RF diameter w.r.t. input samples
-    bpMosaicParams.ampCenter = 1;%1.3;%1.5 _2
-    bpMosaicParams.ampSurround = .5;%1;%.5
-    % Maybe we need a bipolarLayer.compute that performs this loop
-    for ii = 1:length(cellType)
-        bpL.mosaic{ii} = bipolarMosaic(cMosaicNS, cellType{ii}, bpMosaicParams);
-        bpL.mosaic{ii}.compute();
-    end
-    
-%     bpL.window;
-
-    
-    %% RGC
-    
-    clear rgcL rgcParams
-    
-    % Create retina ganglion cell layer object
-    rgcL = rgcLayer(bpL);
-    
-    % There are various parameters you could set.  We will write a script
-    % illustrating these later.  We need a description.
-    rgcParams.centerNoise = 0;
-    rgcParams.ellipseParams = [1 1 0];  % Principle, minor and theta
-    % mosaicParams.axisVariance = .1;
-    
-    % 28*32+31*35+55*63+61*70
-    onPdiameter = 9.4;
-    diameters = [onPdiameter onPdiameter*.9 onPdiameter*.5 onPdiameter*.45];  % In microns.
-    
-    cellType = {'on parasol','off parasol','on midget','off midget'};
-    for ii = 1:length(cellType)
-        rgcParams.rfDiameter = diameters(ii);
-        rgcL.mosaic{ii} = rgcGLM(rgcL, bpL.mosaic{ii},cellType{ii},rgcParams);
-    end
-    
-    nTrials = 1; rgcL.set('numberTrials',nTrials);
-    
-    %% Compute the inner retina response and visualize
-    
-    % Every mosaic has its input and properties assigned so we should be able
-    % to just run through all of them.
-    rgcL.compute('bipolarScale',50,'bipolarContrast',1);
-    
-    %%
     toc
-    %% Look at covariance matrix
+    
+    %% Get spikes
     tic
     spikesout  = RGB2XWFormat(rgcL.mosaic{1}.get('spikes'));
     spikesout2 = RGB2XWFormat(rgcL.mosaic{2}.get('spikes'));
@@ -181,29 +89,26 @@ for blockNum =blockIn%:nBlocks
     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+[1:size(spikesout3,1)] ,1:size(spikesout3,2) ) = spikesout3;
     spikesoutsm(size(spikesout,1)+size(spikesout2,1)+size(spikesout3,1)+[1:size(spikesout4,1)] ,1:size(spikesout4,2) ) = spikesout4;
     
-    whiteNoiseSmall = natScenes;
+    %% Save spikes and movie
+    whiteNoiseSmall = stimScenes;
 
-    if testFlag
-        if ismac || isunix
-            filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
-        else
-            filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat'];
-        end
-        
-    else
-        
-        if ismac || isunix
-            filename1 = [reconstructionRootPath '/dat/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
-        else
-            filename1 = [reconstructionRootPath '\dat\ns100/' buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat'];
-        end
+    if ~exist(fullfile(reconstructionRootPath,'dat',buildFile(1:end-5)),'dir')
+        mkdir(fullfile(reconstructionRootPath,'dat',buildFile(1:end-5)));
     end
+
+    if testFlag        
+            filename1 = fullfile(reconstructionRootPath,'dat',[ buildFile '_block_' num2str(blockNum) '_start_' num2str(startInd) '_' mosaicFile '.mat']);
+    else
+            filename1 = fullfile(reconstructionRootPath,'dat',[ buildFile '_block_' num2str(blockNum) '_' mosaicFile '.mat']);
+    end
+    
     save(filename1, 'spikesoutsm','whiteNoiseSmall');
     toc
     close all
 end
+end
 
-
+%%
 % Working STA!
 % cd /Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/test4
 % load('sp_may5_test4_mosaic_may5.mat')

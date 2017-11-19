@@ -6,8 +6,8 @@
 clear
 
 folderNameTrain = 'aug30';
-
-folderNameTest = 'sep20test'; testShift = 11;
+folderNameTest = 'nov_results/healthyTest/'; 
+% folderNameTest = 'sep20test'; testShift = 11;
 % folderNameTest = 'sep20hall100';
 % folderNameTest = 'aug29hall';
 % folderNameTrain = 'aug27prima9';

@@ -17,19 +17,23 @@ clear
 % folderNameTest = 'sep8prima70test';
 % folderNameTest = 'aug29prima70test';
 
-folderNameTrain = 'aug29prima35';
-folderNameTest = 'sep20prima35test';
-% folderNameTest = 'sep20prima35hall';
-percentSV = .02;
-shifttime = 3;
-onlyOnFlag = 0;
+% folderNameTrain = 'aug29prima35';
+% percentSV = .02;
+% shifttime = 3;
+% onlyOnFlag = 0;
 
-% folderNameTrain = 'aug29prima70';
+% folderNameTest = 'sep20prima35test';
+folderNameTest = 'nov_results/primaTestLearning/'; 
+% folderNameTest = 'sep20prima35hall';
+
+
+folderNameTrain = 'aug29prima70';
+percentSV = .05;
+shifttime = 4;
+onlyOnFlag = 0;
 % folderNameTest = 'sep20prima70test';
 % % folderNameTest = 'sep20prima70hall';
-% percentSV = .05;
-% shifttime = 4;
-% onlyOnFlag = 0;
+
 % 
 % folderNameTest = 'sep9prima9hall';
 % folderNameTest = 'aug29prima35hall';
@@ -54,7 +58,7 @@ spatialFilterLambda = .001;
 filterFile  = fullfile(folderNameTrain,...    
     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
 
-% pRecon.pixelWidth = pixelWidth;
+pRecon.pixelWidth = pixelWidth;
 pRecon.currentDecay = currentDecay;
 pRecon.mosaicFile = mosaicFile;
 pRecon.filterFile = filterFile;

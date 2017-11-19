@@ -79,7 +79,7 @@ methods
         %   reconHealthy = recon('mosaicHealhty','naturalSceneBuild');
         
         p = inputParser;
-        addParameter(p,  'mosaicFile','',@ischar);% ['mosaic_' num2str(round(cputime))], @ischar);
+        addParameter(p,  'mosaicFile','mosaic0',@ischar);% ['mosaic_' num2str(round(cputime))], @ischar);
         addParameter(p, 'buildFile',  '',@ischar);
         addParameter(p, 'stimFile',   '',@ischar);
         addParameter(p, 'respFile',   '',@ischar);
@@ -131,8 +131,10 @@ methods
     
     obj = testCV(obj,stim,spikeResp,varargin);
         
-    obj = testImagenet(obj,varargin);
+    [obj, mse1, cc] = testImagenet(obj,varargin);
     
+    obj = loadSpikes(obj, varargin)
+
     % Declare the method for plotting properties from the recon object
     h = plot(obj, varargin);
     
