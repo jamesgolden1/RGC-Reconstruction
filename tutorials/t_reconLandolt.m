@@ -9,6 +9,15 @@ folderNameTest = 'sep17landoltFreq';
 
 pixelWidth = 70/8;
 currentDecay = 2;
+pulseFreq = 
+pulseDutyCycle
+irradianceFraction
+currentDecay
+% 
+% addParameter(p,  'pulseFreq',0,@isscalar);
+% addParameter(p,  'pulseDutyCycle',1,@isscalar);
+% addParameter(p,  'irradianceFraction',1,@isscalar);
+% addParameter(p,  'currentDecay',2,@isscalar);
 % folderNameTrain = 'july25prima18';
 % % folderNameTest  = 'aug1prima18test';
 % folderNameTest = 'july30prima18test';
