@@ -101,35 +101,46 @@ stimTest = stimTestzm;
 
 
 % % % % % % % % % % % 
-    if isempty(pixelWidth)
-        %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-        %     [filterFile '.mat']);
-        
-        rd = RdtClient('isetbio');
-        rd.crp('/resources/data/reconstruction');
-        filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
-        data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-        filterMat = data.filterMat; clear data;
-        
-        if isempty(spatialFilterLambda)
-            spatialFilterLambda = 0.06;
-        end
-    else
-%          load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2.mat')
-%
-        %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
-        %     [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
-        rd = RdtClient('isetbio');
-        rd.crp('/resources/data/reconstruction');
-        filterFile = 'filtersmosaic0_sv05_w1_sh4_dr0_pitch_70_decay_2_aug29.mat';
-%         filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat'
-        % filterFile = 'filtersmosaic0_sv10_w1_sh4_dr0_pitch_70_decay_2.mat';
-        % rd.crp('/resources/data/istim');
-        % filterFile = 'filters_mosaic0_sv10_w1_sh2_dr0.mat';
-        data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-        filterMat = data.filterMat; clear data;
+    if isempty(filterFile)
+        if isempty(pixelWidth) 
+            %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+            %     [filterFile '.mat']);
 
-        if isempty(spatialFilterLambda)
+            rd = RdtClient('isetbio');
+            rd.crp('/resources/data/reconstruction');
+            filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
+            data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+            filterMat = data.filterMat; clear data;
+
+            if isempty(spatialFilterLambda)
+                spatialFilterLambda = 0.06;
+            end
+        else
+    %          load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2.mat')
+    %
+            %     filterFileFull  = fullfile(reconstructionRootPath,'/dat/', ...
+            %     [filterFile '_pitch_' sprintf('%2.0f',pixelWidth) '_decay_' num2str(currentDecay) '.mat']);
+            rd = RdtClient('isetbio');
+            rd.crp('/resources/data/reconstruction');
+            filterFile = 'filtersmosaic0_sv05_w1_sh4_dr0_pitch_70_decay_2_aug29.mat';
+    %         filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat'
+            % filterFile = 'filtersmosaic0_sv10_w1_sh4_dr0_pitch_70_decay_2.mat';
+            % rd.crp('/resources/data/istim');
+            % filterFile = 'filters_mosaic0_sv10_w1_sh2_dr0.mat';
+            data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+            filterMat = data.filterMat; clear data;
+
+            if isempty(spatialFilterLambda)
+                spatialFilterLambda = 0.001;
+            end
+        end
+        
+    else
+        filterMat = load(filterFile);
+        
+        if isempty(spatialFilterLambda) && isempty(pixelWidth) 
+            spatialFilterLambda = 0.06;
+        elseif isempty(spatialFilterLambda)
             spatialFilterLambda = 0.001;
         end
     end

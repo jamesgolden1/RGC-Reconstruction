@@ -18,14 +18,14 @@ switch plottype
         
         % load(obj.filterFile);
         
-        if isempty(pixelWidth)
+        if isempty(pixelWidth) && isempty(filterFile)
             
             rd = RdtClient('isetbio');
             rd.crp('/resources/data/reconstruction');
             filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
             data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
             filterMat = data.filterMat; clear data;
-        else
+        elseif isempty(filterFile)
             %          load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2.mat')
             %
             rd = RdtClient('isetbio');
@@ -34,6 +34,9 @@ switch plottype
             %         filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat'
             data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
             filterMat = data.filterMat; clear data;
+            
+        else
+            filterMat = load(filterFile);
         end
         
         % size(filterMat)
