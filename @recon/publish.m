@@ -11,10 +11,10 @@ rd.credentialsDialog;
 rd.crp('/resources/data/reconstruction/training');
 
 %%
-% for ii = 101:360
+for ii = 101:360
 % fname = [reconstructionRootPath '/dat/im_blocks/im_block_1.mat'];
-% ii
-% fname = [reconstructionRootPath '/dat/im_blocks/im_block_' num2str(ii) '.mat'];
+ii
+fname = [reconstructionRootPath '/dat/im_blocks/im_block_' num2str(ii) '.mat'];
 % fname = [reconstructionRootPath '/dat/nov_results/healthyTest/stim500_1.mat'];
 % fname = ('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/gratings_sep22/prosthesis_gratings_sep20_accuracy.mat');
 % fname = ('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/sep20_err/errmeanall_sep20.mat');
@@ -27,4 +27,4 @@ rd.crp('/resources/data/reconstruction/training');
 
 % Publish to RDT
 rd.publishArtifact(fname); 
-% end
+end

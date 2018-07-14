@@ -64,7 +64,8 @@ tic
 for icind = 1:length(includedComponentsArray)
     if includedComponentsArray(icind) < 1
         percentSV = includedComponentsArray(icind);
-        includedComponentsArray(icind) = round((1-dropout)*percentSV*size(respTrain,2));
+        includedComponentsArray(icind) = round(percentSV*size(respTrain,2));
+%         includedComponentsArray(icind) = round((1-dropout)*percentSV*size(respTrain,2));
     end
     includedComponents = [1:includedComponentsArray(icind)];
     

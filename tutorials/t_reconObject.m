@@ -103,7 +103,7 @@ blockIn = 1; startInd = 1;
 reconHealthy.loadSpikes(pRecon);
 % reconHealthy.loadSpikes
 % reconHealthy.train(pRecon,'shifttime',shifttime);
-% reconHealthy.plot('filters');
+% c
 % reconHealthy.test(pRecon);
 % reconHealthy.movie();
 

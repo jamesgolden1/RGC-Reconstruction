@@ -57,7 +57,7 @@ shifttime = 15;
 dropout = 0;
 
 filterFile  = fullfile(folderName,...    
-    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
+    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout) '_pitch_70_decay_2']);
 
 pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
@@ -93,3 +93,22 @@ end
 % delete(gcp);
 reconHealthy.loadSpikes(pRecon);
 reconHealthy.train(pRecon,'shifttime',shifttime);
+
+%%
+folderName = 'testHealthy'; 
+
+% Stimulus is 25 natural scene images presented for 20 frames each at 0.001 sec
+pRecon.stimTypeBuild = 'ns500'; 
+
+% Set destination files for movie and spike data
+pRecon.stimFile  = fullfile(folderName, 'mov');
+pRecon.respFile  = fullfile(folderName, 'sp');
+pRecon.buildFile = fullfile(folderName, 'raw','build');
+
+pRecon.testFlag = 0;
+pRecon.stimTypeBuild = 'ns500';
+reconHealthy.build(pRecon);
+
+reconHealthy.loadSpikes(pRecon);
+[mse1, cc] = reconHealthy.testImagenet(pRecon);
+disp('Healthy: 0.0952    0.8305');   

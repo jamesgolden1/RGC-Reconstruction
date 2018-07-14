@@ -20,14 +20,14 @@
 clear
 
 % Choose demo  type
-demoType = 'healthy';
-% demoType = 'prosLearning';
+% demoType = 'healthy';
+demoType = 'prosLearning';
 % demoType = 'prosNoLearning'
 
 %% Build objects
 
 % Choose a folder name, will be created in reconRootPath/dat/ directory
-folderName = ['demo_' demoType]; 
+folderName = ['demo_april22_' demoType]; 
 
 % Stimulus is 25 natural scene images presented for 20 frames each at 0.001 sec
 pRecon.stimTypeBuild = 'ns500'; 
