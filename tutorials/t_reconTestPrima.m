@@ -44,7 +44,7 @@ onlyOnFlag = 0;
 % folderNameTrain = 'aug23sp';
 % folderNameTest = 'aug23sptest';
 
-pixelWidth = 70/8;
+pixelWidth = 70/1;
 currentDecay = 2;
 % folderNameTrain = 'july25prima18';
 % % folderNameTest  = 'aug1prima18test';

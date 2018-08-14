@@ -19,6 +19,7 @@ p.addParameter('testShift',0,@isnumeric);
 
 p.addParameter('spatialFilterLambda',[],@isnumeric);
 p.addParameter('onlyOnFlag',0,@isnumeric);
+p.addParameter('noLearnFlag',0,@isnumeric);
 p.addParameter('pixelWidth',[],@isnumeric);
 p.addParameter('currentDecay',2,@isnumeric);
 p.addParameter('testFlag',2,@isnumeric);
@@ -38,6 +39,7 @@ dropout = p.Results.dropout;
 testShift = p.Results.testShift;
 spatialFilterLambda = p.Results.spatialFilterLambda;
 onlyOnFlag = p.Results.onlyOnFlag;
+noLearnFlag = p.Results.noLearnFlag;
 pixelWidth = p.Results.pixelWidth;
 currentDecay = p.Results.currentDecay;
 testFlag = p.Results.testFlag;
@@ -165,7 +167,20 @@ stimTest = stimTestzm;
 
     lambda = spatialFilterLambda;%.001;%.0075;% .01;
 %     lambda = .06;%.001;%1;%.01;%.0075;
+    if isstruct(filterMat)
+        droputIndices = filterMat.dropoutIndices;
+        filterMatSm = filterMat.filterMat;
+        filterMat=zeros(9717,10000);
+        filterMat(droputIndices,:)=filterMatSm;
+        filterMatSm=[];        
+        
+%         spikeAugFull = spikeAug;
+%         spikeAug = zeros(size(spikeAug));
+%         spikeAug(droputIndices,:) = spikeAugFull(droputIndices,:);
+    end
     filterMat2 = zeroFilter(filterMat,lambda);
+    
+%     filterMat2 = filterMat;
 %     movRecon2 = filterMat2'*spikeAug;%(:,randperm(size(spikeAug,2)));;
     
 
@@ -176,14 +191,14 @@ stimTest = stimTestzm;
 % are computed for that shift every 20 frames, instead of for every frame,
 % which speeds up the testImagenet function a great deal.
     szLen = size(spikeAug,2)-1;
-    
+
     % Long test runs are 54000 frames, so shortFrames is 2000
     % However the short hallway movie is 500, so shortFrames is 100.
     shortFrames = max([100, round(szLen/27)]);
     if ~onlyOnFlag
         movRecon2 = filterMat2'*(spikeAug(:,1:shortFrames));
         
-        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20);
+        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20,'testShift',testShift);
         movRecon2 = filterMat2'*(spikeAug(:,matchShift+1:20:szLen+0));
         spikeReduced = uint8(spikeAug(:,matchShift+1:20:szLen+0));
     else
@@ -206,19 +221,36 @@ stimTest = stimTestzm;
     % This functions computes zero mean and STDEV normalized images for
     % test set, and measures MSE and correlation.
     [imRefNorm, imTestNorm, ~, mse1, cc, mseAll, ccAll] = normalizeImages(stimTest(:,1:20:szLen-matchShift+0),movRecon2,'skipValue',1);
-    [mse1 cc]
+       
+    imTestRS = reshape(imTestNorm,[100 100 size(imTestNorm,2)]);
+    
+    imRefRS = reshape(imRefNorm,[100 100 size(imRefNorm,2)]);
+    for imind = 1:size(imTestNorm,2)
+        ssimAll(imind) = 1;%-ssim(imTestRS(:,:,imind), imRefRS(:,:,imind));
+    end
+    
+    [mse1 cc median(ssimAll)]
+%     imTestRS = double(reshape(stimTest(:,1:20:szLen-matchShift+0),[100 100 size(imTestNorm,2)]));
+%     
+%     imRefRS = reshape(movRecon2,[100 100 size(imRefNorm,2)]);
+%     
+%     for imind = 1:size(imTestNorm,2)
+%         ssimval(imind) = ssim(imTestRS(:,:,imind), imRefRS(:,:,imind));
+%     end
+%     [ssimval,ssimap] = ssim(reshape(imTestNorm(:,1),[100 100]),reshape(imRefNorm(:,1),[100 100]));
+    
     errMov = imRefNorm - imTestNorm;
-      if ~onlyOnFlag
+  if ~onlyOnFlag && ~noLearnFlag
        if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'results'),'dir')
            mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'results'));
        end
        
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll','ssimAll');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced');
        
        
-   else
+  elseif ~noLearnFlag
        
        if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOn'),'dir')
            mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOn'));
@@ -227,7 +259,16 @@ stimTest = stimTestzm;
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced');
-
+       
+  else 
+       
+       if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'),'dir')
+           mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'));
+       end
+       
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+       save
    end
    
    %     errmean = mean(errMov.^2);

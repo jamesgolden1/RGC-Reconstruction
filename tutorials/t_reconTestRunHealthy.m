@@ -37,37 +37,46 @@
 %%
 clear
 
+% 
+% addpath(genpath('/Volumes/Lab/Users/james/EJLPhosphene'))
+% addpath(genpath('/Volumes/Lab/Users/james/current/RGC-Reconstruction/'))
+% addpath(genpath('/Volumes/Lab/Users/james/current/isetbio'))
 
 % Each image block is 500 different images
 % Total available is 576*500 images
 % Save 20% for test set
-numberImageBlocks = 468;
+numberImageBlocks = 576;%460;
 
-pRecon.pixelWidth = 70/2;
+% folderName = 'healthy_training'; 
 
-% folderName = 'healthy_training_aug122'; 
-folderName = 'prosthesis_35_training_aug13'; 
+
+% pixelWidth = 70/2;
+folderName = 'healthy_testing_aug124'; 
+% folderName = 'prosthesis_70_testing_july16'; 
+% folderName = 'prosthesis_35_training_july16'; 
 mosaicFile = 'mosaic0';
-pRecon.testFlag = 0;
-
+% pRecon.testFlag = 0;
+% 
 movieFile  = fullfile(folderName, 'mov');
 spikesFile = fullfile(folderName, 'sp');
 buildFile  = fullfile(folderName, 'raw','build');
 
-% % healthy
-% windowSize = 1;
-% percentSV = .5;
-% shifttime = 15;
-% dropout = 0;
-
-% prosthesis
+% healthy
 windowSize = 1;
-percentSV = .05;
-shifttime = 3;
-dropout = .3;
+percentSV = .5;
+shifttime = 15;
+dropout = 0;
+
+% % prosthesis
+% windowSize = 1;
+% percentSV = .05;
+% shifttime = 3;
+% dropout = .3;
+
+% pRecon.pixelWidth = pixelWidth;
 
 filterFile  = fullfile(folderName,...    
-    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout) '_pitch_35_decay_2']);
+    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime)]);% sprintf('_dr%d',100*dropout) '_pitch' sprintf('_%d',pixelWidth) '_decay_2']);
 
 pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
@@ -81,55 +90,77 @@ pRecon.dropout = dropout;
 pRecon.stimTypeBuild = 'ns';
 % pRecon.stimTypeBuild = 'wn'; 
 
+
+pRecon.testFlag = 1;
+
 reconHealthy = recon(pRecon);
 %%
 
 % reconHealthy.loadSpikes(pRecon);
 % reconHealthy.train(pRecon,'shifttime',shifttime);
 %%
-% % For parallel pool, uncomment below:
+% % % For parallel pool, uncomment below:
 % % blockIn = 1; 
-nCores = 18;
+nCores = 2;
 pool = parpool(nCores);
-% % pRecon.pixelWidth = 70/2;
-for ii = 1:floor(numberImageBlocks/nCores)
+% pRecon.pixelWidth = 70/2;
+
+for startInd =1%:20
+for ii = 27%:floor(numberImageBlocks/nCores) % 18 core
+% for ii = 40:floor(numberImageBlocks/nCores) % 12 cores
+pRecon.startInd = startInd;
 parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
 % for blockIn = 1:numberImageBlocks
     % Healthy training
 %     reconHealthy.build(pRecon,'blockIn',blockIn);
     
     % Prosthesis training
-    reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
+    reconHealthy.build(pRecon,'blockIn',blockIn);
 % end
 end
 % 
-delete(gcp);
+% delete(gcp);
+end
 end
 % % delete(gcp);
-
-addpath(genpath(reconstructionRootPath));
-reconHealthy.loadSpikes(pRecon);
-reconHealthy.train(pRecon,'shifttime',shifttime);
+% % % reconHealthy.loadSpikes(pRecon);
+% % % reconHealthy.train(pRecon,'shifttime',shifttime);
 % 
 %%
 % % folderName = 'testHealthy'; 
-% folderName = 'testPros70_july14';
-% 
-% % Stimulus is 25 natural scene images presented for 20 frames each at 0.001 sec
-% % pRecon.stimTypeBuild = 'ns500'; 
-% 
-% % Set destination files for movie and spike data
-% pRecon.stimFile  = fullfile(folderName, 'mov');
-% pRecon.respFile  = fullfile(folderName, 'sp');
-% pRecon.buildFile = fullfile(folderName, 'raw','build');
-% 
-% pRecon.testFlag = 0;
-% % pRecon.stimTypeBuild = 'ns500';
-% % reconHealthy.build(pRecon);
-% 
-% % reconHealthy.loadSpikes(pRecon);
-% 
+% % folderName = 'testPros70_july14';
+folderName = 'healthy_testing_aug11';
+% Stimulus is 25 natural scene images presented for 20 frames each at 0.001 sec
+% pRecon.stimTypeBuild = 'ns500'; 
+
+% Set destination files for movie and spike data
+pRecon.stimFile  = fullfile(folderName,'mov');
+pRecon.respFile  = fullfile(folderName,'sp');
+pRecon.buildFile = fullfile(folderName, 'raw','build');
+
+pRecon.testFlag = 1;
+% pRecon.stimTypeBuild = 'ns500';
+% reconHealthy.build(pRecon);
+
+
 % reconHealthy.loadSpikes(pRecon);
-% reconHealthy.train(pRecon,'shifttime',shifttime);
-% [mse1, cc] = reconHealthy.testImagenet(pRecon);
+
+pRecon.numTest = 20;
+reconHealthy = recon(pRecon);
+reconHealthy.loadSpikes(pRecon);
+    
+pRecon.stimFile  = fullfile(folderName);%,'mov');
+pRecon.respFile  = fullfile(folderName);%,'sp');
+for testShift = 1%:20
+    
+%     pRecon.testShift = testShift;
+%     pRecon.startInd = startInd;
+
+    pRecon.testShift = testShift;
+    
+    % reconHealthy.train(pRecon,'shifttime',shifttime);
+
+%     testShift=1;
+%     [mse1, cc] = reconHealthy.testImagenet(pRecon); 
+end
 % disp('Healthy: 0.0952    0.8305');   

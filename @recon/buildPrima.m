@@ -67,7 +67,7 @@ for blockNum =blockIn%1%:nBlocks
     
     blockNum
         
-    stimScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag);
+    stimScenes = uint8(generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag, startInd));
         
     %% Build mosaic and prosthesis array
     
@@ -81,7 +81,7 @@ for blockNum =blockIn%1%:nBlocks
     
     primaParams.currentDecay = currentDecay;
     
-    primaRecon = primaArray(stimScenes,primaParams);
+    primaRecon = primaArray(stimScenes(:,:,1:30),primaParams);
     
     primaRecon.compute(stimScenes)
     innerRetina = primaRecon.innerRetina;

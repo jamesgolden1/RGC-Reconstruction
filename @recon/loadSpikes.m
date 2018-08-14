@@ -153,8 +153,8 @@ for fi = 1:numTest
         save(fullfile(reconstructionRootPath, 'dat', [respFileName '_' mosaicFile '.mat']),'spikeResp','-v7.3');
         save(fullfile(reconstructionRootPath, 'dat', [stimFileName '_' mosaicFile '.mat']),'stim','-v7.3')
     else
-        save(fullfile(reconstructionRootPath, 'dat', [respFile '_' num2str(fi) '_' mosaicFile '.mat']),'spikeResp','-v7.3');
-        save(fullfile(reconstructionRootPath, 'dat', [stimFile '_' num2str(fi) '_' mosaicFile '.mat']),'stim','-v7.3')
+        save(fullfile(reconstructionRootPath, 'dat', [respFileName '_' num2str(fi) '_' mosaicFile '.mat']),'spikeResp','-v7.3');
+        save(fullfile(reconstructionRootPath, 'dat', [stimFileName '_' num2str(fi) '_' mosaicFile '.mat']),'stim','-v7.3')
     end
     
     

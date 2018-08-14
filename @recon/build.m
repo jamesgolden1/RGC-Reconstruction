@@ -65,10 +65,12 @@ for blockNum =blockIn%:nBlocks
     blockNum
     %     natScenes = 255*ieScale(loadHallStimulus(20));
     
-    stimScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag);
+    stimScenes = uint8(generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag, startInd));
      
     %% Build mosaic and get response
-    
+%     size(stimScenes)
+%     mean(stimScenes(:))
+%     stimScenes= stimScenes(:,:,1:20);
     [rgcL, bpL, cMosaicNS, iStimNS] = mosaicResponse(stimScenes, fov);
 
     toc

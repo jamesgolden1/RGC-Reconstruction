@@ -1,4 +1,4 @@
-function natScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag)
+function natScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag, startInd)
 
     if strcmpi(stimTypeBuild,'ns')
         % Training/testing with natural scenes data on server
@@ -15,8 +15,9 @@ function natScenes = generateStimulus(stimTypeBuild, blockNum, nSteps, testFlag)
 %             natScenes = whiteNoiseSmall;%(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
         else
             movsm = parload(['/Volumes/Lab/Users/james/RGC-Reconstruction/dat/imagenetBlocks/movsm_' num2str(12+mod(blockNum-1,12)+1) '.mat']);            
-            natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
-            
+            % natScenes = movsm(1:100,1:100,nSteps*floor((blockNum-1)/12)+randperm(nSteps));
+            natScenes = movsm(1:100,1:100,nSteps*(floor((-288+blockNum-1)/12))+randperm(nSteps));
+%            
 %             rd = RdtClient('isetbio');
 %             rd.crp('/resources/data/reconstruction/training');            
 %             fname = ['im_block_' num2str(blockNum)];
