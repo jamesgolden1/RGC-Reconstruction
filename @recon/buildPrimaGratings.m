@@ -110,8 +110,19 @@ gratingsMovieContrast(:,:,1) = 127*zeros(100,100,1);
 % filterFile  = fullfile(folderNameTrain,...    
 %     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
 
-load(filterFile);
+filterMat = load(filterFile);
+if isstruct(filterMat)
+    droputIndices = filterMat.dropoutIndices;
+    filterMatSm = filterMat.filterMat;
+    filterMat=zeros(9717,10000);
+    filterMat(droputIndices,:)=filterMatSm;
+    filterMatSm=[];        
 
+%         spikeAugFull = spikeAug;
+%         spikeAug = zeros(size(spikeAug));
+%         spikeAug(droputIndices,:) = spikeAugFull(droputIndices,:);
+end
+    
 % lambda = .01;
 % filterMat2 = zeroFilter(filterMat,lambda);
 % clear filterMat;
@@ -202,20 +213,20 @@ for iTrial = 1:nTrials
 
 end
 %% Find best frame
-gratingsMovieImage = gratingsMovieContrast(:,:,2);
-movRecon0 = movRecon - ones(10000,1)*mean(movRecon);
-stdRecon0 = std(movRecon0);
-std0 = std(single(gratingsMovieImage(:)));
-movReconNorm = std0*movRecon0./(ones(10000,1)*stdRecon0);
-% movRecon0 = movRecon - ones(10000,1)*me an(movRecon);
-
-errMov = (movReconNorm - (single(gratingsMovieImage(:))*ones(1,16)));
-
-% errMov = (movReconNorm - RGB2XWFormat(gratingsMovieContrast));
-size(errMov)
-mse1 = mean(errMov.^2);
-figure; plot(mse1)
-[mv,mi] = min(mse1)
+% gratingsMovieImage = gratingsMovieContrast(:,:,2);
+% movRecon0 = movRecon - ones(10000,1)*mean(movRecon);
+% stdRecon0 = std(movRecon0);
+% std0 = std(single(gratingsMovieImage(:)));
+% movReconNorm = std0*movRecon0./(ones(10000,1)*stdRecon0);
+% % movRecon0 = movRecon - ones(10000,1)*me an(movRecon);
+% 
+% errMov = (movReconNorm - (single(gratingsMovieImage(:))*ones(1,16)));
+% 
+% % errMov = (movReconNorm - RGB2XWFormat(gratingsMovieContrast));
+% size(errMov)
+% mse1 = mean(errMov.^2);
+% % figure; plot(mse1)
+% [mv,mi] = min(mse1);
 
 %%
 % cont = .5;

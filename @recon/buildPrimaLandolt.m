@@ -131,7 +131,7 @@ landoltMovieContrast(:,:,1) = zeros(100,100);
 % filterFile  = fullfile(folderNameTrain,...    
 %     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
 
-load(filterFile);
+filterMat = load(filterFile);
 
 % lambda = .005;
 % filterMat2 = zeroFilter(filterMat,lambda);
@@ -175,6 +175,18 @@ for iTrial = 1:nTrials
 %     movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
 %     figure; ieMovie(movReconPlay);
     % save('hallwayReconMovie.mat','movRecon');
+    
+    if isstruct(filterMat)
+        droputIndices = filterMat.dropoutIndices;
+        filterMatSm = filterMat.filterMat;
+        filterMat=zeros(9717,10000);
+        filterMat(droputIndices,:)=filterMatSm;
+        filterMatSm=[];        
+        
+%         spikeAugFull = spikeAug;
+%         spikeAug = zeros(size(spikeAug));
+%         spikeAug(droputIndices,:) = spikeAugFull(droputIndices,:);
+    end
     
     movRecon = filterMat'*spikeAug;
     toc
