@@ -21,9 +21,10 @@ freqArr = 4;%[.05 .1 .2 .5 1 2 4 5 8 10 16];
 folderNameTrain = 'prosthesis_70_training_aug13';
 % folderNameTest = 'sep12prima70gratings_add';
 
-folderNameTest = 'prosthesis_70_landolt_aug16_gap';
-gap = 20;
-% gap = -2;
+% folderNameTest = 'prosthesis_70_landolt_aug16_gap';
+% gap = 20;
+folderNameTest = 'prosthesis_70_landolt_aug16_nogap';
+gap = -2;
 
 % folderNameTest = 'sep14landolt';
 
@@ -58,7 +59,7 @@ pRecon.percentSV = percentSV;
 pRecon.dropout = dropout; 
 
 % resizeArr = [.5 1];
-contrastVal= 1;%*[0 .0002 .0004 .001 .002:.002:.01 .02:.02:.1 .15 .2];
+contrastVal= .04;%*[0 .0002 .0004 .001 .002:.002:.01 .02:.02:.1 .15 .2];
 % 
 % contrastArr = [.06 .07 .09:.01:.2];
 

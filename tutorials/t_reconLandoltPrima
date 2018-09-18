@@ -1,0 +1,12 @@
+
+clear
+
+for contrast = .02%[.02 .04 .06 .08 .11 .15]
+    for gap = 0%[0 -2]
+        reconPrimaLandolt = recon();
+        reconPrimaLandolt.buildPrimaLandolt('nTrials',1,'contrast',contrast,'gap',gap);
+    end
+end
+
+
+        

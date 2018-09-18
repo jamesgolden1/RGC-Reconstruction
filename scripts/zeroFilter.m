@@ -28,3 +28,4 @@ clear fmaxrmat fmaxcmat mgrmat mgrd mgcmat mgcd
 expFilter = 1.2*(exp(-lambda*dp.^2));
 expFilter(expFilter>1) = 1;
 filterZero = filterMat.*expFilter;
+filterZero(1,:) = filterMat(1,:);

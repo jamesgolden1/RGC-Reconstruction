@@ -76,7 +76,10 @@ nSteps = 16;%000;
 
 numCols = 100; numRows = 100; % gratingSpFreq = 50;
 % gratingsMovieRow = sin((2*pi/(numCols/gratingSpFreq))*[1:numCols]);
-gratingsMovieRow = 127+contrast*127*sin((2*pi/(numCols/gratingSpFreq))*[1:numCols] + pi/2);
+
+bitdepth = 8;
+ampFactor = 2^bitdepth;
+gratingsMovieRow = ampFactor/2+contrast*(ampFactor/2 - 1)*sin((2*pi/(numCols/gratingSpFreq))*[1:numCols] + pi/2);
 if horizontalFlag
     gratingsMovieIm= (ones(numRows,1)*gratingsMovieRow)';%*tempFreq;
 else
@@ -87,7 +90,7 @@ end
 gratingsMovie = repmat(gratingsMovieIm,[1 1 nSteps]);
 
 gratingsMovieContrast = (gratingsMovie(1:100,1:100,:));
-gratingsMovieContrast(:,:,1) = 127*zeros(100,100,1);
+gratingsMovieContrast(:,:,1) = (ampFactor/2)*zeros(100,100,1);
 % gratingsMovieContrast = 128+127*gratingsMovieContrast;
 
 
@@ -189,10 +192,13 @@ for iTrial = 1:nTrials
 %     figure; ieMovie(movReconPlay);
     % save('hallwayReconMovie.mat','movRecon');
     
+    
     movRecon = filterMat'*spikeAug;
+    % [~, ~, matchShift] = normalizeImages(reshape(gratingsMovie, [10000 16]),movRecon,'skipValue',1,'testShift',1);
     toc
     movTrials(:,iTrial) = movRecon(:,8);
-    spikeTrials(:,iTrial) = spikeAug(:,8);
+%     spikeTrials(:,iTrial) = spikeAug(:,matchShift);
+    spikeTrials(:,iTrial) = reshape(spikeAug,[size(spikeAug,1)*size(spikeAug,2) 1]);
     clear spikeResp spikeAug
 
 

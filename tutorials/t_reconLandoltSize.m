@@ -5,9 +5,10 @@ clear
 folderNameTrain = 'aug27';% 'aug30';
 % folderNameTest = 'sep13gratings4_add2';
 
-folderNameTest = 'healthy_landolt_aug16_nogap';
-
+% folderNameTest = 'healthy_landolt_aug16_gap';
 % gap = 20;
+
+folderNameTest = 'healthy_landolt_aug16_nogap';
 gap = -2;
 
 % 
@@ -65,15 +66,16 @@ pRecon.folderNameTest = folderNameTest;
 
 % resizeArr = sqrt([.0025 .01 .02 .05 .1 .15 .2 .25 .3 .35 .4 .45 .5 .6 .8 1]);
 % 
-resizeArr = sqrt([ .01 .1 .2 .3 .35 .4 .45 .5 .55 .6 .65 .7 .75 .8 .875 1]);
+% resizeArr = sqrt([ .01 .1 .2 .3 .35 .4 .45 .5 .55 .6 .65 .7 .75 .8 .875 1]);
+resizeArr = sqrt([ .001 .005 .008 .02 .025 .03 .04 .06 .08 .09 .11 .12 .15]);% .2 .3 .35 .4 .45 .5 .55 .6 .65 .7 .75 .8 .875 1]);
 
 % 
 
 % parpool(length(resizeArr));
 
 
-pRecon.nTrials = 200;
-pRecon.contrast = 1;
+pRecon.nTrials = 150;
+pRecon.contrast = .04;
 pRecon.gap = gap;
 
 parfor resizeInd = 1:length(resizeArr)
@@ -83,11 +85,11 @@ parfor resizeInd = 1:length(resizeArr)
 %     parfor hFlag = [0 1]
 % for contrast =.5* [0  .04  .08 .15]
 % %     for contrast =.5* [.02 .06 .11 ]
-        reconPrimaLandolt = recon();
+        reconLandolt = recon();
 %         reconPrimaLandolt.buildPrimaGratings('nTrials',100,'contrast',contrastArr(contrastInd),'gratingSpFreq',10);
 %      reconPrimaLandolt.buildPrimaGratings('nTrials',400,'contrast',contrastArr(contrastInd),'gratingSpFreq',freqArr(freqInd),'horizontalFlag',hFlag,pRecon);
 %         reconPrimaLandolt.buildPrimaLandolt('nTrials',200,'contrast',contrastArr(contrastInd),'gap',gap,'resizeFraction',resizeArr(resizeInd),pRecon);   
-        reconPrimaLandolt.buildPrimaLandolt('resizeFraction',resizeArr(resizeInd),pRecon);   
+        reconLandolt.buildLandolt('resizeFraction',resizeArr(resizeInd),pRecon);   
 
 % end
 end

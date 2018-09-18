@@ -178,9 +178,16 @@ stimTest = stimTestzm;
 %         spikeAug = zeros(size(spikeAug));
 %         spikeAug(droputIndices,:) = spikeAugFull(droputIndices,:);
     end
-    filterMat2 = zeroFilter(filterMat,lambda);
     
 %     filterMat2 = filterMat;
+
+
+    filterMat2 = zeroFilter(filterMat,lambda);
+    load('/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/prosthesis_70_training_aug13/dropoutindices_aug23.mat')
+    filterMatDrop = zeros(size(filterMat2));
+    filterMatDrop(dropoutIndices,:) = filterMat2(dropoutIndices,:);
+    filterMat2 = []; filterMat2 = filterMatDrop;
+    
 %     movRecon2 = filterMat2'*spikeAug;%(:,randperm(size(spikeAug,2)));;
     
 
@@ -211,7 +218,7 @@ stimTest = stimTestzm;
         movRecon2 = filterMat2'*(spikeOn(:,1:shortFrames));
         
         
-        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20);
+        [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20,'testShift',testShift);
    
         movRecon2 = filterMat2'*(spikeOn(:,matchShift+1:20:szLen+0));
         spikeReduced = uint8(spikeOn(:,matchShift+1:20:szLen+0));
@@ -220,7 +227,7 @@ stimTest = stimTestzm;
     stimReduced = single(stim(:,matchShift+1:20:szLen+0));
     % This functions computes zero mean and STDEV normalized images for
     % test set, and measures MSE and correlation.
-    [imRefNorm, imTestNorm, ~, mse1, cc, mseAll, ccAll] = normalizeImages(stimTest(:,1:20:szLen-matchShift+0),movRecon2,'skipValue',1);
+    [imRefNorm, imTestNorm, ~, mse1, cc, mseAll, ccAll] = normalizeImages(stimTest(:,matchShift:20:szLen-1+0),movRecon2,'skipValue',1);
        
     imTestRS = reshape(imTestNorm,[100 100 size(imTestNorm,2)]);
     
@@ -245,20 +252,20 @@ stimTest = stimTestzm;
            mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'results'));
        end
        
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll','ssimAll');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
        
        
   elseif ~noLearnFlag
        
-       if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOn'),'dir')
-           mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOn'));
+       if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOnC'),'dir')
+           mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOnC'));
        end
        
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
        
   else 
        
@@ -266,9 +273,11 @@ stimTest = stimTestzm;
            mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'));
        end
        
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm');
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
        save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
-       save
+       
+       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
    end
    
    %     errmean = mean(errMov.^2);

@@ -52,11 +52,11 @@ numberImageBlocks = 576;%460;
 
 % pixelWidth = 70/2;
 
-folderName = 'prosthesis_70_training_aug13'; 
+% folderName = 'prosthesis_35_training_aug13'; 
 % folderName = 'prosthesis_70_real_testing_aug6'; 
 % folderName = 'prosthesis_70_testing_july16'; 
 % folderName = 'prosthesis_35_training_aug7'; 
-% folderName = 'aug27';
+folderName = 'aug27';
 mosaicFile = 'mosaic0';
 % pRecon.testFlag = 0;
 % 
@@ -65,25 +65,25 @@ spikesFile = fullfile(folderName, 'sp');
 buildFile  = fullfile(folderName, 'raw','build');
 
 % % healthy
-% windowSize = 1;
-% percentSV = .5;
-% shifttime = 15;
-% dropout = 0;
-% 
-% filterFile  = fullfile(folderName,...    
-%     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);% '_pitch' sprintf('_%d',pixelWidth) '_decay_2']);
-
-pixelWidth = 70/1;
-% prosthesis
 windowSize = 1;
-percentSV = .05;
-shifttime = 3;
-dropout = .3;
-
-% pRecon.pixelWidth = pixelWidth;
+percentSV = .5;
+shifttime = 15;
+dropout = 0;
 
 filterFile  = fullfile(folderName,...    
-    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout) '_pitch' sprintf('_%d',pixelWidth) '_decay_2']);
+    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);% '_pitch' sprintf('_%d',pixelWidth) '_decay_2']);
+
+pixelWidth = 70/2;
+% prosthesis
+% windowSize = 1;
+% percentSV = .05;
+% shifttime = 3;
+% dropout = .3;
+% 
+% % pRecon.pixelWidth = pixelWidth;
+% 
+% filterFile  = fullfile(folderName,...    
+%     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout) '_pitch' sprintf('_%d',pixelWidth) '_decay_2']);
 
 pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
@@ -138,7 +138,7 @@ reconHealthy = recon(pRecon);
 % folderName = 'prosthesis_35_testing_july16';
 % folderName = 'prosthesis_testing_70_aug22_noLearn'; pRecon.pixelWidth = 70/1;
 
-folderName = 'prosthesis_70_testing_aug13'; pRecon.pixelWidth = 70/1;
+folderName = 'prosthesis_35_testing_aug13'; pRecon.pixelWidth = 70/2;
 % folderName = 'aug29test';
 % folderName = 'healthy_testing_aug12'
 % folderName = 'healthy_testing_aug12'
@@ -151,7 +151,7 @@ pRecon.respFile  = fullfile(folderName,'sp');
 pRecon.buildFile = fullfile(folderName, 'raw','build');
 
 pRecon.testFlag = 1;
-pRecon.onlyOnFlag = 0;
+pRecon.onlyOnFlag = 1;
 pRecon.noLearnFlag = 0;
 % pRecon.stimTypeBuild = 'ns500';
 % reconHealthy.build(pRecon);
@@ -165,7 +165,7 @@ reconHealthy = recon(pRecon);
     
 pRecon.stimFile  = fullfile(folderName);%,'mov');
 pRecon.respFile  = fullfile(folderName);%,'sp');
-for testShift =  3%1:5%:20
+for testShift =  1:5%:20
     
 %     pRecon.testShift = testShift;
 %     pRecon.startInd = startInd;

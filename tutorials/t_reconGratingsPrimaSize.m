@@ -19,11 +19,13 @@ freqArr = 2;%[.05 .1 .2 .5 1 2 4 5 8 10 16];
 folderNameTrain = 'prosthesis_70_training_aug13';
 % folderNameTest = 'sep12prima70gratings_add';
 % 
-% folderNameTest = 'prosthesis_70_gratings_aug16_cont';
+% folderNameTest = 'prosthesis_70_gratings_aug25_cont';
 % hFlag = 1;
 
-folderNameTest = 'prosthesis_70_gratings_aug16_nocont';
+folderNameTest = 'prosthesis_70_gratings_aug25_nocont';
 hFlag = 0;
+
+mkdir([folderNameTest '/cont']);
 
 
 % folderNameTest = 'sep14landolt';
@@ -65,7 +67,7 @@ pRecon.dropout = dropout;
 % contrastArr = 1*[0 .0002 .0004 .001 .002:.002:.01 .02:.02:.1 .15 .2];
 % contrastArr = .05;%.1;
 % freqArr =[2 4 8.0000 12 16.0000   18.1595   20.6104   23.3921   26.5493   30.1326   34.1995 38.8153  42 44.0541  47 50.0000];
-freqArr = [.05 .5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 8 12 25];
+freqArr = [.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7 7.5 12];
 
 % freqArr =[2 4 8.0000 12 16.0000   18.1595   20.6104   23.3921   26.5493   30.1326   34.1995 38.8153  42 44.0541  47 50.0000];
 
@@ -81,8 +83,8 @@ parpool(length(freqArr));
 
 pRecon.horizontalFlag = hFlag;
   
-pRecon.nTrials = 200;
-pRecon.contrast = 1;
+pRecon.nTrials = 500;
+pRecon.contrast = .04;
 
 parfor freqInd = 1:length(freqArr)
     

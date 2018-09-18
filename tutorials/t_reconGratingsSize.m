@@ -5,11 +5,11 @@ clear
 folderNameTrain = 'aug27';% 'aug30';
 % folderNameTest = 'sep13gratings4_add2';
 
-folderNameTest = 'healthy_gratings_aug16_cont';
-hFlag = 1;
+% folderNameTest = 'healthy_gratings_aug16_cont';
+% hFlag = 1;
 
-% folderNameTest = 'healthy_gratings_aug16_nocont';
-% hFlag = 0;
+folderNameTest = 'healthy_gratings_aug16_nocont';
+hFlag = 0;
 
 % 
 % addParameter(p,  'pulseFreq',0,@isscalar);
@@ -55,8 +55,9 @@ pRecon.folderNameTest = folderNameTest;
 % pool = parpool(length(contrastArr));
 
 % freqArr = 2;%2%[.05 .1 .2 .5 1 2 4 5 8 10 16];
+freqArr = [0.5 .75 1 6 10 12.5 13 13.5 14 14.5 15.5 16.5 17 17.5 19 21];
 % freqArr =[2 4 8.0000 12 16.0000   18.1595   20.6104   23.3921   26.5493   30.1326   34.1995 38.8153  42 44.0541  47 50.0000];
-freqArr = [.05 .5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 8 12 25];
+% freqArr = [.05 .5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 8 12 25];
 % pool = parpool(length(freqArr));
     
 % contrastArr = 1*[0 .00002 .0002 .0003:.00004:.0004 .001 .002 .005 .008 .02 .04 .06 .08];
@@ -77,7 +78,7 @@ parpool(length(freqArr));
 pRecon.horizontalFlag = hFlag;
   
 pRecon.nTrials = 200;
-pRecon.contrast = 1;
+pRecon.contrast = 8e-4;%.04;
 parfor freqInd = 1:length(freqArr)
 
 %     for contrastInd = length(contrastArr)

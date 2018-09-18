@@ -51,7 +51,7 @@ end
 
 
 [mv,mi] = min(mseshm); %#ok<ASGLU>
-matchShift = mi-1 + testShift -1;
+matchShift = mi-1;% + testShift -1;
 
 %% Find mse
 errMov = imRefNorm - imTestNorm;
