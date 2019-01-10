@@ -88,11 +88,15 @@ spikeResp = mosaicSpikes(primaRecon.innerRetina);
 %     load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27/filtersmosaic0_sv50_w1_sh15_dr0.mat')
 % load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27prima70/filtersmosaic0_sv 5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat')
 
-rd = RdtClient('isetbio');
-rd.crp('/resources/data/reconstruction');
-filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat';
-data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-filterMat = data.filterMat; clear data;
+filterMat = load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/prosthesis_70_training_aug13/filtersmosaic0_sv 5_w1_sh3_dr30_pitch_70_decay_2.mat')
+% filterMat = load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/prosthesis_35_training_aug13/filtersmosaic0_sv 5_w1_sh3_dr30_pitch_35_decay_2.mat')
+% load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27prima35/filtersmosaic0_sv10_w1_sh5_dr0_pitch_35_decay_2.mat')
+
+% rd = RdtClient('isetbio');
+% rd.crp('/resources/data/reconstruction');
+% filterFile = 'filtersmosaic0_sv5_w1_sh4_dr0_pitch_70_decay_2_aug27.mat';
+% data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+% filterMat = data.filterMat; clear data;
 
 % load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv50_w1_sh15_dr0.mat');
 % filterNS = filterMat; clear filterMat
@@ -131,12 +135,27 @@ spikeAug(1,:) = ones(1,size(spikeResp,2));
 spikeAug(2:9716+1,:) = spikeResp;
 % load('filters__mosaic0.mat')
 
-movRecon = filterMat'*spikeAug;
+
+if isstruct(filterMat)
+    dropoutIndices = filterMat.dropoutIndices;
+    filterMatSm = filterMat.filterMat;
+    filterMat=zeros(9717,10000);
+    filterMat(dropoutIndices,:)=filterMatSm;
+    filterMatSm=[];        
+
+%         spikeAugFull = spikeAug;
+%         spikeAug = zeros(size(spikeAug));
+%         spikeAug(dropoutIndices,:) = spikeAugFull(dropoutIndices,:);
+end
+% filterMat2 = filterMat; filterMat = [];
+
+% movRecon2 = filterMat'*spikeAug;
 mse = 0;
 %     movReconPlay = reshape(movRecon,[100 100 size(spikeResp,2)]);
 %     nFramesPlay = 40;
 %     figure; ieMovie(movReconPlay(:,:,1:nFramesPlay));
 % save('hallwayReconMovie.mat','movRecon');
+
 
 %% Compute learning reconstruction
 
@@ -151,6 +170,8 @@ mse = 0;
 %     filterMat2 = zeroFilter(filterMat,lambda);
 movRecon2 = filterMat'*spikeAug;
 
+[a, b, matchShift] = normalizeImages(reshape(imMovie,[100*100 85]),movRecon2,'skipValue',1,'testShift',1);
+    
 %     p2.vname = ['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/current/aug20_hallway_recon2.avi']
 %     p2.vname = ['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/current/aug20_hallway_recon_pros18_filt0025.avi']
 %     p2.vname = ['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/current/aug20_hallway_recon_pros35_filt0005.avi']
@@ -160,13 +181,16 @@ movRecon2 = filterMat'*spikeAug;
 %     figure; ieMovie(reshape(movRecon2,[100 100 size(movRecon2,2)]),p2);
 %     figure; ieMovie(reshape(movRecon2,[100 100 size(movRecon2,2)]));
 
-figure; imagesc(reshape(movRecon2(:,3),[100 100])); axis image; axis off; colormap gray
+figure; imagesc(reshape(movRecon2(:,matchShift),[100 100])); axis image; axis off; colormap gray
 clim1 = caxis;
 set(gcf,'PaperPositionMode','auto')
 % %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_healthy.pdf']);
 % %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_prima70.pdf']);
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_sep20_prima35_decay2_bigSpread_learning.pdf']);
-% print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_sep20_prima70_decay2_bigSpread_learning.pdf']);
+
+print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_prima35_learning_aug24.pdf']);
+% print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_prima35_learning.pdf']);
+
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/wheel_recon_sep20_prima35_decay2_bigSpread_learning.pdf']);
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/wheel_recon_sep20_prima70_decay2_bigSpread_learning.pdf']);
 %% 3, 8, 14
@@ -177,14 +201,30 @@ set(gcf,'PaperPositionMode','auto')
 %% Compute no-learning reconstruction
 
 % load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27/filtersmosaic0_sv50_w1_sh15_dr0.mat')
+% load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug29prima70/filtersmosaic0_sv50_w1_sh15_dr0_zero05.mat')
 
-rd = RdtClient('isetbio');
-rd.crp('/resources/data/reconstruction');
-filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
-data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
-filterMat = data.filterMat; clear data;
+load('/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/aug27/filtersmosaic0_sv50_w1_sh15_dr0.mat')
+load('dropoutIndices_826.mat'); dropoutIndices = [1 dropoutIndices];
+    filterMatSm = filterMat;
+    filterMat=zeros(9717,10000);
+    filterMat(dropoutIndices,:)=filterMatSm(dropoutIndices,:);
+    filterMatSm=[];     
+    
+% load('dropoutIndices_826.mat');
+% rd = RdtClient('isetbio');
+% rd.crp('/resources/data/reconstruction');
+% filterFile = 'filtersmosaic0_sv50_w1_sh15_dr0_aug27.mat';
+% data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
+% filterMat = data.filterMat; clear data;
 
-lambda = .0025;
+spikeAugOrig = spikeAug;
+
+spikeAugFull = spikeAug;
+spikeAug = zeros(size(spikeAug));
+spikeAug(dropoutIndices,:) = spikeAugFull(dropoutIndices,:);
+
+lambda = .05;
+% lambda = .0025;
 %     lambda = .001;
 filterMat2 = zeroFilter(filterMat,lambda);
 movRecon2 = filterMat2'*spikeAug;
@@ -198,12 +238,16 @@ movRecon2 = filterMat2'*spikeAug;
 %     figure; ieMovie(reshape(movRecon2,[100 100 size(movRecon2,2)]),p2);
 %     figure; ieMovie(reshape(movRecon2,[100 100 size(movRecon2,2)]));
 
-figure; imagesc(reshape(movRecon2(:,9),[100 100])); axis image; axis off; colormap gray
+[a, b, matchShift] = normalizeImages(reshape(imMovie,[100*100 85]),movRecon2,'skipValue',1,'testShift',1);
+figure; imagesc(reshape(movRecon2(:,8),[100 100])); axis image; axis off; colormap gray
 clim1 = caxis;
 set(gcf,'PaperPositionMode','auto')
 % %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_healthy.pdf']);
 % %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_prima70.pdf']);
-% print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_sep20_prima70_decay2_bigSpread_noLearning.pdf']);
+
+print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_aug24_prima35_decay2_bigSpread_noLearning.pdf']);
+% print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_sep20_prima35_decay2_bigSpread_noLearning.pdf']);
+
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_sep20_prima35_decay2_bigSpread_noLearning.pdf']);
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/wheel_recon_sep20_prima70_decay2_bigSpread_noLearning.pdf']);
 % print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/wheel_recon_sep20_prima35_decay2_bigSpread_noLearning.pdf']);
@@ -215,14 +259,21 @@ spikeOn = zeros(size(spikeAug));
 spikeOn(1:1+28*32,:) = spikeAug(1:1+28*32,:);
 spikeOn(28*32+31*35+1:28*32+31*35+55*63+1,:) = spikeAug(28*32+31*35+1:28*32+31*35+55*63+1,:);
 
+
+% spikeAugFull = spikeOn;
+% spikeAug = zeros(size(spikeAug));
+% spikeAug(dropoutIndices,:) = spikeAugFull(dropoutIndices,:);
+
 movReconOn = filterMat2'*spikeOn;
 
+% [a, b, matchShift] = normalizeImages(reshape(imMovie,[100*100 85]),movReconOn,'skipValue',1,'testShift',1);
 %     figure; ieMovie(reshape(movReconOn,[100 100 size(movRecon2,2)]));
-figure; imagesc(reshape(movReconOn(:,9),[100 100])); axis image; axis off; colormap gray
+figure; imagesc(reshape(movReconOn(:,8),[100 100])); axis image; axis off; colormap gray
 %     figure; imagesc(reshape(movReconOn(:,26)+movReconOff(:,26),[100 100])); axis image; axis off; colormap gray
 %     caxis(clim1);
 set(gcf,'PaperPositionMode','auto')
-%     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_healthy_on.pdf']);
+%     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_sep20_prima70_decay2_bigSpread_onlyOn.pdf']);
+        print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_aug26_v2_prima70_decay2_bigSpread_onlyOn.pdf']);
 %          print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_sep20_prima35_decay2_bigSpread_NoLearning_on.pdf']);
 %          print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/wheel_recon_sep20_prima70_decay2_bigSpread_NoLearning_on.pdf']);
 %          print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/wheel_recon_sep20_prima35_decay2_bigSpread_NoLearning_on.pdf']);
@@ -265,16 +316,26 @@ set(gcf,'PaperPositionMode','auto')
 
 spikeOff = zeros(size(spikeAug));
 
-spikeOff(1+28*32:1+28*32+31*35,:) = spikeAug(1+28*32:1+28*32+31*35,:);
-spikeOff(1+28*32+31*35+55*63:end,:) = spikeAug(1+28*32+31*35+55*63:end,:);
+spikeOff(1+28*32:1+28*32+31*35,:) = spikeAugOrig(1+28*32:1+28*32+31*35,:);
+spikeOff(1+28*32+31*35+55*63:end,:) = spikeAugOrig(1+28*32+31*35+55*63:end,:);
 
+spikeAugFull = spikeOn;
+spikeAug = zeros(size(spikeAug));
+spikeAug(dropoutIndices,:) = spikeAugFull(dropoutIndices,:);
+
+movReconOn = filterMat2'*spikeAug;
 movReconOff = filterMat2'*spikeOff;
 
 %     figure; ieMovie(reshape(movReconOff,[100 100 size(movRecon2,2)]));
 
-figure; imagesc(reshape(movReconOff(:,9),[100 100])); axis image; axis off; colormap gray
+[a, b, matchShift] = normalizeImages(reshape(imMovie,[100*100 85]),movRecon2,'skipValue',1,'testShift',1);
+figure; imagesc(reshape(movReconOff(:,matchShift),[100 100])); axis image; axis off; colormap gray
 %     caxis(clim1);
 set(gcf,'PaperPositionMode','auto')
+ print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_aug24_prima70_decay2_bigSpread_onlyOff.pdf']);
+%   print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_recon_sep20_prima35_decay2_bigSpread_onlyOff.pdf']);
+
+  %  
 %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_healthy_off.pdf']);
 %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_prima_off.pdf']);
 %     print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_recon_prima_off_learning.pdf']);
@@ -307,12 +368,12 @@ ph=1;
 % imagesc(reshape(movReconOffNeg(:,26)+movReconOffPos(:,26),[100 100])); axis image; axis off; colormap gray
 %%
 
-for typeInd =1:4
+for typeInd =2:4
     primaRecon.innerRetina.mosaic{typeInd}.plot('mosaicFill'); title(''); colorbar off; axis image; axis off;
     %            rgcL.mosaic{typeInd}.plot('mosaicFill'); title(''); colorbar off; axis image; axis off;
     set(gcf,'PaperPositionMode','auto')
     % %            print(gcf, '-dpdf',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures/spatial_mos' num2str(typeInd) '.pdf']);
-    %             print(gcf, '-dsvg',['/Users/james/Documents/matlab/EJLPhosphene/local/august24/figures827/leaf_activation_sep20_prima_decay2_bigSpread_mos' num2str(typeInd) '.svg']);
+%                 print(gcf, '-dsvg',['/Users/james/Documents/matlab/EJLPhosphene/local/figures_aug2018/leaf_activation_prima_decay2_bigSpread_mos' num2str(typeInd) '_8222.svg']);
     
 end
 

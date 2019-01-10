@@ -25,7 +25,7 @@ rd.crp('/resources/data/reconstruction');
 filterFile = 'healthy_gratings_sep20_accuracy.mat';
 data  = rd.readArtifact(filterFile(1:end-4), 'type', 'mat');
 contrastArr = data.contrastArr;
-healhyAccuracy = data.Pbig;
+healthyAccuracy = data.Pbig;
 
 % freqArr2(1,1,:) = contrastArr;
 
@@ -33,12 +33,12 @@ radVal=1;
 [~,sortInd] = sort(contrastArr(1:end),'ascend');
 contrastArrSorted = contrastArr((sortInd));
 
-healhyAccuracySorted = squeeze(mean(healhyAccuracy(radVal,:,:)));
+healthyAccuracySorted = squeeze(mean(healthyAccuracy(radVal,:,:)));
 
 %% Fit psychometric curve - healthy reconstruction
 
 xData = contrastArrSorted(:);
-yData = healhyAccuracySorted(sortInd);
+yData = healthyAccuracySorted(sortInd);
 % Set up fittype and options.
 ft = fittype( '1 - 0.5*exp(-(x/a)^b + c)', 'independent', 'x', 'dependent', 'y' );
 opts = fitoptions( 'Method', 'NonlinearLeastSquares' );

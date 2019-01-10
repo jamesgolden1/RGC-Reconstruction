@@ -45,7 +45,7 @@ fov = 1.7;% 3.2;
 
 % Stimulus length = nSteps*nBlocks;
 nPixels = 100;
-nSteps =5;%50;%000;
+nSteps =450;%50;%000;
 nBlocks = 15;%30;
 
 
@@ -164,5 +164,5 @@ end
 
 
 
-save([reconstructionRootPath '/dat/' respFile '_hallway_' mosaicFile ],'spikeResp','-v7.3');
-save([reconstructionRootPath '/dat/' stimFile '_hallway_' mosaicFile],'stim','-v7.3')
+save([reconstructionRootPath '/dat/' respFile '_rhallway_aug22_' mosaicFile ],'spikeResp','-v7.3');
+save([reconstructionRootPath '/dat/' stimFile '_shallway_aug22_' mosaicFile],'stim','-v7.3')

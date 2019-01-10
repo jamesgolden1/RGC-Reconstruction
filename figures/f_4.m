@@ -16,4 +16,5 @@
 
 %%
 reconHealthy = recon();
-reconHealthy.buildPrimaLeaf;
+% reconHealthy.buildPrimaLeaf();%'pixelWidth',35);
+reconHealthy.buildPrimaWheel('pixelWidth',70);
