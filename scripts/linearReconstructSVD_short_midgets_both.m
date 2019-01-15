@@ -64,7 +64,7 @@ tic
 for icind = 1:length(includedComponentsArray)
     if includedComponentsArray(icind) < 1
         percentSV = includedComponentsArray(icind);
-        includedComponentsArray(icind) = round(percentSV*size(respTrain,2));
+        includedComponentsArray(icind) = floor(percentSV*size(respTrain,2));
 %         includedComponentsArray(icind) = round((1-dropout)*percentSV*size(respTrain,2));
     end
     includedComponents = [1:includedComponentsArray(icind)];
@@ -77,7 +77,7 @@ if dropout ~= 0
     fullIndices = [1:size(respTrain,2)];
     permIndices = fullIndices(randperm(size(respTrain,2)-1));
     dropoutIndices = permIndices(1:ceil(dropout*(size(respTrain,2)-1)));
-    keepIndices = permIndices(1+ceil(dropout*(size(respTrain,2)-1)):end);
+    keepIndices = permIndices(1+floor(dropout*(size(respTrain,2)-1)):end);
     dropoutIndicesSort = sort(dropoutIndices,'ascend'); keepIndicesSort = sort(keepIndices,'ascend');
     % [dropoutIndicesSort(1:10)' keepIndicesSort(1:10)'];
     
@@ -120,7 +120,14 @@ end
 
 
 % clear respTrain
+
+
 szStrain = size(Strain);
+
+if szStrain(1) < length(includedComponents)
+    includedComponents = includedComponents(1:(szStrain(1)));
+end
+
 StrainInv = zeros(szStrain);
 StrainInv(1:szStrain(1)+1:end) = 1./diag(Strain);
 corrTrainSVD =  (Vtrain(:,includedComponents) * (StrainInv(includedComponents,includedComponents)) * (Utrain(:,includedComponents))');

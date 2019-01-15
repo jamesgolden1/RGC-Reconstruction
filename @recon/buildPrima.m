@@ -28,6 +28,8 @@ p.addParameter('stimTypeBuild','ns',@ischar);
 p.addParameter('pixelWidth',70,@isnumeric);
 p.addParameter('currentDecay',2,@isnumeric);
 
+addParameter(p,  'bipolarNoise',0,@isscalar);
+
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
@@ -41,6 +43,7 @@ stimTypeBuild = p.Results.stimTypeBuild;
 pixelWidth = p.Results.pixelWidth;
 currentDecay = p.Results.currentDecay;
 testFlag = p.Results.testFlag;
+bipolarNoise = p.Results.bipolarNoise;
 
 if isempty(buildFile)
     buildFile = ['NS_training_' num2str(round(cputime*100))];
@@ -80,7 +83,7 @@ for blockNum =blockIn%1%:nBlocks
     primaParams.irradianceFraction = 1;    % Fraction of maximum irradiance
     
     primaParams.currentDecay = currentDecay;
-    
+    primaParams.bipolarNoise = bipolarNoise;
     primaRecon = primaArray(stimScenes(:,:,1:30),primaParams);
     
     primaRecon.compute(stimScenes)

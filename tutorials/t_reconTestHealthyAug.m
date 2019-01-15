@@ -175,7 +175,9 @@ for testShift =  3%1:5%:20
     % reconHealthy.train(pRecon,'shifttime',shifttime);
 
 %     testShift=1;
-    pRecon.spatialFilterLambda = .06;
+    pRecon.spatialFilterLambda = .001; %pros
+    
+%     pRecon.spatialFilterLambda = .06; % healthy
     [mse1, cc] = reconHealthy.testImagenet(pRecon); 
 end
 % disp('Healthy: 0.0952    0.8305');   

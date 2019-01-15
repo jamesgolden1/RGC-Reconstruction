@@ -20,6 +20,7 @@ p.addParameter('testShift',0,@isnumeric);
 p.addParameter('spatialFilterLambda',[],@isnumeric);
 p.addParameter('onlyOnFlag',0,@isnumeric);
 p.addParameter('noLearnFlag',0,@isnumeric);
+p.addParameter('dropoutFlag',0,@isnumeric);
 p.addParameter('pixelWidth',[],@isnumeric);
 p.addParameter('currentDecay',2,@isnumeric);
 p.addParameter('testFlag',2,@isnumeric);
@@ -43,6 +44,7 @@ noLearnFlag = p.Results.noLearnFlag;
 pixelWidth = p.Results.pixelWidth;
 currentDecay = p.Results.currentDecay;
 testFlag = p.Results.testFlag;
+dropoutFlag = p.Results.dropoutFlag;
 %
 % p = inputParser;
 % p.addRequired('obj');
@@ -168,25 +170,56 @@ stimTest = stimTestzm;
     lambda = spatialFilterLambda;%.001;%.0075;% .01;
 %     lambda = .06;%.001;%1;%.01;%.0075;
     if isstruct(filterMat)
-        droputIndices = filterMat.dropoutIndices;
+        dropoutIndices = filterMat.dropoutIndices;
         filterMatSm = filterMat.filterMat;
         filterMat=zeros(9717,10000);
-        filterMat(droputIndices,:)=filterMatSm;
+%         filterMat(dropoutIndices,:)=filterMatSm;
+        
+%         rng(2666);
+        filterMat(dropoutIndices,:)=filterMatSm;
+        % dIndPerm = randperm(length(dropoutIndices));
+        % dIndShort = dropoutIndices(dIndPerm(1:floor(dropout*length(dIndPerm))));
+        
+%         dIndShort = randperm(floor((dropout*size(filterMat,1))));
+%         filterMat(dIndShort,:) = zeros(size(filterMat(dIndShort,:)));
+        
+        
+%         dIndPerm = randperm(length(dropoutIndices));
+%         dIndShort = dropoutIndices(dIndPerm(1:floor(dropout*length(dIndPerm))));
+%         filterMat(dIndShort,:) = filterMatSm(dIndPerm(1:floor(dropout*length(dIndPerm))),:);
+        
         filterMatSm=[];        
         
 %         spikeAugFull = spikeAug;
 %         spikeAug = zeros(size(spikeAug));
-%         spikeAug(droputIndices,:) = spikeAugFull(droputIndices,:);
+%         spikeAug(dropoutIndices,:) = spikeAugFull(dropoutIndices,:);
     end
+    
+    if dropoutFlag
+        
+        rng(2666134);
+%         dIndShort = randperm(ceil((dropout*size(filterMat,1)-2)));
+%         filterMat(dIndShort,:) = zeros(size(filterMat(1+dIndShort,:)));
+        
+        dIndShort = randperm(((size(filterMat,1)-2)));
+        filterMat(1+dIndShort(1:floor(dropout*length(dIndShort))),:) = zeros(size(filterMat(1+dIndShort(1:floor(dropout*length(dIndShort))),:)));
+   
+%         spikeAugFull = spikeAug;
+%         spikeAug = zeros(size(spikeAug));
+%         spikeAug(1+dIndShort(1:floor(dropout*length(dIndShort))),:) = (zeros(size(spikeAug(1+dIndShort(1:floor(dropout*length(dIndShort))),:))));
+
+    
+    end
+    
     
 %     filterMat2 = filterMat;
 
 
     filterMat2 = zeroFilter(filterMat,lambda);
-    load('/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/prosthesis_70_training_aug13/dropoutindices_aug23.mat')
-    filterMatDrop = zeros(size(filterMat2));
-    filterMatDrop(dropoutIndices,:) = filterMat2(dropoutIndices,:);
-    filterMat2 = []; filterMat2 = filterMatDrop;
+% %     load('/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/prosthesis_70_training_aug13/dropoutindices_aug23.mat')
+%     filterMatDrop = zeros(size(filterMat2));
+%     filterMatDrop(dropoutIndices,:) = filterMat2(dropoutIndices,:);
+%     filterMat2 = []; filterMat2 = filterMatDrop;
     
 %     movRecon2 = filterMat2'*spikeAug;%(:,randperm(size(spikeAug,2)));;
     
@@ -205,8 +238,19 @@ stimTest = stimTestzm;
     if ~onlyOnFlag
         movRecon2 = filterMat2'*(spikeAug(:,1:shortFrames));
         
+%         permute for aug 27 filter
+%         movRecon2RS = reshape(movRecon2,[100 100 size(movRecon2,2)]);
+%         movRecon2RS = permute(movRecon2RS,[2 1 3]);
+%         movRecon2 = reshape(movRecon2RS, [100*100 size(movRecon2,2)]);
+        
         [~, ~, matchShift] = normalizeImages(stimTest(:,1:shortFrames),movRecon2,'skipValue',20,'testShift',testShift);
         movRecon2 = filterMat2'*(spikeAug(:,matchShift+1:20:szLen+0));
+        
+%         permute for aug 27 filter
+%         movRecon2RS = reshape(movRecon2,[100 100 size(movRecon2,2)]);
+%         movRecon2RS = permute(movRecon2RS,[2 1 3]);
+%         movRecon2 = reshape(movRecon2RS, [100*100 size(movRecon2,2)]);
+        
         spikeReduced = uint8(spikeAug(:,matchShift+1:20:szLen+0));
     else
         
@@ -247,39 +291,77 @@ stimTest = stimTestzm;
 %     [ssimval,ssimap] = ssim(reshape(imTestNorm(:,1),[100 100]),reshape(imRefNorm(:,1),[100 100]));
     
     errMov = imRefNorm - imTestNorm;
-  if ~onlyOnFlag && ~noLearnFlag
-       if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'results'),'dir')
-           mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'results'));
-       end
-       
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll','ssimAll');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
-       
-       
-  elseif ~noLearnFlag
-       
-       if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOnC'),'dir')
-           mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOnC'));
-       end
-       
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
-       
-  else 
-       
-       if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'),'dir')
-           mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'));
-       end
-       
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
-       
-       save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+    
+  if dropoutFlag
+      
+      if ~onlyOnFlag && ~noLearnFlag
+          
+           if ~exist(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],'results'),'dir')
+               mkdir(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],'results'));
+           end
 
-   end
-   
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll','ssimAll');
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
+      elseif ~noLearnFlag
+
+           if ~exist(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],'resultsOnlyOnC'),'dir')
+               mkdir(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],'resultsOnlyOnC'));
+           end
+
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['resultsOnlyOnC/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['resultsOnlyOnC/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['resultsOnlyOnC/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
+      else 
+
+           if ~exist(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],'resultsNoLearn'),'dir')
+               mkdir(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],'resultsNoLearn'));
+           end
+
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['resultsNoLearn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['resultsNoLearn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+
+           save(fullfile(reconstructionRootPath,'dat',[stimFileName sprintf('_dr%.0f',100*dropout)],['resultsNoLearn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
+      end
+  
+  else
+    
+      if ~onlyOnFlag && ~noLearnFlag
+           if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'results'),'dir')
+               mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'results'));
+           end
+
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/stats_' num2str(testShift) '.mat']),'mseAll','ccAll','ssimAll');
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['results/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
+
+      elseif ~noLearnFlag
+
+           if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOnC'),'dir')
+               mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsOnlyOnC'));
+           end
+
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsOnlyOnC/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
+      else 
+
+           if ~exist(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'),'dir')
+               mkdir(fullfile(reconstructionRootPath,'dat',stimFileName,'resultsNoLearn'));
+           end
+
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/im_' num2str(testShift) '.mat']),'imRefNorm','imTestNorm','-v7.3');
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/stats_' num2str(testShift) '.mat']),'mseAll','ccAll');
+
+           save(fullfile(reconstructionRootPath,'dat',stimFileName,['resultsNoLearn/spikeReduced_' num2str(testShift) '.mat']),'spikeReduced','stimReduced','-v7.3');
+
+      end
+    end
    %     errmean = mean(errMov.^2);
 
 
