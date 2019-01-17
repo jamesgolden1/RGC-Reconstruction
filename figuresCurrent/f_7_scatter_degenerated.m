@@ -28,6 +28,8 @@ clear;
 
 %% 
 
+datDir = [reconstructionRootPath '/figuresCurrent/dat/f_7_scatter_degenerated/'];
+
 plotLin = 1;
 degenFlag = '_degen';
 dirName35 = 'prosthesis_35_testing_aug22_degen';
@@ -46,15 +48,14 @@ dirName70 = 'prosthesis_70_testing_aug22_degen';
 
 %% Load data - learning
 ccB = [];
-% for ii = 2:20; load(['/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/sep20test/results/stats_' num2str(ii) '.mat']); ccB = [ccB; ccAll]; end;
-% for ii = 2:20; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/nov_results/primaTestLearning/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
-for ii = [1:3 5]; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName70 '/results/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
-for ii = [4]; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName70 '/results/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
+
+for ii = [1:3 5]; load([datDir dirName70 '/results/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
+for ii = [4]; load([datDir dirName70 '/results/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
 
 ccB2 = [];
-% for ii = 2:20; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/nov_results/prima35TestLearning/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
-for ii = [1:3 5]; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName35 '/results/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
-for ii = [4]; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName35 '/results/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
+
+for ii = [1:3 5]; load([datDir dirName35 '/results/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
+for ii = [4]; load([datDir dirName35 '/results/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
 
 %% Plot
 
@@ -114,13 +115,10 @@ end
 %% Load data - Only On
 
 ccB = [];
-% for ii = 2:20; load(['/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/sep20test/results/stats_' num2str(ii) '.mat']); ccB = [ccB; ccAll]; end;
-% for ii = 2:20; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/nov_results/primaTestLearning/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
-for ii = 1:4; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName70 '/resultsOnlyOnC/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
+for ii = 1:4; load([datDir dirName70 '/resultsOnlyOnC/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
 
 ccB2 = [];
-% for ii = 2:20; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/nov_results/prima35TestLearning/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
-for ii = 1:4; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName35 '/resultsOnlyOnC/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
+for ii = 1:4; load([datDir dirName35 '/resultsOnlyOnC/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
 
 %% PLot
 
@@ -185,13 +183,11 @@ end
 %% Load data - No Learning
 
 ccB = [];
-% for ii = 2:20; load(['/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/sep20test/results/stats_' num2str(ii) '.mat']); ccB = [ccB; ccAll]; end;
-% for ii = 2:20; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/nov_results/primaTestLearning/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
-for ii = [1:3 5]; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName70 '/resultsNoLearn/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
+for ii = [1:3 5]; load([datDir dirName70 '/resultsNoLearn/stats_' num2str(ii) '.mat']); ccB = [ccB mseAll]; end;
 
 ccB2 = [];
 % for ii = 2:20; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/nov_results/prima35TestLearning/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
-for ii = [1:3 5]; load(['/Users/james/Documents/MATLAB/RGC-Reconstruction/dat/' dirName35 '/resultsNoLearn/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
+for ii = [1:3 5]; load([datDir dirName35 '/resultsNoLearn/stats_' num2str(ii) '.mat']); ccB2 = [ccB2 mseAll]; end;
 
 %% Plot
 

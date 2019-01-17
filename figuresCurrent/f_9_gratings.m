@@ -27,7 +27,10 @@ clear
 % contrastArr = data.contrastArr;
 % healthyAccuracy = data.Pbig;
 
-load('ws_gratings_healthy_aug17_2018_4reps_out0.mat');
+datDir = [reconstructionRootPath '/figuresCurrent/dat/f_9_gratings/'];
+load([datDir 'ws_gratings_healthy_aug17_2018_4reps_out0.mat']);
+
+% load('ws_gratings_healthy_aug17_2018_4reps_out0.mat');
 contrastArr = freqArr;
 healthyAccuracy = Pbig;
 
@@ -92,7 +95,9 @@ title('Landolt C Orientation Discrimination');
 
 
 % load('ws_gratings_prima_aug17_2018_4reps_out0.mat');
-load('ws_gratings_primaLearning_aug25_2018_8reps500_sh8_out0.mat');
+
+load([datDir 'ws_gratings_primaLearning_aug25_2018_8reps500_sh8_out0.mat']);
+% load('ws_gratings_primaLearning_aug25_2018_8reps500_sh8_out0.mat');
 
 
 freqArr = freqArr(1:end);
@@ -176,8 +181,9 @@ xlabel('Contrast'); ylabel('Fraction Correct');
 
 
 % load('ws_gratings_primaOnlyOn_aug17_2018_4reps_out0.mat');
-% 
-load('ws_gratings_primaOnlyOnCorrect_aug25_2018_8reps500_sh8_f05_out0.mat');
+
+load([datDir 'ws_gratings_primaOnlyOnCorrect_aug25_2018_8reps500_sh8_f05_out0_sm.mat']);
+% load('ws_gratings_primaOnlyOnCorrect_aug25_2018_8reps500_sh8_f05_out0.mat');
 freqArr = freqArr(1:end);
 Pbig = Pbig(:,:,1:end);
 contrastArr = freqArr;
@@ -264,7 +270,8 @@ xlabel('Contrast'); ylabel('Fraction Correct');
 
 
 
-load('ws_gratings_primaNoLearn_aug17_2018_4reps_out0.mat');
+load([datDir 'ws_gratings_primaNoLearn_aug17_2018_4reps_out0.mat']);
+% load('ws_gratings_primaNoLearn_aug17_2018_4reps_out0.mat');
 
 freqArr = freqArr(2:end);
 Pbig = Pbig(:,:,2:end);

@@ -27,7 +27,11 @@ clear
 % contrastArr = data.contrastArr;
 % healthyAccuracy = data.Pbig;
 
-load('ws_landolt_healthy2_aug17_2018_4reps_out0.mat');
+% load('ws_landolt_healthy2_aug17_2018_4reps_out0.mat');
+
+datDir = [reconstructionRootPath '/figuresCurrent/dat/f_9_landolt/'];
+load([datDir 'ws_landolt_healthy2_aug17_2018_4reps_out0.mat']);
+
 contrastArr = ((50/20)/1.7)./freqArr;
 healthyAccuracy = Pbig;
 
@@ -39,6 +43,7 @@ contrastArrSorted = contrastArr((sortInd));
 
 healthyAccuracySorted = squeeze(mean(healthyAccuracy(radVal,:,:)));
 % figure; plot(contrastArrSorted,healthyAccuracySorted)
+
 %% Fit psychometric curve - healthy reconstruction
 
 xData = contrastArrSorted(:);
@@ -98,7 +103,10 @@ title('Landolt C Orientation Discrimination');
 % prosthesisAccuracy = data.Pbig;
 
 
-load('ws_landolt_prima_aug17_2018_4reps_out0.mat');
+
+% datDir = [reconstructionRootPath '/figuresCurrent/dat/f_9_landolt/'];
+load([datDir 'ws_landolt_prima_aug17_2018_4reps_out0.mat']);
+% load('ws_landolt_prima_aug17_2018_4reps_out0.mat');
 
 freqArrShort = freqArr([1:2 4:length(freqArr)]);
 PbigShort = Pbig(:,:,[1:2 4:length(freqArr)]);
@@ -117,6 +125,7 @@ contrastArrSorted = contrastArr((sortInd));
 
 prosthesisAccuracySorted = squeeze(mean(prosthesisAccuracy(radVal,:,:)));
 % figure; plot(contrastArrSorted,prosthesisAccuracySorted)
+
 %% Fit psychometric curve - prosthesis reconstruction
 % [xData, yData] = prepareCurveData(freqArrSort(:),Pbigsort(sortInd));
 xData = contrastArrSorted(:);
@@ -183,7 +192,9 @@ xlabel('Contrast'); ylabel('Fraction Correct');
 % prosthesisAccuracy = data.Pbig;
 
 
-load('ws_landolt_primaOnlyOn_aug17_2018_4reps_out0.mat');
+load([datDir 'ws_landolt_primaOnlyOn_aug17_2018_4reps_out0.mat']);
+
+% load('ws_landolt_primaOnlyOn_aug17_2018_4reps_out0.mat');
 freqArr = freqArr([1:2 4:length(freqArr)]);
 Pbig = Pbig(:,:,[1:2 4:length(Pbig)]);
 % contrastArr = freqArr;
@@ -261,7 +272,9 @@ xlabel('Contrast'); ylabel('Fraction Correct');
 % prosthesisAccuracy = data.Pbig;
 
 
-load('ws_landolt_primaNoLearn_aug17_2018_4reps_out0.mat');
+
+load([datDir 'ws_landolt_primaNoLearn_aug17_2018_4reps_out0.mat']);
+% load('ws_landolt_primaNoLearn_aug17_2018_4reps_out0.mat');
 
 freqArr = freqArr(2:end);
 Pbig = Pbig(:,:,2:end);
@@ -275,6 +288,7 @@ contrastArrSorted = contrastArr((sortInd));
 
 prosthesisAccuracySorted = squeeze(mean(prosthesisAccuracy(radVal,:,:)));
 % figure; plot(contrastArrSorted,prosthesisAccuracySorted)
+
 %% Fit psychometric curve - prosthesis No Learning reconstruction
 % [xData, yData] = prepareCurveData(freqArrSort(:),Pbigsort(sortInd));
 xData = contrastArrSorted(:);
