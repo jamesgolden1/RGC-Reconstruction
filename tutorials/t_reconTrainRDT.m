@@ -35,18 +35,29 @@
 % 
 % (c) isetbio team 2017 JRG  NP (Nikhil Parthsarathy)
 %%
-clear
 
+clear;
+
+isetbioLocalPath = '/Volumes/Lab/Users/james/';
+addpath(genpath([isetbioLocalPath 'isetbio']));
+
+rdtLocalPath = '/Volumes/Lab/Users/james/';
+addpath(genpath([rdtLocalPath 'RemoteDataToolbox']));
+
+phospheneLocalPath = '/Volumes/Lab/Users/james/current';
+addpath(genpath([phospheneLocalPath 'EJLPhosphene']));
+
+reconLocalPath = '/Volumes/Lab/Users/james/current';
+addpath(genpath([reconLocalPath 'RGC-Reconstruction/']));
+
+%%
 
 % Each image block is 500 different images
-% Total available is 576*500 images
+% Total available is 360*500 images
 % Save 20% for test set
-numberImageBlocks = 468;
+numberImageBlocks = 360;
 
-pRecon.pixelWidth = 70/2;
-
-% folderName = 'healthy_training_aug122'; 
-folderName = 'prosthesis_35_training_aug13'; 
+folderName = 'healthy'; 
 mosaicFile = 'mosaic0';
 pRecon.testFlag = 0;
 
@@ -54,20 +65,13 @@ movieFile  = fullfile(folderName, 'mov');
 spikesFile = fullfile(folderName, 'sp');
 buildFile  = fullfile(folderName, 'raw','build');
 
-% % healthy
-% windowSize = 1;
-% percentSV = .5;
-% shifttime = 15;
-% dropout = 0;
-
-% prosthesis
 windowSize = 1;
-percentSV = .05;
-shifttime = 3;
-dropout = .3;
+percentSV = .5;
+shifttime = 15;
+dropout = 0;
 
 filterFile  = fullfile(folderName,...    
-    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout) '_pitch_35_decay_2']);
+    ['filters' mosaicFile sprintf('_sv%2d',100*percentSV) sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
 
 pRecon.buildFile = buildFile;
 pRecon.stimFile = movieFile;
@@ -82,54 +86,24 @@ pRecon.stimTypeBuild = 'ns';
 % pRecon.stimTypeBuild = 'wn'; 
 
 reconHealthy = recon(pRecon);
-%%
 
-% reconHealthy.loadSpikes(pRecon);
-% reconHealthy.train(pRecon,'shifttime',shifttime);
-%%
 % % For parallel pool, uncomment below:
-% % blockIn = 1; 
-nCores = 18;
-pool = parpool(nCores);
-% % pRecon.pixelWidth = 70/2;
-for ii = 1:floor(numberImageBlocks/nCores)
-parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
-% for blockIn = 1:numberImageBlocks
+% blockIn = 1; 
+% nCores = 18;
+% pool = parpool(nCores);
+% for ii = 1:floor(numberImageBlocks/nCores)
+% parfor blockIn = [nCores*(ii-1)+1:nCores*(ii)]
+for blockIn = 1:numberImageBlocks
     % Healthy training
-%     reconHealthy.build(pRecon,'blockIn',blockIn);
+    reconHealthy.build(pRecon,'blockIn',blockIn);
     
     % Prosthesis training
-    reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
+%     pRecon.pixelWidth = 70/1;
+%     reconHealthy.buildPrima(pRecon,'blockIn',blockIn);
+end
+% delete(pool);
 % end
-end
-% 
-delete(gcp);
-end
-% % delete(gcp);
-
-addpath(genpath(reconstructionRootPath));
+% end
+% delete(gcp);
 reconHealthy.loadSpikes(pRecon);
 reconHealthy.train(pRecon,'shifttime',shifttime);
-% 
-%%
-% % folderName = 'testHealthy'; 
-% folderName = 'testPros70_july14';
-% 
-% % Stimulus is 25 natural scene images presented for 20 frames each at 0.001 sec
-% % pRecon.stimTypeBuild = 'ns500'; 
-% 
-% % Set destination files for movie and spike data
-% pRecon.stimFile  = fullfile(folderName, 'mov');
-% pRecon.respFile  = fullfile(folderName, 'sp');
-% pRecon.buildFile = fullfile(folderName, 'raw','build');
-% 
-% pRecon.testFlag = 0;
-% % pRecon.stimTypeBuild = 'ns500';
-% % reconHealthy.build(pRecon);
-% 
-% % reconHealthy.loadSpikes(pRecon);
-% 
-% reconHealthy.loadSpikes(pRecon);
-% reconHealthy.train(pRecon,'shifttime',shifttime);
-% [mse1, cc] = reconHealthy.testImagenet(pRecon);
-% disp('Healthy: 0.0952    0.8305');   

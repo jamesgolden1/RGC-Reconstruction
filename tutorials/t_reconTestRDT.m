@@ -34,22 +34,40 @@
 %       RemoteDataToolbox:  https://github.com/isetbio/RemoteDataToolbox
 % 
 % (c) isetbio team 2017 JRG  NP (Nikhil Parthsarathy)
+
 %%
-clear
+clear;
 
+isetbioLocalPath = '/Volumes/Lab/Users/james/';
+addpath(genpath([isetbioLocalPath 'isetbio']));
 
-% addpath(genpath('/Volumes/Lab/Users/james/EJLPhosphene'))
-% addpath(genpath('/Volumes/Lab/Users/james/current/RGC-Reconstruction/'))
-% addpath(genpath('/Volumes/Lab/Users/james/current/isetbio'))
+rdtLocalPath = '/Volumes/Lab/Users/james/';
+addpath(genpath([rdtLocalPath 'RemoteDataToolbox']));
+
+phospheneLocalPath = '/Volumes/Lab/Users/james/current';
+addpath(genpath([phospheneLocalPath 'EJLPhosphene']));
+
+reconLocalPath = '/Volumes/Lab/Users/james/current';
+addpath(genpath([reconLocalPath 'RGC-Reconstruction/']));
+
+%%
+% If you want to train recon filters from start, set trainFlag to 1.
+% Note: the training procedure downloads 3 GB of images and takes at least
+% one day to run. It runs faster with a parallel pool; see t_reconTrainRDT
+% for details.
+trainFlag = 0;
+if trainFlag
+    t_reconTrainRDT;
+end
 
 % Each image block is 500 different images
 % Total available is 576*500 images
 % Save 20% for test set
 numberImageBlocks = 576;%460;
 
-% folderName = 'healthy_training'; 
-folderName = 'prosthesis_70_testing_july16'; 
-% folderName = 'prosthesis_35_training_july16'; 
+folderName = 'healthy'; 
+% folderName = 'prosLearn'; 
+% folderName = 'prosNoLearn'; 
 mosaicFile = 'mosaic0';
 % pRecon.testFlag = 0;
 % 

@@ -1,7 +1,6 @@
 function [mse1,cc] = testImagenet(obj,varargin)
 % Computes MSE for movie.
 
-
 p = inputParser;
 p.addParameter('stimFile',[],@ischar);
 p.addParameter('respFile',[],@ischar);
@@ -63,6 +62,9 @@ if isempty(regexpi(stimFileName,'hall')) && (testShift ==0)
     
     stimFile = fullfile(reconstructionRootPath,'dat',[respFileName '_' mosaicFile '.mat']);
     load(stimFile);
+    
+    % Need to shift
+    testShift = 1;
 
 %     spikeFile = fullfile(reconstructionRootPath,'dat',stimFileName,['sp_' mosaicFile '.mat']);
 %     load(spikeFile);
@@ -183,11 +185,12 @@ stimTest = stimTestzm;
 
 
     filterMat2 = zeroFilter(filterMat,lambda);
-    load('/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/prosthesis_70_training_aug13/dropoutindices_aug23.mat')
-    filterMatDrop = zeros(size(filterMat2));
-    filterMatDrop(dropoutIndices,:) = filterMat2(dropoutIndices,:);
-    filterMat2 = []; filterMat2 = filterMatDrop;
-    
+    if dropout
+        load('/Volumes/Lab/Users/james/current/RGC-Reconstruction/dat/prosthesis_70_training_aug13/dropoutindices_aug23.mat')
+        filterMatDrop = zeros(size(filterMat2));
+        filterMatDrop(dropoutIndices,:) = filterMat2(dropoutIndices,:);
+        filterMat2 = []; filterMat2 = filterMatDrop;
+    end
 %     movRecon2 = filterMat2'*spikeAug;%(:,randperm(size(spikeAug,2)));;
     
 

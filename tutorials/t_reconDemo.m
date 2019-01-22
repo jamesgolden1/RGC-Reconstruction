@@ -17,17 +17,17 @@
 % (c) isetbio team 2017 JRG 
 
 %% 
-clear
+clear;
 
 % Choose demo  type
-% demoType = 'healthy';
-demoType = 'prosLearning';
+demoType = 'healthy';
+% demoType = 'prosLearning';
 % demoType = 'prosNoLearning'
 
 %% Build objects
 
 % Choose a folder name, will be created in reconRootPath/dat/ directory
-folderName = ['demo_april22_' demoType]; 
+folderName = ['demo_' demoType]; 
 
 % Stimulus is 25 natural scene images presented for 20 frames each at 0.001 sec
 pRecon.stimTypeBuild = 'ns500'; 
@@ -66,7 +66,8 @@ reconHealthy.loadSpikes(pRecon);
 % reconHealthy.plot('filters');
 
 %% Compute test measures
-% Compute RMS error and corr coeff for each image
+% Compute normalized RMS error and corr coeff for each image.
+% 
 % Note that these measurements differ slightly from values in the paper
 % because they are over only 25 images. The test set responses take a long
 % time to compute, so only a sample is presented here.
@@ -75,9 +76,12 @@ reconHealthy.loadSpikes(pRecon);
 
 switch demoType
     case 'healthy'        
-        disp('Healthy: 0.0952    0.8305');        
+        disp('Healthy: 0.1025    0.8305'); % mean       
+%         disp('Healthy: 0.0952    0.8305'); % median       
     case 'prosLearning'
-        disp('Prosthesis, learning: 0.1420    0.6629');
-    case 'prosNoLearning'
-        disp('Prosthesis, no learning: 0.1462    0.6796');
+        disp('Prosthesis, learning: 0.1551    0.6629'); % mean
+%         disp('Prosthesis, learning: 0.1420    0.6629'); % median
+    case 'prosNoLearning'        
+        disp('Prosthesis, no learning: 0.1530    0.6796'); % mean
+%         disp('Prosthesis, no learning: 0.1462    0.6796'); % median
 end

@@ -49,7 +49,7 @@ for shiftval = 0:30
     mseshm(shiftval+1) = mean(errtot(:));
 end
 
-
+% figure; plot(mseshm);
 [mv,mi] = min(mseshm); %#ok<ASGLU>
 matchShift = mi-1;% + testShift -1;
 
@@ -59,7 +59,7 @@ errMov = imRefNorm - imTestNorm;
 errmean = mean(errMov.^2);
 % mse1 = sqrt(median(errmean(errmean~=0)))/255;
 
-mse1 = (mean(errmean(errmean~=0)));%/255;
+mse1 = sqrt(mean(errmean(errmean~=0)))/255;
 
 %% Find correlation
 tshift = matchShift;
