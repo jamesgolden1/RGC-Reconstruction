@@ -24,6 +24,12 @@ demoType = 'healthy';
 % demoType = 'prosLearning';
 % demoType = 'prosNoLearning'
 
+% Set compute flag
+% 0 means RGC spikes have already been computed once with this script,
+% which takes 10-12 minutes on a laptop.
+% 1 bypasses spike computation, script takes only 1 minute
+spikeComputeFlag = 0;
+
 %% Build objects
 
 % Choose a folder name, will be created in reconRootPath/dat/ directory
@@ -42,10 +48,23 @@ pRecon.buildFile = fullfile(folderName, 'raw','build');
 % Create recon object
 reconHealthy = recon(pRecon);
 
+if spikeComputeFlag
 switch demoType
     
     case 'healthy'
         
+        % Use local filter file - change folder name here
+        % filterFolderName = 'aug27';
+        % mosaicFile = 'mosaic0';        
+        % windowSize = 1;
+        % percentSV = .5;
+        % shifttime = 15;
+        % dropout = 0;
+        % filterFile  = fullfile(filterFolderName,...    
+        %     ['filters' mosaicFile sprintf('_sv%2d',100*percentSV)...
+        %         sprintf('_w%d',windowSize) sprintf('_sh%d',shifttime) sprintf('_dr%d',100*dropout)]);
+        % pRecon.filterFile = filterFile;
+
         % Build RGC mosaic, find spikes in repsonse to stimulus
         reconHealthy.build(pRecon);
         
@@ -62,6 +81,7 @@ end
 
 % Format spikes
 reconHealthy.loadSpikes(pRecon);
+end
 
 % reconHealthy.plot('filters');
 

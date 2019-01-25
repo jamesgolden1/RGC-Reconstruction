@@ -36,8 +36,6 @@
 % (c) isetbio team 2017 JRG  NP (Nikhil Parthsarathy)
 %%
 
-clear;
-
 isetbioLocalPath = '/Volumes/Lab/Users/james/';
 addpath(genpath([isetbioLocalPath 'isetbio']));
 
