@@ -1,4 +1,6 @@
 # RGC-Reconstruction
+For use with the 'phosphenePaper' [branch of isetbio](https://github.com/isetbio/isetbio/tree/phosphenePaper).
+
 Collaborative repo for working on reconstruction from RGC spike responses
 
 1) In dat/ unzip WNMovie.zip  
